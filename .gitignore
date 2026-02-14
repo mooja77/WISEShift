@@ -10,5 +10,9 @@ Thumbs.db
 .railway/
 nul
 *.d.ts.map
+*.png
+screenshots/
+.playwright-mcp/
 apps/backend/prisma/seed.js
 apps/backend/prisma/seed.d.ts
+audit.log
