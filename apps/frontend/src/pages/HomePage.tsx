@@ -6,6 +6,7 @@ import { useAssessmentStore } from '../stores/assessmentStore';
 import { useTour } from '../hooks/useTour';
 import { homeTourSteps } from '../config/tourSteps';
 import toast from 'react-hot-toast';
+import EmailAccessCode from '../components/common/EmailAccessCode';
 
 const EU_COUNTRIES = [
   'Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic',
@@ -159,18 +160,7 @@ export default function HomePage() {
                 >
                   Continue Assessment
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (accessCode) {
-                      navigator.clipboard.writeText(accessCode);
-                      toast.success('Access code copied!');
-                    }
-                  }}
-                  className="btn-secondary"
-                >
-                  Copy Access Code
-                </button>
+                {accessCode && <EmailAccessCode accessCode={accessCode} />}
               </div>
             </div>
           )}

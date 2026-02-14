@@ -57,6 +57,12 @@ export const assessmentApi = {
 
   getResponses: (id: string) =>
     api.get(`/assessments/${id}/responses`),
+
+  deleteAssessment: (id: string, accessCode: string) =>
+    api.delete(`/assessments/${id}`, { headers: { 'x-access-code': accessCode } }),
+
+  anonymiseData: (id: string, accessCode: string) =>
+    api.delete(`/assessments/${id}/data`, { headers: { 'x-access-code': accessCode } }),
 };
 
 // Results API
@@ -66,6 +72,12 @@ export const resultsApi = {
 
   calculateResults: (id: string) =>
     api.post(`/assessments/${id}/results/calculate`),
+
+  getTimeline: (id: string) =>
+    api.get(`/assessments/${id}/timeline`),
+
+  getExemplars: (id: string, domainKey: string) =>
+    api.get(`/assessments/${id}/exemplars?domainKey=${encodeURIComponent(domainKey)}`),
 };
 
 // Benchmark API
@@ -81,6 +93,12 @@ export const actionPlanApi = {
 
   generate: (id: string) =>
     api.post(`/assessments/${id}/action-plan/generate`),
+
+  updateItem: (assessmentId: string, planId: string, data: { status?: string; notes?: string }) =>
+    api.put(`/assessments/${assessmentId}/action-plan/${planId}`, data),
+
+  getProgress: (id: string) =>
+    api.get(`/assessments/${id}/action-plan/progress`),
 };
 
 // Report API
@@ -241,6 +259,76 @@ export const researchApi = {
   // Phase C: Codebook
   exportCodebook: () =>
     researchClient.get('/export/codebook', { responseType: 'blob' }),
+
+  // Phase 4A: Cross-Case Comparison
+  getAssessments: () =>
+    researchClient.get('/assessments'),
+
+  compareAssessments: (assessmentIds: string[]) =>
+    researchClient.post('/compare', { assessmentIds }),
+
+  // Phase 4B: Statistics
+  getStatistics: () =>
+    researchClient.get('/statistics'),
+
+  getStatisticsGroups: (groupBy: string, domainKey?: string) =>
+    researchClient.get(`/statistics/groups?groupBy=${encodeURIComponent(groupBy)}${domainKey ? `&domainKey=${encodeURIComponent(domainKey)}` : ''}`),
+
+  // Phase 5A: Sampling
+  runSampling: (data: { method: string; count: number; criteria?: Record<string, string> }) =>
+    researchClient.post('/sampling', data),
+
+  // Phase 5B: Inter-Rater Reliability
+  calculateIRR: (otherDashboardCode: string) =>
+    researchClient.post('/irr', { otherDashboardCode }),
+
+  // Phase 6A: Trends
+  getTrends: (granularity: string) =>
+    researchClient.get(`/trends?granularity=${encodeURIComponent(granularity)}`),
+
+  // Phase 6B: Exports
+  exportDataset: (format: 'csv' | 'json') =>
+    researchClient.get(`/export/dataset?format=${format}`, { responseType: format === 'csv' ? 'blob' : 'json' }),
+
+  exportDataDictionary: () =>
+    researchClient.get('/export/data-dictionary'),
+
+  exportEnhancedCodebook: () =>
+    researchClient.get('/export/enhanced-codebook', { responseType: 'blob' }),
+
+  getCitation: (format: string) =>
+    researchClient.get(`/citation?format=${encodeURIComponent(format)}`),
+
+  // Phase 6C: Annotation Layers
+  getLayers: () =>
+    researchClient.get('/layers'),
+
+  createLayer: (name: string, description?: string) =>
+    researchClient.post('/layers', { name, description }),
+
+  updateLayer: (id: string, data: { name?: string; description?: string }) =>
+    researchClient.put(`/layers/${id}`, data),
+
+  deleteLayer: (id: string) =>
+    researchClient.delete(`/layers/${id}`),
+
+  activateLayer: (id: string) =>
+    researchClient.put(`/layers/${id}/activate`),
+
+  getLayerHighlights: (layerId: string) =>
+    researchClient.get(`/layers/${layerId}/highlights`),
+
+  createLayerHighlight: (layerId: string, data: { responseId: string; tagId: string; startOffset: number; endOffset: number; highlightedText: string }) =>
+    researchClient.post(`/layers/${layerId}/highlights`, data),
+
+  deleteLayerHighlight: (layerId: string, highlightId: string) =>
+    researchClient.delete(`/layers/${layerId}/highlights/${highlightId}`),
+
+  shareLayer: (layerId: string, dashboardCode: string, permission = 'read') =>
+    researchClient.post(`/layers/${layerId}/share`, { dashboardCode, permission }),
+
+  compareLayers: (layerId1: string, layerId2: string) =>
+    researchClient.post('/layers/compare', { layerId1, layerId2 }),
 };
 
 export default api;

@@ -45,6 +45,63 @@ actionPlanRoutes.get('/:id/action-plan', async (req, res, next) => {
   }
 });
 
+// PUT /api/assessments/:id/action-plan/:planId — Update action plan item status/notes
+actionPlanRoutes.put('/:id/action-plan/:planId', async (req, res, next) => {
+  try {
+    const { id, planId } = req.params;
+    const { status, notes } = req.body;
+
+    const plan = await prisma.actionPlan.findFirst({
+      where: { id: planId, assessmentId: id },
+    });
+    if (!plan) {
+      throw new AppError('Action plan item not found', 404);
+    }
+
+    const updateData: any = {};
+    if (status !== undefined) {
+      updateData.status = status;
+      if (status === 'completed' && !plan.completedAt) {
+        updateData.completedAt = new Date();
+      }
+      if (status !== 'completed') {
+        updateData.completedAt = null;
+      }
+    }
+    if (notes !== undefined) {
+      updateData.notes = notes;
+    }
+
+    const updated = await prisma.actionPlan.update({
+      where: { id: planId },
+      data: updateData,
+    });
+
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/assessments/:id/action-plan/progress — Get completion stats
+actionPlanRoutes.get('/:id/action-plan/progress', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const plans = await prisma.actionPlan.findMany({ where: { assessmentId: id } });
+    const total = plans.length;
+    const completed = plans.filter(p => p.status === 'completed').length;
+    const inProgress = plans.filter(p => p.status === 'in_progress').length;
+    const notStarted = plans.filter(p => p.status === 'not_started').length;
+
+    res.json({
+      success: true,
+      data: { total, completed, inProgress, notStarted },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /api/assessments/:id/action-plan/generate — Generate action plan
 actionPlanRoutes.post('/:id/action-plan/generate', async (req, res, next) => {
   try {

@@ -11,6 +11,7 @@ import PrintReportPage from './pages/PrintReportPage';
 import ComparisonPage from './pages/ComparisonPage';
 import MethodologyPage from './pages/MethodologyPage';
 import ResearchPage from './pages/ResearchPage';
+import DataManagementPage from './pages/DataManagementPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -97,6 +98,14 @@ export default function App() {
         element={
           <PageLayout>
             <ResearchPage />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/data-management"
+        element={
+          <PageLayout>
+            <DataManagementPage />
           </PageLayout>
         }
       />

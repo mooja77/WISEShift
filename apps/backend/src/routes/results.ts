@@ -262,6 +262,50 @@ resultsRoutes.get('/:id/comparison', async (req, res, next) => {
   }
 });
 
+// GET /api/assessments/:id/timeline — Get all assessment scores in the chain
+resultsRoutes.get('/:id/timeline', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const assessment = await prisma.assessment.findUnique({
+      where: { id },
+      include: { organisation: true },
+    });
+
+    if (!assessment) {
+      throw new AppError('Assessment not found', 404);
+    }
+
+    // Find all assessments for this organisation, ordered by creation date
+    const allAssessments = await prisma.assessment.findMany({
+      where: {
+        organisationId: assessment.organisationId,
+        status: 'completed',
+        domainScores: { some: {} },
+      },
+      include: { domainScores: true },
+      orderBy: { completedAt: 'asc' },
+    });
+
+    const timeline = allAssessments.map(a => {
+      const domainScores: Record<string, number> = {};
+      for (const ds of a.domainScores) {
+        domainScores[ds.domainKey] = ds.score;
+      }
+      return {
+        assessmentId: a.id,
+        completedAt: (a.completedAt ?? a.createdAt).toISOString(),
+        overallScore: a.overallScore ?? 0,
+        domainScores,
+      };
+    });
+
+    res.json({ success: true, data: timeline });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /api/assessments/:id/reassess — Create a reassessment
 resultsRoutes.post('/:id/reassess', async (req, res, next) => {
   try {
@@ -292,6 +336,80 @@ resultsRoutes.post('/:id/reassess', async (req, res, next) => {
         accessCode: currentAssessment.organisation.accessCode,
       },
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/assessments/:id/exemplars — Get anonymised narrative exemplars from higher-scoring assessments
+resultsRoutes.get('/:id/exemplars', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const domainKey = req.query.domainKey as string;
+
+    if (!domainKey) {
+      throw new AppError('domainKey query parameter is required', 400);
+    }
+
+    const assessment = await prisma.assessment.findUnique({
+      where: { id },
+      include: { domainScores: true },
+    });
+
+    if (!assessment) {
+      throw new AppError('Assessment not found', 404);
+    }
+
+    const currentDomainScore = assessment.domainScores.find(ds => ds.domainKey === domainKey);
+    const currentScore = currentDomainScore?.score ?? 0;
+
+    // Find assessments scoring at least 1 maturity level (1 point) higher in this domain
+    const higherScoringAssessments = await prisma.assessment.findMany({
+      where: {
+        id: { not: id },
+        status: 'completed',
+        domainScores: {
+          some: {
+            domainKey,
+            score: { gte: currentScore + 1 },
+          },
+        },
+      },
+      include: {
+        organisation: {
+          select: { country: true, sector: true, size: true },
+        },
+        responses: {
+          where: {
+            domainKey,
+            questionType: 'narrative',
+            textValue: { not: '' },
+          },
+          select: { textValue: true },
+        },
+      },
+      take: 10,
+    });
+
+    // Build anonymised exemplars
+    const exemplars = higherScoringAssessments
+      .flatMap(a => {
+        const contextParts: string[] = [];
+        if (a.organisation.size) contextParts.push(`${a.organisation.size} employees`);
+        if (a.organisation.country) contextParts.push(a.organisation.country);
+        if (a.organisation.sector) contextParts.push(a.organisation.sector);
+        const context = contextParts.length > 0 ? contextParts.join(' · ') : 'European WISE';
+
+        return a.responses
+          .filter(r => r.textValue && r.textValue.length > 50)
+          .map(r => ({
+            context,
+            text: r.textValue!,
+          }));
+      })
+      .slice(0, 5); // Limit to 5 exemplars
+
+    res.json({ success: true, data: exemplars });
   } catch (err) {
     next(err);
   }

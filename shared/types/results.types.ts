@@ -71,6 +71,9 @@ export interface ActionPlanItem {
   timeframe: 'short' | 'medium' | 'long';
   currentLevel: string;
   targetLevel: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  notes?: string;
+  completedAt?: string;
 }
 
 export interface ActionPlan {
@@ -127,6 +130,13 @@ export interface ReassessmentComparison {
     delta: number;
     direction: 'improved' | 'declined' | 'unchanged';
   }[];
+}
+
+export interface AssessmentTimelineEntry {
+  assessmentId: string;
+  completedAt: string;
+  overallScore: number;
+  domainScores: Record<string, number>;
 }
 
 export interface CrossCaseComparison {

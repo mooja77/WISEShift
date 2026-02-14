@@ -6,6 +6,13 @@ import ResearchTabs from '../components/research/ResearchTabs';
 import NarrativeExplorer from '../components/research/NarrativeExplorer';
 import ThemeHeatmap from '../components/research/ThemeHeatmap';
 import QuoteBoard from '../components/research/QuoteBoard';
+import ResearchComparison from '../components/research/ResearchComparison';
+import StatisticalDashboard from '../components/research/StatisticalDashboard';
+import SamplingAssistant from '../components/research/SamplingAssistant';
+import IRRPanel from '../components/research/IRRPanel';
+import TrendsPanel from '../components/research/TrendsPanel';
+import ExportPanel from '../components/research/ExportPanel';
+import LayerManager from '../components/research/LayerManager';
 import toast from 'react-hot-toast';
 
 export default function ResearchPage() {
@@ -29,11 +36,11 @@ export default function ResearchPage() {
 
   if (!authenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-indigo-50 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-indigo-50 px-4 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
         <div className="w-full max-w-md card">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Research Workspace</h1>
-            <p className="mt-2 text-sm text-gray-600">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Research Workspace</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               Qualitative analysis tools for WISE assessment narratives. Enter your dashboard access code to begin.
             </p>
           </div>
@@ -55,7 +62,7 @@ export default function ResearchPage() {
             </button>
           </form>
           <div className="mt-4 text-center">
-            <button onClick={() => navigate('/')} className="text-sm text-brand-600 hover:text-brand-800">
+            <button onClick={() => navigate('/')} className="text-sm text-brand-600 hover:text-brand-800 dark:text-brand-400">
               Back to Home
             </button>
           </div>
@@ -65,13 +72,13 @@ export default function ResearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Research Workspace</h1>
-            <p className="mt-1 text-gray-600">Qualitative analysis tools for WISE narratives</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Research Workspace</h1>
+            <p className="mt-1 text-gray-600 dark:text-gray-400">Qualitative & quantitative analysis tools</p>
           </div>
           <button
             onClick={() => { clearAuth(); navigate('/dashboard'); }}
@@ -89,6 +96,13 @@ export default function ResearchPage() {
           {activeTab === 'explorer' && <NarrativeExplorer />}
           {activeTab === 'heatmap' && <ThemeHeatmap />}
           {activeTab === 'quotes' && <QuoteBoard />}
+          {activeTab === 'comparison' && <ResearchComparison />}
+          {activeTab === 'statistics' && <StatisticalDashboard />}
+          {activeTab === 'sampling' && <SamplingAssistant />}
+          {activeTab === 'irr' && <IRRPanel />}
+          {activeTab === 'trends' && <TrendsPanel />}
+          {activeTab === 'layers' && <LayerManager />}
+          {activeTab === 'exports' && <ExportPanel />}
         </div>
       </div>
     </div>

@@ -24,6 +24,13 @@ export default function Footer() {
             >
               Privacy Policy
             </Link>
+            <span className="text-gray-300" aria-hidden="true">|</span>
+            <Link
+              to="/data-management"
+              className="text-xs font-medium text-gray-500 hover:text-brand-600 transition-colors"
+            >
+              Manage My Data
+            </Link>
           </nav>
           <p className="text-xs text-gray-400">
             Grounded in{' '}

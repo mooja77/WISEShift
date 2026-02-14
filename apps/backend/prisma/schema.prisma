@@ -51,9 +51,10 @@ model Response {
   updatedAt    DateTime   @updatedAt
   assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 
-  highlights    TextHighlight[]
-  researchNotes ResearchNote[]
-  quotePins     QuotePin[]
+  highlights      TextHighlight[]
+  researchNotes   ResearchNote[]
+  quotePins       QuotePin[]
+  layerHighlights LayerHighlight[]
 
   @@unique([assessmentId, questionId])
 }
@@ -83,6 +84,9 @@ model ActionPlan {
   timeframe      String     // short | medium | long
   currentLevel   String
   targetLevel    String
+  status         String     @default("not_started") // not_started | in_progress | completed
+  notes          String?
+  completedAt    DateTime?
   createdAt      DateTime   @default(now())
   assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 }
@@ -112,6 +116,8 @@ model DashboardAccess {
   highlights     TextHighlight[]
   researchNotes  ResearchNote[]
   quotePins      QuotePin[]
+  codingLayers   CodingLayer[]
+  sharedLayers   LayerShare[]    @relation("sharedLayers")
 }
 
 model ResearchTag {
@@ -125,6 +131,7 @@ model ResearchTag {
   updatedAt         DateTime        @updatedAt
   dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
   highlights        TextHighlight[]
+  layerHighlights   LayerHighlight[]
 
   @@unique([dashboardAccessId, name])
 }
@@ -166,4 +173,45 @@ model QuotePin {
   createdAt         DateTime        @default(now())
   dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
   response          Response        @relation(fields: [responseId], references: [id], onDelete: Cascade)
+}
+
+model CodingLayer {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  name              String
+  description       String?
+  isActive          Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
+  highlights        LayerHighlight[]
+  shares            LayerShare[]
+
+  @@unique([dashboardAccessId, name])
+}
+
+model LayerHighlight {
+  id              String      @id @default(cuid())
+  codingLayerId   String
+  responseId      String
+  tagId           String
+  startOffset     Int
+  endOffset       Int
+  highlightedText String
+  createdAt       DateTime    @default(now())
+  codingLayer     CodingLayer @relation(fields: [codingLayerId], references: [id], onDelete: Cascade)
+  response        Response    @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  tag             ResearchTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+}
+
+model LayerShare {
+  id             String          @id @default(cuid())
+  codingLayerId  String
+  sharedWithId   String
+  permission     String          @default("read") // read | write
+  createdAt      DateTime        @default(now())
+  codingLayer    CodingLayer     @relation(fields: [codingLayerId], references: [id], onDelete: Cascade)
+  sharedWith     DashboardAccess @relation("sharedLayers", fields: [sharedWithId], references: [id], onDelete: Cascade)
+
+  @@unique([codingLayerId, sharedWithId])
 }

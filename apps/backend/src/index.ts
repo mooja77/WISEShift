@@ -17,6 +17,7 @@ import { reportRoutes } from './routes/reports.js';
 import { exportsRoutes } from './routes/exports.js';
 import { dashboardRoutes } from './routes/dashboard.js';
 import { researchRoutes } from './routes/research.js';
+import { researchApiRoutes } from './routes/researchApi.js';
 import { researchAuth } from './middleware/researchAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { auditLog } from './middleware/auditLog.js';
@@ -150,6 +151,15 @@ app.use('/api/assessments', reportRoutes);
 app.use('/api/assessments', exportsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/research', researchAuth, researchRoutes);
+
+// ----- Versioned Research API (Phase 6D) -----
+const researchApiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/v1/research', researchApiLimiter, researchApiRoutes);
 
 // ----- Production: serve frontend static build -----
 if (IS_PRODUCTION) {

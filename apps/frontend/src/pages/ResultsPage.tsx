@@ -12,7 +12,9 @@ import HelpTooltip from '../components/common/HelpTooltip';
 import ExportDropdown from '../components/results/ExportDropdown';
 import WordCloud from '../components/results/WordCloud';
 import InterviewGuide from '../components/results/InterviewGuide';
+import PeerExemplars from '../components/results/PeerExemplars';
 import ReassessmentComparison from '../components/results/ReassessmentComparison';
+import AssessmentTimeline from '../components/results/AssessmentTimeline';
 import { useTour } from '../hooks/useTour';
 import { resultsTourSteps } from '../config/tourSteps';
 import { formatScore } from '../utils/locale';
@@ -121,14 +123,20 @@ export default function ResultsPage() {
             {results.domainScores.map((ds) => {
               const domain = DOMAINS.find((d) => d.key === ds.domainKey);
               return (
-                <DomainScoreCard
-                  key={ds.domainKey}
-                  domainKey={ds.domainKey}
-                  domainName={ds.domainName}
-                  score={ds.score}
-                  maturityLevel={ds.maturityLevel}
-                  color={domain?.color || '#6366F1'}
-                />
+                <div key={ds.domainKey}>
+                  <DomainScoreCard
+                    domainKey={ds.domainKey}
+                    domainName={ds.domainName}
+                    score={ds.score}
+                    maturityLevel={ds.maturityLevel}
+                    color={domain?.color || '#6366F1'}
+                  />
+                  <PeerExemplars
+                    assessmentId={assessmentId!}
+                    domainKey={ds.domainKey}
+                    domainName={ds.domainName}
+                  />
+                </div>
               );
             })}
           </div>
@@ -152,6 +160,11 @@ export default function ResultsPage() {
             <WordCloud words={wordCloudData} />
           </div>
         )}
+
+        {/* Assessment Timeline (visible when multiple assessments exist) */}
+        <div className="mt-8 card">
+          <AssessmentTimeline assessmentId={assessmentId!} />
+        </div>
 
         {/* Reassessment Comparison */}
         <div className="mt-8">

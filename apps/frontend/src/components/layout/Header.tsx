@@ -9,8 +9,12 @@ import {
   ClipboardDocumentCheckIcon,
   BookOpenIcon,
   QuestionMarkCircleIcon,
+  SunIcon,
+  MoonIcon,
 } from '@heroicons/react/24/outline';
 import { useAssessmentStore } from '../../stores/assessmentStore';
+import { useUiStore } from '../../stores/uiStore';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 import { useTour } from '../../hooks/useTour';
 import { homeTourSteps, assessmentTourSteps, resultsTourSteps } from '../../config/tourSteps';
 
@@ -24,6 +28,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { accessCode, status } = useAssessmentStore();
+  const { darkMode, toggleDarkMode } = useUiStore();
 
   // Determine current page tour
   const isHome = location.pathname === '/';
@@ -51,7 +56,7 @@ export default function Header() {
         Skip to main content
       </a>
 
-      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-gray-700 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/80">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo / Brand */}
           <div className="flex items-center gap-3">
@@ -63,8 +68,8 @@ export default function Header() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 shadow-sm">
                 <ClipboardDocumentCheckIcon className="h-5 w-5 text-white" aria-hidden="true" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-gray-900">
-                WISE<span className="text-brand-600">Shift</span>
+              <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                WISE<span className="text-brand-600 dark:text-brand-400">Shift</span>
               </span>
             </Link>
           </div>
@@ -106,11 +111,24 @@ export default function Header() {
             <button
               type="button"
               onClick={startTour}
-              className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
               aria-label="Take a Tour"
             >
               <QuestionMarkCircleIcon className="h-4 w-4" aria-hidden="true" />
               Tour
+            </button>
+            <LanguageSwitcher />
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {darkMode ? (
+                <SunIcon className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <MoonIcon className="h-5 w-5" aria-hidden="true" />
+              )}
             </button>
           </nav>
 

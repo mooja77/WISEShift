@@ -1,0 +1,159 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "WISEShift Research API",
+    "description": "Programmatic access to anonymised WISE self-assessment data for research purposes.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "WISEShift",
+      "url": "https://wiseshift-production.up.railway.app"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://wiseshift-production.up.railway.app/api/v1/research",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "DashboardCode": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "DashboardCode": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-dashboard-code",
+        "description": "Dashboard access code (DASH-XXXXXXXX format)"
+      }
+    },
+    "schemas": {
+      "DomainScores": {
+        "type": "object",
+        "description": "Map of domain key to score (0-5)",
+        "additionalProperties": {
+          "type": "number"
+        }
+      },
+      "Assessment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "CASE_001" },
+          "country": { "type": "string", "nullable": true },
+          "sector": { "type": "string", "nullable": true },
+          "size": { "type": "string", "nullable": true },
+          "overallScore": { "type": "number" },
+          "domainScores": { "$ref": "#/components/schemas/DomainScores" },
+          "completedAt": { "type": "string", "format": "date", "nullable": true }
+        }
+      },
+      "DomainStatistic": {
+        "type": "object",
+        "properties": {
+          "domain": { "type": "string" },
+          "n": { "type": "integer" },
+          "mean": { "type": "number" },
+          "median": { "type": "number" },
+          "sd": { "type": "number" },
+          "min": { "type": "number" },
+          "max": { "type": "number" }
+        }
+      },
+      "Domain": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "questionCount": { "type": "integer" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/assessments": {
+      "get": {
+        "summary": "List completed assessments",
+        "description": "Returns all completed assessments with anonymised identifiers and domain scores.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": { "type": "integer" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Assessment" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/statistics": {
+      "get": {
+        "summary": "Descriptive statistics",
+        "description": "Returns descriptive statistics and correlation matrix across all domains.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalAssessments": { "type": "integer" },
+                    "descriptive": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/DomainStatistic" }
+                    },
+                    "correlationMatrix": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/domains": {
+      "get": {
+        "summary": "Domain definitions",
+        "description": "Returns the 8 assessment domain definitions.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": { "type": "integer" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Domain" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

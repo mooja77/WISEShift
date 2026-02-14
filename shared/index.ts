@@ -6,3 +6,5 @@ export * from './constants/domains.js';
 export * from './constants/maturity-levels.js';
 export * from './constants/recommendations.js';
 export * from './constants/benchmarks.js';
+export * from './constants/help-content.js';
+export * from './constants/resources.js';

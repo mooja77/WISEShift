@@ -10,7 +10,7 @@ interface PageLayoutProps {
 
 export default function PageLayout({ children, className }: PageLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
       <Header />
 
       <main

@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DOMAINS } from '@wiseshift/shared';
 import type { ResponseInput } from '@wiseshift/shared';
-import { UserPlusIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { useAssessmentStore } from '../stores/assessmentStore';
+import { useUiStore } from '../stores/uiStore';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useTour } from '../hooks/useTour';
 import { assessmentTourSteps } from '../config/tourSteps';
@@ -28,6 +29,7 @@ export default function AssessmentPage() {
     setCurrentDomain,
     completeAssessment,
   } = useAssessmentStore();
+  const { toggleMobileSidebar } = useUiStore();
   const { saveResponses } = useAutoSave();
   const { hasSeenTour, startTour } = useTour('assessment', assessmentTourSteps);
 
@@ -136,15 +138,26 @@ export default function AssessmentPage() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 lg:pl-72">
+      <div className="flex-1">
         {/* Top Bar */}
-        <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/95 backdrop-blur px-4 py-3 sm:px-6">
+        <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/95 backdrop-blur px-4 py-3 sm:px-6 dark:border-gray-700 dark:bg-gray-900/95">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-500">
-                Domain {currentDomainIndex + 1} of {DOMAINS.length}
-              </p>
-              <h2 className="text-lg font-semibold text-gray-900">{currentDomain.name}</h2>
+            <div className="flex items-center gap-3">
+              {/* Mobile hamburger toggle */}
+              <button
+                type="button"
+                onClick={toggleMobileSidebar}
+                className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                aria-label="Open domain navigation"
+              >
+                <Bars3Icon className="h-5 w-5" aria-hidden="true" />
+              </button>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Domain {currentDomainIndex + 1} of {DOMAINS.length}
+                </p>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{currentDomain.name}</h2>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <AutoSaveIndicator />
