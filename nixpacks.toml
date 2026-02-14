@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-10_x"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = [
+  "npm run build",
+  "cd apps/backend && npx prisma migrate deploy",
+  "cd apps/backend && npx tsx prisma/seed.ts"
+]
+
+[start]
+cmd = "cd apps/backend && node dist/index.js"
