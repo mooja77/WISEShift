@@ -1,0 +1,239 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { DOMAINS } from '@wiseshift/shared';
+import type { ResponseInput } from '@wiseshift/shared';
+import { UserPlusIcon } from '@heroicons/react/24/outline';
+import { useAssessmentStore } from '../stores/assessmentStore';
+import { useAutoSave } from '../hooks/useAutoSave';
+import { useTour } from '../hooks/useTour';
+import { assessmentTourSteps } from '../config/tourSteps';
+import { assessmentApi } from '../services/api';
+import Sidebar from '../components/layout/Sidebar';
+import DomainStep from '../components/assessment/DomainStep';
+import AutoSaveIndicator from '../components/assessment/AutoSaveIndicator';
+import CollaboratorPanel from '../components/assessment/CollaboratorPanel';
+import { ProgressBar } from '../components/common/ProgressBar';
+import toast from 'react-hot-toast';
+
+export default function AssessmentPage() {
+  const navigate = useNavigate();
+  const [collabOpen, setCollabOpen] = useState(false);
+  const {
+    assessmentId,
+    accessCode,
+    status,
+    currentDomainIndex,
+    responses,
+    setResponse,
+    setCurrentDomain,
+    completeAssessment,
+  } = useAssessmentStore();
+  const { saveResponses } = useAutoSave();
+  const { hasSeenTour, startTour } = useTour('assessment', assessmentTourSteps);
+
+  useEffect(() => {
+    if (!assessmentId || status === 'idle') {
+      navigate('/');
+    }
+  }, [assessmentId, status, navigate]);
+
+  useEffect(() => {
+    if (assessmentId && !hasSeenTour) {
+      const timeout = setTimeout(startTour, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [assessmentId, hasSeenTour, startTour]);
+
+  const currentDomain = DOMAINS[currentDomainIndex];
+
+  // Calculate progress
+  const totalRequired = DOMAINS.reduce(
+    (sum, d) => sum + d.questions.filter((q) => q.required).length,
+    0
+  );
+  const answeredRequired = DOMAINS.reduce((sum, d) => {
+    return (
+      sum +
+      d.questions.filter((q) => {
+        if (!q.required) return false;
+        const resp = responses[q.id];
+        if (!resp) return false;
+        if (q.type === 'narrative') return !!resp.textValue?.trim();
+        return resp.numericValue != null;
+      }).length
+    );
+  }, 0);
+  const progressPercent = totalRequired > 0 ? Math.round((answeredRequired / totalRequired) * 100) : 0;
+
+  // Domain progress for sidebar
+  const domainProgress: Record<string, number> = {};
+  for (const domain of DOMAINS) {
+    const required = domain.questions.filter((q) => q.required).length;
+    const answered = domain.questions.filter((q) => {
+      if (!q.required) return false;
+      const resp = responses[q.id];
+      if (!resp) return false;
+      if (q.type === 'narrative') return !!resp.textValue?.trim();
+      return resp.numericValue != null;
+    }).length;
+    domainProgress[domain.key] = required > 0 ? Math.round((answered / required) * 100) : 0;
+  }
+
+  const handleResponseChange = useCallback(
+    (questionId: string, response: ResponseInput) => {
+      setResponse(questionId, response);
+    },
+    [setResponse]
+  );
+
+  const handleNext = async () => {
+    await saveResponses();
+    if (currentDomainIndex < DOMAINS.length - 1) {
+      setCurrentDomain(currentDomainIndex + 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentDomainIndex > 0) {
+      setCurrentDomain(currentDomainIndex - 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handleComplete = async () => {
+    await saveResponses();
+    if (progressPercent < 100) {
+      const proceed = window.confirm(
+        `You've answered ${progressPercent}% of required questions. Are you sure you want to submit?`
+      );
+      if (!proceed) return;
+    }
+
+    try {
+      await assessmentApi.complete(assessmentId!);
+      completeAssessment();
+      toast.success('Assessment completed successfully!');
+      navigate(`/results?id=${assessmentId}`);
+    } catch (err) {
+      toast.error('Failed to submit assessment');
+    }
+  };
+
+  if (!currentDomain) return null;
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar
+        currentDomainIndex={currentDomainIndex}
+        onSelectDomain={(index) => {
+          saveResponses();
+          setCurrentDomain(index);
+          window.scrollTo(0, 0);
+        }}
+        domainProgress={domainProgress}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 lg:pl-72">
+        {/* Top Bar */}
+        <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/95 backdrop-blur px-4 py-3 sm:px-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-500">
+                Domain {currentDomainIndex + 1} of {DOMAINS.length}
+              </p>
+              <h2 className="text-lg font-semibold text-gray-900">{currentDomain.name}</h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <AutoSaveIndicator />
+              <button
+                type="button"
+                onClick={() => setCollabOpen(true)}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-200 hover:bg-purple-100"
+              >
+                <UserPlusIcon className="h-3.5 w-3.5" />
+                Invite
+              </button>
+              {accessCode && (
+                <span className="hidden sm:inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-mono font-medium text-gray-700">
+                  {accessCode}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="mt-2">
+            <ProgressBar value={progressPercent} label="Overall Progress" showPercentage />
+          </div>
+        </div>
+
+        {/* Save confidence banner */}
+        {accessCode && (
+          <div className="mx-auto max-w-3xl px-4 pt-4 sm:px-6">
+            <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+              <svg className="h-5 w-5 shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+              </svg>
+              <span className="flex-1">
+                Your progress is saved automatically. Close your browser and return anytime with your access code:{' '}
+                <code className="rounded bg-blue-100 px-1.5 py-0.5 font-mono font-bold">{accessCode}</code>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(accessCode);
+                  toast.success('Access code copied!');
+                }}
+                className="shrink-0 rounded-md bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              >
+                Copy Code
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Domain Content */}
+        <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+          <DomainStep
+            domain={currentDomain}
+            responses={responses}
+            onResponseChange={handleResponseChange}
+          />
+
+          {/* Navigation */}
+          <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
+            <button
+              onClick={handlePrevious}
+              disabled={currentDomainIndex === 0}
+              className="btn-secondary"
+            >
+              Previous
+            </button>
+
+            <div className="flex gap-3">
+              {currentDomainIndex === DOMAINS.length - 1 ? (
+                <button onClick={handleComplete} className="btn-primary">
+                  Complete Assessment
+                </button>
+              ) : (
+                <button onClick={handleNext} className="btn-primary">
+                  Next Domain
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Collaborator Panel */}
+      {assessmentId && (
+        <CollaboratorPanel
+          open={collabOpen}
+          onClose={() => setCollabOpen(false)}
+          assessmentId={assessmentId}
+        />
+      )}
+    </div>
+  );
+}

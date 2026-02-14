@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organisation {
+  id             String       @id @default(cuid())
+  name           String
+  accessCode     String       @unique
+  country        String?
+  region         String?
+  sector         String?
+  size           String?
+  legalStructure String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  assessments    Assessment[]
+}
+
+model Assessment {
+  id                   String        @id @default(cuid())
+  organisationId       String
+  status               String        @default("in_progress") // in_progress | completed
+  overallScore         Float?
+  previousAssessmentId String?
+  collaborators        String?       // JSON array of collaborator assignments
+  completedAt          DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  organisation         Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  responses            Response[]
+  domainScores         DomainScore[]
+  actionPlans          ActionPlan[]
+}
+
+model Response {
+  id           String     @id @default(cuid())
+  assessmentId String
+  domainKey    String
+  questionId   String
+  questionType String     // likert | maturity | narrative
+  numericValue Int?
+  textValue    String?
+  tags         String?    // JSON array stored as string
+  claimedBy    String?    // Collaborator name who filled this response
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  highlights    TextHighlight[]
+  researchNotes ResearchNote[]
+  quotePins     QuotePin[]
+
+  @@unique([assessmentId, questionId])
+}
+
+model DomainScore {
+  id            String     @id @default(cuid())
+  assessmentId  String
+  domainKey     String
+  score         Float
+  maturityLevel String
+  createdAt     DateTime   @default(now())
+  assessment    Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, domainKey])
+}
+
+model ActionPlan {
+  id             String     @id @default(cuid())
+  assessmentId   String
+  domainKey      String
+  domainName     String
+  priority       String     // high | medium | low
+  recommendation String
+  description    String
+  effort         String     // low | medium | high
+  impact         String     // low | medium | high
+  timeframe      String     // short | medium | long
+  currentLevel   String
+  targetLevel    String
+  createdAt      DateTime   @default(now())
+  assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model Benchmark {
+  id               String   @id @default(cuid())
+  sector           String
+  sampleSize       Int
+  domainAverages   String   // JSON
+  domainPercentiles String  // JSON
+  overallAverage   Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([sector])
+}
+
+model DashboardAccess {
+  id         String   @id @default(cuid())
+  accessCode String   @unique
+  name       String
+  role       String   // policymaker | funder | researcher
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  researchTags   ResearchTag[]
+  highlights     TextHighlight[]
+  researchNotes  ResearchNote[]
+  quotePins      QuotePin[]
+}
+
+model ResearchTag {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  name              String
+  color             String
+  description       String?
+  isDefault         Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
+  highlights        TextHighlight[]
+
+  @@unique([dashboardAccessId, name])
+}
+
+model TextHighlight {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  responseId        String
+  tagId             String
+  startOffset       Int
+  endOffset         Int
+  highlightedText   String
+  createdAt         DateTime        @default(now())
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
+  response          Response        @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  tag               ResearchTag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+}
+
+model ResearchNote {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  responseId        String
+  text              String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
+  response          Response        @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  @@unique([dashboardAccessId, responseId])
+}
+
+model QuotePin {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  responseId        String
+  quoteText         String
+  contextNote       String?
+  sortOrder         Int             @default(0)
+  createdAt         DateTime        @default(now())
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
+  response          Response        @relation(fields: [responseId], references: [id], onDelete: Cascade)
+}

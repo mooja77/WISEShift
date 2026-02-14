@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+*.db
+*.db-journal
+.DS_Store
+Thumbs.db
+*.log
+.vite/
+.railway/
+nul
+*.d.ts.map
+apps/backend/prisma/seed.js
+apps/backend/prisma/seed.d.ts
