@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Question } from '@wiseshift/shared';
 import { getQuestionHelp } from '@wiseshift/shared';
 import LikertScale from './LikertScale';
@@ -19,6 +20,7 @@ export default function QuestionRenderer({
   onChange,
   disabled = false,
 }: QuestionRendererProps) {
+  const { t } = useTranslation();
   const [helpOpen, setHelpOpen] = useState(false);
   const help = getQuestionHelp(question.id);
 
@@ -32,7 +34,7 @@ export default function QuestionRenderer({
           </h3>
           {question.required && (
             <span className="mt-0.5 inline-flex shrink-0 items-center rounded-md bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-300 dark:ring-red-500/30">
-              Required
+              {t('questions.required')}
             </span>
           )}
         </div>

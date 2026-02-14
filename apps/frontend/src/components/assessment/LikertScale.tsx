@@ -1,13 +1,6 @@
 import React, { useId } from 'react';
+import { useTranslation } from 'react-i18next';
 import HelpTooltip from '../common/HelpTooltip';
-
-const DEFAULT_LABELS = [
-  'Strongly Disagree',
-  'Disagree',
-  'Neutral',
-  'Agree',
-  'Strongly Agree',
-];
 
 interface LikertScaleProps {
   value: number | undefined;
@@ -19,10 +12,19 @@ interface LikertScaleProps {
 export default function LikertScale({
   value,
   onChange,
-  labels = DEFAULT_LABELS,
+  labels: labelsProp,
   disabled = false,
 }: LikertScaleProps) {
+  const { t } = useTranslation();
   const groupId = useId();
+
+  const labels = labelsProp ?? [
+    t('questions.likertLabels.1'),
+    t('questions.likertLabels.2'),
+    t('questions.likertLabels.3'),
+    t('questions.likertLabels.4'),
+    t('questions.likertLabels.5'),
+  ];
 
   return (
     <div

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { DOMAINS, AVAILABLE_SECTORS } from '@wiseshift/shared';
 import { assessmentApi } from '../services/api';
 import { useAssessmentStore } from '../stores/assessmentStore';
@@ -50,6 +51,7 @@ const DEFAULT_LEGAL_STRUCTURES = [
 const ORG_SIZES = ['1-10', '11-50', '51-200', '201-500', '500+'];
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { startAssessment, assessmentId, accessCode, status } = useAssessmentStore();
   const [loading, setLoading] = useState(false);
@@ -65,7 +67,7 @@ export default function HomePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) {
-      toast.error('Organisation name is required');
+      toast.error(t('errors.organisationRequired'));
       return;
     }
 
@@ -84,7 +86,7 @@ export default function HomePage() {
       toast.success(`Assessment created! Your access code: ${accessCode}`);
       navigate('/assessment');
     } catch (err) {
-      toast.error('Failed to create assessment');
+      toast.error(t('errors.createFailed'));
     } finally {
       setLoading(false);
     }
@@ -107,13 +109,11 @@ export default function HomePage() {
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-12 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
-            <span className="block">WISE</span>
-            <span className="block text-brand-600">Self-Assessment Tool</span>
+            <span className="block">{t('home.title')}</span>
+            <span className="block text-brand-600">{t('home.subtitle')}</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
-            A comprehensive self-assessment framework for Work Integration Social Enterprises.
-            Evaluate your organisation across 8 key domains, identify strengths and areas for
-            growth, and generate actionable improvement plans.
+            {t('home.description')}
           </p>
         </div>
 
@@ -141,9 +141,9 @@ export default function HomePage() {
             <div className="card border-2 border-brand-200 bg-brand-50 lg:col-span-2">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-brand-900">Continue Assessment</h2>
+                  <h2 className="text-xl font-bold text-brand-900">{t('home.continueAssessment')}</h2>
                   <p className="mt-2 text-sm text-brand-700">
-                    You have an assessment in progress. Your access code is:{' '}
+                    {t('home.continueDescription')}{' '}
                     <code className="rounded bg-brand-100 px-2 py-0.5 font-mono font-bold">
                       {accessCode}
                     </code>
@@ -158,7 +158,7 @@ export default function HomePage() {
                   onClick={() => navigate('/assessment')}
                   className="btn-primary"
                 >
-                  Continue Assessment
+                  {t('home.continueAssessment')}
                 </button>
                 {accessCode && <EmailAccessCode accessCode={accessCode} />}
               </div>
@@ -167,38 +167,37 @@ export default function HomePage() {
 
           {/* Start New Assessment */}
           <div className="card lg:col-span-2">
-            <h2 className="text-2xl font-bold text-gray-900">Start a New Assessment</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{t('home.startNew')}</h2>
             <p className="mt-2 text-sm text-gray-600">
-              Tell us about your organisation to begin. You'll receive a unique access code to
-              save and resume your assessment at any time.
+              {t('home.startNewDescription')}
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <label htmlFor="name" className="label">
-                    Organisation Name <span className="text-red-500">*</span>
+                    {t('form.organisationNameRequired')}
                   </label>
                   <input
                     id="name"
                     type="text"
                     required
                     className="input mt-1"
-                    placeholder="Enter your organisation's name"
+                    placeholder={t('form.organisationNamePlaceholder')}
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="country" className="label">Country</label>
+                  <label htmlFor="country" className="label">{t('form.country')}</label>
                   <select
                     id="country"
                     className="input mt-1"
                     value={form.country}
                     onChange={(e) => setForm({ ...form, country: e.target.value, legalStructure: '' })}
                   >
-                    <option value="">Select country...</option>
+                    <option value="">{t('form.selectCountry')}</option>
                     {EU_COUNTRIES.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
@@ -206,57 +205,57 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label htmlFor="region" className="label">Region / State</label>
+                  <label htmlFor="region" className="label">{t('form.region')}</label>
                   <input
                     id="region"
                     type="text"
                     className="input mt-1"
-                    placeholder="e.g., Île-de-France, Bavaria, Lombardy"
+                    placeholder={t('form.regionPlaceholder')}
                     value={form.region}
                     onChange={(e) => setForm({ ...form, region: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="sector" className="label">Sector</label>
+                  <label htmlFor="sector" className="label">{t('form.sector')}</label>
                   <select
                     id="sector"
                     className="input mt-1"
                     value={form.sector}
                     onChange={(e) => setForm({ ...form, sector: e.target.value })}
                   >
-                    <option value="">Select sector...</option>
+                    <option value="">{t('form.selectSector')}</option>
                     {AVAILABLE_SECTORS.filter(s => s !== 'All WISEs').map((s) => (
                       <option key={s} value={s}>{s}</option>
                     ))}
-                    <option value="Other">Other</option>
+                    <option value="Other">{t('form.other')}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label htmlFor="size" className="label">Organisation Size</label>
+                  <label htmlFor="size" className="label">{t('form.organisationSize')}</label>
                   <select
                     id="size"
                     className="input mt-1"
                     value={form.size}
                     onChange={(e) => setForm({ ...form, size: e.target.value })}
                   >
-                    <option value="">Select size...</option>
+                    <option value="">{t('form.selectSize')}</option>
                     {ORG_SIZES.map((s) => (
-                      <option key={s} value={s}>{s} employees</option>
+                      <option key={s} value={s}>{s} {t('form.employees')}</option>
                     ))}
                   </select>
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label htmlFor="legalStructure" className="label">Legal Structure</label>
+                  <label htmlFor="legalStructure" className="label">{t('form.legalStructure')}</label>
                   <select
                     id="legalStructure"
                     className="input mt-1"
                     value={form.legalStructure}
                     onChange={(e) => setForm({ ...form, legalStructure: e.target.value })}
                   >
-                    <option value="">Select structure...</option>
+                    <option value="">{t('form.selectStructure')}</option>
                     {(form.country && LEGAL_STRUCTURES_BY_COUNTRY[form.country]
                       ? LEGAL_STRUCTURES_BY_COUNTRY[form.country]
                       : DEFAULT_LEGAL_STRUCTURES
@@ -273,14 +272,14 @@ export default function HomePage() {
                   disabled={loading || !form.name.trim()}
                   className="btn-primary"
                 >
-                  {loading ? 'Creating...' : 'Start Assessment'}
+                  {loading ? t('home.creating') : t('home.startAssessment')}
                 </button>
                 <button
                   type="button"
                   onClick={() => navigate('/resume')}
                   className="btn-secondary"
                 >
-                  Resume Existing Assessment
+                  {t('home.resumeExisting')}
                 </button>
               </div>
             </form>
@@ -293,27 +292,27 @@ export default function HomePage() {
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100">
               <span className="text-xl font-bold text-brand-600">40</span>
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-gray-900">Questions</h3>
+            <h3 className="mt-3 text-sm font-semibold text-gray-900">{t('home.questions')}</h3>
             <p className="mt-1 text-xs text-gray-500">
-              Across 8 domains, with a mix of quantitative and qualitative questions
+              {t('home.questionsDescription')}
             </p>
           </div>
           <div className="text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
               <span className="text-xl font-bold text-emerald-600">5</span>
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-gray-900">Maturity Levels</h3>
+            <h3 className="mt-3 text-sm font-semibold text-gray-900">{t('home.maturityLevels')}</h3>
             <p className="mt-1 text-xs text-gray-500">
-              From Emerging to Leading — understand where you are and where you're going
+              {t('home.maturityLevelsDescription')}
             </p>
           </div>
           <div className="text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
               <span className="text-xl font-bold text-amber-600">PDF</span>
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-gray-900">Reports</h3>
+            <h3 className="mt-3 text-sm font-semibold text-gray-900">{t('home.reports')}</h3>
             <p className="mt-1 text-xs text-gray-500">
-              Download comprehensive PDF reports with radar charts, narratives, and action plans
+              {t('home.reportsDescription')}
             </p>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import {
   CheckCircleIcon,
@@ -25,6 +26,7 @@ export default function Sidebar({
   onSelectDomain,
   domainProgress,
 }: SidebarProps) {
+  const { t } = useTranslation();
   const { sidebarOpen: collapsed, toggleSidebar, mobileSidebarOpen, closeMobileSidebar } = useUiStore();
   const assessmentId = useAssessmentStore(s => s.assessmentId);
 
@@ -67,7 +69,7 @@ export default function Sidebar({
       <div className="hidden md:flex items-center justify-between border-b border-gray-100 px-3 py-3 dark:border-gray-700">
         {!isCollapsed && (
           <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-            Domains
+            {t('research.domains')}
           </h2>
         )}
         <button
@@ -93,7 +95,7 @@ export default function Sidebar({
       {/* Mobile close button */}
       <div className="flex md:hidden items-center justify-between border-b border-gray-100 px-3 py-3 dark:border-gray-700">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-          Domains
+          {t('research.domains')}
         </h2>
         <button
           type="button"
@@ -201,7 +203,7 @@ export default function Sidebar({
       {!isCollapsed && (
         <div className="border-t border-gray-100 px-4 py-3 dark:border-gray-700">
           <div className="mb-1.5 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>Domain {currentDomainIndex + 1} of {DOMAINS.length}</span>
+            <span>{t('assessment.domainOf', { current: currentDomainIndex + 1, total: DOMAINS.length })}</span>
             <span className="font-medium">
               {completedDomains}/{DOMAINS.length} complete
             </span>

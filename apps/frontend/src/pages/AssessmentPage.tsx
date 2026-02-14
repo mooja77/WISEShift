@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { DOMAINS } from '@wiseshift/shared';
 import type { ResponseInput } from '@wiseshift/shared';
 import { UserPlusIcon, Bars3Icon } from '@heroicons/react/24/outline';
@@ -17,6 +18,7 @@ import { ProgressBar } from '../components/common/ProgressBar';
 import toast from 'react-hot-toast';
 
 export default function AssessmentPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [collabOpen, setCollabOpen] = useState(false);
   const {
@@ -107,7 +109,7 @@ export default function AssessmentPage() {
     await saveResponses();
     if (progressPercent < 100) {
       const proceed = window.confirm(
-        `You've answered ${progressPercent}% of required questions. Are you sure you want to submit?`
+        t('assessment.confirmIncomplete', { percent: progressPercent })
       );
       if (!proceed) return;
     }
@@ -115,10 +117,10 @@ export default function AssessmentPage() {
     try {
       await assessmentApi.complete(assessmentId!);
       completeAssessment();
-      toast.success('Assessment completed successfully!');
+      toast.success(t('assessment.completedSuccess'));
       navigate(`/results?id=${assessmentId}`);
     } catch (err) {
-      toast.error('Failed to submit assessment');
+      toast.error(t('assessment.failedSubmit'));
     }
   };
 
@@ -154,7 +156,7 @@ export default function AssessmentPage() {
               </button>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Domain {currentDomainIndex + 1} of {DOMAINS.length}
+                  {t('assessment.domainOf', { current: currentDomainIndex + 1, total: DOMAINS.length })}
                 </p>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{currentDomain.name}</h2>
               </div>
@@ -167,7 +169,7 @@ export default function AssessmentPage() {
                 className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-200 hover:bg-purple-100"
               >
                 <UserPlusIcon className="h-3.5 w-3.5" />
-                Invite
+                {t('collaboration.invite')}
               </button>
               {accessCode && (
                 <span className="hidden sm:inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-mono font-medium text-gray-700">
@@ -177,7 +179,7 @@ export default function AssessmentPage() {
             </div>
           </div>
           <div className="mt-2">
-            <ProgressBar value={progressPercent} label="Overall Progress" showPercentage />
+            <ProgressBar value={progressPercent} label={t('assessment.overallProgress')} showPercentage />
           </div>
         </div>
 
@@ -189,18 +191,18 @@ export default function AssessmentPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
               </svg>
               <span className="flex-1">
-                Your progress is saved automatically. Close your browser and return anytime with your access code:{' '}
+                {t('saveConfidence.bannerText')}{' '}
                 <code className="rounded bg-blue-100 px-1.5 py-0.5 font-mono font-bold">{accessCode}</code>
               </span>
               <button
                 type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(accessCode);
-                  toast.success('Access code copied!');
+                  toast.success(t('saveConfidence.codeCopied'));
                 }}
                 className="shrink-0 rounded-md bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
               >
-                Copy Code
+                {t('saveConfidence.copyCode')}
               </button>
             </div>
           </div>
@@ -221,17 +223,17 @@ export default function AssessmentPage() {
               disabled={currentDomainIndex === 0}
               className="btn-secondary"
             >
-              Previous
+              {t('assessment.previous')}
             </button>
 
             <div className="flex gap-3">
               {currentDomainIndex === DOMAINS.length - 1 ? (
                 <button onClick={handleComplete} className="btn-primary">
-                  Complete Assessment
+                  {t('assessment.completeAssessment')}
                 </button>
               ) : (
                 <button onClick={handleNext} className="btn-primary">
-                  Next Domain
+                  {t('assessment.nextDomain')}
                 </button>
               )}
             </div>

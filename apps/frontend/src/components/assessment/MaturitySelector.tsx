@@ -1,8 +1,18 @@
 import { useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MATURITY_LEVELS, getDomainMaturityExamples } from '@wiseshift/shared';
 import type { DomainMaturityExample } from '@wiseshift/shared';
 import HelpTooltip from '../common/HelpTooltip';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
+
+/** Map maturity level names to i18n keys */
+const MATURITY_I18N_KEYS: Record<string, string> = {
+  'Emerging': 'maturity.emerging',
+  'Developing': 'maturity.developing',
+  'Established': 'maturity.established',
+  'Advanced': 'maturity.advanced',
+  'Leading': 'maturity.leading',
+};
 
 interface MaturitySelectorProps {
   value: number | undefined;
@@ -18,6 +28,7 @@ export default function MaturitySelector({
   disabled = false,
   domainKey,
 }: MaturitySelectorProps) {
+  const { t } = useTranslation();
   const groupId = useId();
   const [expandedLevel, setExpandedLevel] = useState<number | null>(null);
 
@@ -28,7 +39,7 @@ export default function MaturitySelector({
   return (
     <div>
       <div className="mb-2 flex items-center gap-1">
-        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Select a maturity level</span>
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('questions.maturitySelect')}</span>
         <HelpTooltip tooltipKey="help.maturitySelector" />
       </div>
       <div
@@ -47,7 +58,7 @@ export default function MaturitySelector({
               type="button"
               role="radio"
               aria-checked={isSelected}
-              aria-label={`Level ${ml.level} - ${ml.name}: ${ml.shortDescription}`}
+              aria-label={`Level ${ml.level} - ${MATURITY_I18N_KEYS[ml.name] ? t(MATURITY_I18N_KEYS[ml.name]) : ml.name}: ${ml.shortDescription}`}
               id={`${groupId}-maturity-${ml.level}`}
               disabled={disabled}
               onClick={() => onChange(ml.level)}
@@ -78,7 +89,7 @@ export default function MaturitySelector({
                 className="text-sm font-semibold"
                 style={{ color: isSelected ? ml.color : undefined }}
               >
-                {ml.name}
+                {MATURITY_I18N_KEYS[ml.name] ? t(MATURITY_I18N_KEYS[ml.name]) : ml.name}
               </span>
 
               {/* Short description */}
@@ -119,7 +130,7 @@ export default function MaturitySelector({
                   setExpandedLevel(isExpanded ? null : ml.level);
                 }}
                 className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm border border-gray-200 text-gray-400 hover:text-brand-600 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-500 dark:hover:text-brand-400"
-                aria-label={`Example for ${ml.name} level`}
+                aria-label={`Example for ${MATURITY_I18N_KEYS[ml.name] ? t(MATURITY_I18N_KEYS[ml.name]) : ml.name} level`}
               >
                 <InformationCircleIcon className="h-3.5 w-3.5" />
               </button>

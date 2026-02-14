@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import {
   Bars3Icon,
@@ -19,12 +20,13 @@ import { useTour } from '../../hooks/useTour';
 import { homeTourSteps, assessmentTourSteps, resultsTourSteps } from '../../config/tourSteps';
 
 const NAV_LINKS = [
-  { to: '/', label: 'Home', icon: HomeIcon },
-  { to: '/methodology', label: 'Methodology', icon: BookOpenIcon },
-  { to: '/dashboard', label: 'Dashboard', icon: ChartBarSquareIcon },
+  { to: '/', labelKey: 'nav.home', icon: HomeIcon },
+  { to: '/methodology', labelKey: 'nav.methodology', icon: BookOpenIcon },
+  { to: '/dashboard', labelKey: 'nav.dashboard', icon: ChartBarSquareIcon },
 ] as const;
 
 export default function Header() {
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { accessCode, status } = useAssessmentStore();
@@ -53,7 +55,7 @@ export default function Header() {
           'focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-600',
         )}
       >
-        Skip to main content
+        {t('app.skipToContent')}
       </a>
 
       <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-gray-700 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/80">
@@ -81,14 +83,14 @@ export default function Header() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500" />
               </span>
-              <span className="sr-only">Assessment access code:</span>
+              <span className="sr-only">{t('nav.accessCode')}</span>
               <span className="font-mono tracking-wider">{accessCode}</span>
             </div>
           )}
 
           {/* Desktop navigation */}
-          <nav className="hidden sm:flex items-center gap-1" aria-label="Primary navigation">
-            {NAV_LINKS.map(({ to, label, icon: Icon }) => {
+          <nav className="hidden sm:flex items-center gap-1" aria-label={t('nav.primaryNav')}>
+            {NAV_LINKS.map(({ to, labelKey, icon: Icon }) => {
               const isActive = location.pathname === to;
               return (
                 <Link
@@ -104,7 +106,7 @@ export default function Header() {
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
-                  {label}
+                  {t(labelKey)}
                 </Link>
               );
             })}
@@ -112,10 +114,10 @@ export default function Header() {
               type="button"
               onClick={startTour}
               className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
-              aria-label="Take a Tour"
+              aria-label={t('tour.takeATour')}
             >
               <QuestionMarkCircleIcon className="h-4 w-4" aria-hidden="true" />
-              Tour
+              {t('tour.takeATour')}
             </button>
             <LanguageSwitcher />
             <button
@@ -143,7 +145,7 @@ export default function Header() {
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-menu"
-            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-label={mobileMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
           >
             {mobileMenuOpen ? (
               <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -161,7 +163,7 @@ export default function Header() {
             mobileMenuOpen ? 'max-h-64 border-t border-gray-200' : 'max-h-0',
           )}
           role="navigation"
-          aria-label="Mobile navigation"
+          aria-label={t('nav.mobileNav')}
         >
           <div className="space-y-1 px-4 pb-4 pt-2">
             {/* Access code in mobile menu */}
@@ -172,12 +174,12 @@ export default function Header() {
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500" />
                 </span>
                 <span>
-                  Access Code: <span className="font-mono tracking-wider">{accessCode}</span>
+                  {t('nav.accessCode')} <span className="font-mono tracking-wider">{accessCode}</span>
                 </span>
               </div>
             )}
 
-            {NAV_LINKS.map(({ to, label, icon: Icon }) => {
+            {NAV_LINKS.map(({ to, labelKey, icon: Icon }) => {
               const isActive = location.pathname === to;
               return (
                 <Link
@@ -194,7 +196,7 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Icon className="h-5 w-5" aria-hidden="true" />
-                  {label}
+                  {t(labelKey)}
                 </Link>
               );
             })}
