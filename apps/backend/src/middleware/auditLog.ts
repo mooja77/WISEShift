@@ -19,7 +19,7 @@ export interface AuditEntry {
 
 function extractAccessCode(req: Request): string | null {
   // From route parameter (resume endpoint)
-  if (req.params.accessCode) {
+  if (req.params?.accessCode) {
     return req.params.accessCode;
   }
   // From header
@@ -96,7 +96,7 @@ export function auditLog(req: Request, res: Response, next: NextFunction): void 
       timestamp: new Date().toISOString(),
       action,
       resource: determineResource(startPath),
-      resourceId: req.params.id || null,
+      resourceId: req.params?.id || null,
       accessCode: extractAccessCode(req),
       ip: req.ip || req.socket.remoteAddress || 'unknown',
       userAgent: req.headers['user-agent'] || 'unknown',
