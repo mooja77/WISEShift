@@ -1,5 +1,5 @@
-import type { OrganisationInput, ResponseInput, Assessment, Response } from './assessment.types';
-import type { AssessmentResults, BenchmarkComparison, ActionPlan, DashboardOverview, DashboardInsight } from './results.types';
+import type { OrganisationInput, ResponseInput, Assessment, Response } from './assessment.types.js';
+import type { AssessmentResults, BenchmarkComparison, ActionPlan, DashboardOverview, DashboardInsight } from './results.types.js';
 
 // Generic API response wrapper
 export interface ApiResponse<T> {

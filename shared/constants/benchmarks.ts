@@ -1,4 +1,4 @@
-import type { BenchmarkData } from '../types/results.types';
+import type { BenchmarkData } from '../types/results.types.js';
 
 // Seed benchmark data derived from ENSIE Impact-WISEs data, ESEM survey results,
 // PERSE project findings, and B-WISE digital skills research. These represent

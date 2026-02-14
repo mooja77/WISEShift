@@ -1,4 +1,4 @@
-import type { Domain } from '../types/assessment.types';
+import type { Domain } from '../types/assessment.types.js';
 
 export const DOMAINS: Domain[] = [
   // ─── Domain 1: Governance & Democracy ───
