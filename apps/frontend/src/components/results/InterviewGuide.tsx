@@ -15,9 +15,9 @@ interface InterviewGuideProps {
 }
 
 const TYPE_BADGES: Record<string, { label: string; color: string }> = {
-  development: { label: 'Area for development', color: 'bg-amber-100 text-amber-800' },
-  strength: { label: 'Strength to explore', color: 'bg-green-100 text-green-800' },
-  elaboration: { label: 'Needs more detail', color: 'bg-blue-100 text-blue-800' },
+  development: { label: 'Area for development', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' },
+  strength: { label: 'Strength to explore', color: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' },
+  elaboration: { label: 'Needs more detail', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300' },
 };
 
 function downloadBlob(data: Blob, filename: string) {
@@ -84,8 +84,8 @@ export default function InterviewGuide({ assessmentId }: InterviewGuideProps) {
     <div className="card">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Follow-Up Interview Guide</h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Follow-Up Interview Guide</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Suggested interview questions generated from your assessment results,
             designed for follow-up qualitative research.
           </p>
@@ -103,14 +103,14 @@ export default function InterviewGuide({ assessmentId }: InterviewGuideProps) {
       <div className="mt-6 space-y-6">
         {Array.from(grouped).map(([domainName, domainQuestions]) => (
           <div key={domainName}>
-            <h3 className="mb-3 text-sm font-bold text-gray-800">{domainName}</h3>
+            <h3 className="mb-3 text-sm font-bold text-gray-800 dark:text-gray-200">{domainName}</h3>
             <div className="space-y-3">
               {domainQuestions.map((q, idx) => {
                 const badge = TYPE_BADGES[q.type] || TYPE_BADGES.elaboration;
                 return (
                   <div
                     key={idx}
-                    className="rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-3"
+                    className="rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50"
                   >
                     <div className="flex items-start gap-2">
                       <span
@@ -119,8 +119,8 @@ export default function InterviewGuide({ assessmentId }: InterviewGuideProps) {
                         {badge.label}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm font-medium text-gray-900">{q.question}</p>
-                    <p className="mt-1 text-xs italic text-gray-500">{q.rationale}</p>
+                    <p className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">{q.question}</p>
+                    <p className="mt-1 text-xs italic text-gray-500 dark:text-gray-400">{q.rationale}</p>
                   </div>
                 );
               })}

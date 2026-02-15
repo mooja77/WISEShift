@@ -44,7 +44,7 @@ const QUADRANTS: Quadrant[] = [
   {
     label: 'Quick Wins',
     subtitle: 'Low Effort, High Impact',
-    bg: 'bg-green-50/70',
+    bg: 'bg-green-50/70 dark:bg-green-900/20',
     effortRange: [0, 1], // low-medium effort
     impactRange: [2, 2], // high impact
     gridRow: 1,
@@ -53,7 +53,7 @@ const QUADRANTS: Quadrant[] = [
   {
     label: 'Major Projects',
     subtitle: 'High Effort, High Impact',
-    bg: 'bg-blue-50/70',
+    bg: 'bg-blue-50/70 dark:bg-blue-900/20',
     effortRange: [2, 2], // high effort
     impactRange: [2, 2], // high impact
     gridRow: 1,
@@ -62,7 +62,7 @@ const QUADRANTS: Quadrant[] = [
   {
     label: 'Fill-Ins',
     subtitle: 'Low Effort, Low Impact',
-    bg: 'bg-gray-50/70',
+    bg: 'bg-gray-50/70 dark:bg-gray-800/70',
     effortRange: [0, 1], // low-medium effort
     impactRange: [0, 1], // low-medium impact
     gridRow: 2,
@@ -71,7 +71,7 @@ const QUADRANTS: Quadrant[] = [
   {
     label: 'Thankless Tasks',
     subtitle: 'High Effort, Low Impact',
-    bg: 'bg-amber-50/70',
+    bg: 'bg-amber-50/70 dark:bg-amber-900/20',
     effortRange: [2, 2], // high effort
     impactRange: [0, 1], // low-medium impact
     gridRow: 2,
@@ -119,7 +119,7 @@ export function PriorityMatrix({ items }: PriorityMatrixProps) {
     <div className="w-full">
       {/* Axis labels */}
       <div className="mb-1 flex items-end justify-between px-10">
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
           Impact
         </span>
       </div>
@@ -127,13 +127,13 @@ export function PriorityMatrix({ items }: PriorityMatrixProps) {
       <div className="flex">
         {/* Y-axis label */}
         <div className="flex w-8 shrink-0 flex-col items-center justify-between py-4">
-          <span className="text-[10px] font-medium text-gray-500">High</span>
-          <span className="text-[10px] font-medium text-gray-500">Low</span>
+          <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">High</span>
+          <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">Low</span>
         </div>
 
         {/* Matrix grid */}
         <div className="flex-1">
-          <div className="grid grid-cols-2 grid-rows-2 gap-px overflow-hidden rounded-xl border border-gray-200 bg-gray-200">
+          <div className="grid grid-cols-2 grid-rows-2 gap-px overflow-hidden rounded-xl border border-gray-200 bg-gray-200 dark:border-gray-700 dark:bg-gray-700">
             {QUADRANTS.map((quadrant, qIdx) => (
               <div
                 key={quadrant.label}
@@ -148,10 +148,10 @@ export function PriorityMatrix({ items }: PriorityMatrixProps) {
               >
                 {/* Quadrant label */}
                 <div className="mb-3">
-                  <h4 className="text-sm font-semibold text-gray-900">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {quadrant.label}
                   </h4>
-                  <p className="text-[10px] text-gray-500">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">
                     {quadrant.subtitle}
                   </p>
                 </div>
@@ -166,23 +166,23 @@ export function PriorityMatrix({ items }: PriorityMatrixProps) {
                       <div
                         key={item.id}
                         title={`${item.domainName}: ${item.recommendation}`}
-                        className="group relative flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 shadow-sm transition-shadow hover:shadow-md"
+                        className="group relative flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 shadow-sm transition-shadow hover:shadow-md dark:border-gray-600 dark:bg-gray-800"
                       >
                         {/* Domain color dot */}
                         <span
                           className="h-2.5 w-2.5 shrink-0 rounded-full"
                           style={{ backgroundColor: dotColor }}
                         />
-                        <span className="max-w-[140px] truncate text-xs font-medium text-gray-800">
+                        <span className="max-w-[140px] truncate text-xs font-medium text-gray-800 dark:text-gray-200">
                           {item.recommendation}
                         </span>
 
                         {/* Hover tooltip */}
-                        <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs shadow-lg opacity-0 transition-opacity group-hover:opacity-100">
-                          <p className="font-semibold text-gray-900">
+                        <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs shadow-lg opacity-0 transition-opacity group-hover:opacity-100 dark:border-gray-600 dark:bg-gray-800">
+                          <p className="font-semibold text-gray-900 dark:text-gray-100">
                             {item.recommendation}
                           </p>
-                          <p className="mt-0.5 text-gray-500">
+                          <p className="mt-0.5 text-gray-500 dark:text-gray-400">
                             {item.domainName} &middot; Effort:{' '}
                             {item.effort} &middot; Impact: {item.impact}
                           </p>
@@ -203,10 +203,10 @@ export function PriorityMatrix({ items }: PriorityMatrixProps) {
 
           {/* X-axis labels */}
           <div className="mt-1 flex items-start justify-between px-4">
-            <span className="text-[10px] font-medium text-gray-500">
+            <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
               Low Effort
             </span>
-            <span className="text-[10px] font-medium text-gray-500">
+            <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
               High Effort
             </span>
           </div>
@@ -227,7 +227,7 @@ export function PriorityMatrix({ items }: PriorityMatrixProps) {
                     className="h-2.5 w-2.5 rounded-full"
                     style={{ backgroundColor: domain.color }}
                   />
-                  <span className="text-xs text-gray-600">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">
                     {domain.shortName}
                   </span>
                 </div>
