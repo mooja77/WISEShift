@@ -15,7 +15,7 @@ export default function PageLayout({ children, className }: PageLayoutProps) {
 
       <main
         id="main-content"
-        className={clsx('flex-1', className)}
+        className={clsx('flex-1 page-enter', className)}
         tabIndex={-1}
       >
         {children}

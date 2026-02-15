@@ -5,7 +5,7 @@ import type { AssessmentResults, BenchmarkData } from '@wiseshift/shared';
 import { AVAILABLE_SECTORS } from '@wiseshift/shared';
 import { BenchmarkRadar } from '../components/benchmark/BenchmarkRadar';
 import { SectorComparison } from '../components/benchmark/SectorComparison';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import PageSkeleton from '../components/common/PageSkeleton';
 import HelpTooltip from '../components/common/HelpTooltip';
 
 export default function BenchmarkPage() {
@@ -54,17 +54,13 @@ export default function BenchmarkPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (!results || !benchmark) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-600">Unable to load benchmark data.</p>
+        <p className="text-gray-600 dark:text-gray-400">Unable to load benchmark data.</p>
       </div>
     );
   }
@@ -76,15 +72,15 @@ export default function BenchmarkPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-900">
+            <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
               Sector Benchmarking <HelpTooltip tooltipKey="help.benchmarkData" />
             </h1>
-            <p className="mt-1 text-gray-600">{results.organisationName}</p>
+            <p className="mt-1 text-gray-600 dark:text-gray-400">{results.organisationName}</p>
           </div>
           <div>
             <label htmlFor="sector" className="label">
@@ -105,10 +101,10 @@ export default function BenchmarkPage() {
 
         {/* Radar Comparison */}
         <div className="card mb-8">
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">
             Performance vs {selectedSector} Benchmark
           </h2>
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             Your scores (blue) compared against sector averages (gray) from {benchmark.sampleSize} organisations.
           </p>
           <div className="flex justify-center">
@@ -118,7 +114,7 @@ export default function BenchmarkPage() {
 
         {/* Detailed Comparison Table */}
         <div className="card">
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">
             Detailed Domain Comparison
           </h2>
           <SectorComparison domainScores={domainScores} benchmarkData={benchmark} />

@@ -58,12 +58,12 @@ export default function ResumePage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-indigo-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 px-4">
       <div className="w-full max-w-md">
         <div className="card">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Resume Assessment</h1>
-            <p className="mt-2 text-sm text-gray-600">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Resume Assessment</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               Enter your access code to continue where you left off.
             </p>
           </div>
@@ -81,7 +81,7 @@ export default function ResumePage() {
                 maxLength={12}
                 autoFocus
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Your access code was provided when you started your assessment (e.g., WISE-A7X9K2).
               </p>
             </div>
@@ -89,7 +89,7 @@ export default function ResumePage() {
             <button
               type="submit"
               disabled={loading || !accessCode.trim()}
-              className="btn-primary w-full"
+              className={`btn-primary w-full ${loading ? 'btn-loading' : ''}`}
             >
               {loading ? 'Loading...' : 'Resume Assessment'}
             </button>
@@ -98,7 +98,7 @@ export default function ResumePage() {
           <div className="mt-6 text-center">
             <button
               onClick={() => navigate('/')}
-              className="text-sm text-brand-600 hover:text-brand-800"
+              className="text-sm text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300"
             >
               Start a new assessment instead
             </button>

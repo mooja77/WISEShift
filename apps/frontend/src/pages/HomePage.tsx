@@ -104,15 +104,15 @@ export default function HomePage() {
   const hasActiveAssessment = assessmentId && status === 'in_progress';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
       {/* Hero Section */}
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-12 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl md:text-6xl">
             <span className="block">{t('home.title')}</span>
             <span className="block text-brand-600">{t('home.subtitle')}</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600 dark:text-gray-400">
             {t('home.description')}
           </p>
         </div>
@@ -122,14 +122,14 @@ export default function HomePage() {
           {DOMAINS.map((domain) => (
             <div
               key={domain.key}
-              className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-200 transition-shadow hover:shadow-md"
+              className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-200 transition-shadow hover:shadow-md dark:bg-gray-800 dark:ring-gray-700"
             >
               <div
                 className="mb-2 h-1.5 w-10 rounded-full"
                 style={{ backgroundColor: domain.color }}
               />
-              <h3 className="text-sm font-semibold text-gray-900">{domain.shortName}</h3>
-              <p className="mt-1 text-xs text-gray-500 line-clamp-2">{domain.description}</p>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{domain.shortName}</h3>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{domain.description}</p>
             </div>
           ))}
         </div>
@@ -167,8 +167,8 @@ export default function HomePage() {
 
           {/* Start New Assessment */}
           <div className="card lg:col-span-2">
-            <h2 className="text-2xl font-bold text-gray-900">{t('home.startNew')}</h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('home.startNew')}</h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               {t('home.startNewDescription')}
             </p>
 
@@ -270,7 +270,7 @@ export default function HomePage() {
                 <button
                   type="submit"
                   disabled={loading || !form.name.trim()}
-                  className="btn-primary"
+                  className={`btn-primary ${loading ? 'btn-loading' : ''}`}
                 >
                   {loading ? t('home.creating') : t('home.startAssessment')}
                 </button>
@@ -289,29 +289,29 @@ export default function HomePage() {
         {/* Info Section */}
         <div className="mt-16 grid gap-8 sm:grid-cols-3">
           <div className="text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100">
-              <span className="text-xl font-bold text-brand-600">40</span>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 dark:bg-brand-900/40">
+              <span className="text-xl font-bold text-brand-600 dark:text-brand-400">40</span>
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-gray-900">{t('home.questions')}</h3>
-            <p className="mt-1 text-xs text-gray-500">
+            <h3 className="mt-3 text-sm font-semibold text-gray-900 dark:text-gray-100">{t('home.questions')}</h3>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {t('home.questionsDescription')}
             </p>
           </div>
           <div className="text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-              <span className="text-xl font-bold text-emerald-600">5</span>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/40">
+              <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">5</span>
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-gray-900">{t('home.maturityLevels')}</h3>
-            <p className="mt-1 text-xs text-gray-500">
+            <h3 className="mt-3 text-sm font-semibold text-gray-900 dark:text-gray-100">{t('home.maturityLevels')}</h3>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {t('home.maturityLevelsDescription')}
             </p>
           </div>
           <div className="text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-              <span className="text-xl font-bold text-amber-600">PDF</span>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40">
+              <span className="text-xl font-bold text-amber-600 dark:text-amber-400">PDF</span>
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-gray-900">{t('home.reports')}</h3>
-            <p className="mt-1 text-xs text-gray-500">
+            <h3 className="mt-3 text-sm font-semibold text-gray-900 dark:text-gray-100">{t('home.reports')}</h3>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {t('home.reportsDescription')}
             </p>
           </div>

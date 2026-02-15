@@ -1,6 +1,15 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import PageLayout from './components/layout/PageLayout';
 import HomePage from './pages/HomePage';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 import AssessmentPage from './pages/AssessmentPage';
 import ResultsPage from './pages/ResultsPage';
 import ActionPlanPage from './pages/ActionPlanPage';
@@ -16,9 +25,11 @@ import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
-    <Routes>
-      {/* Assessment page has its own layout with sidebar */}
-      <Route path="/assessment" element={<AssessmentPage />} />
+    <>
+      <ScrollToTop />
+      <Routes>
+        {/* Assessment page has its own layout with sidebar */}
+        <Route path="/assessment" element={<AssessmentPage />} />
 
       {/* All other pages use the standard layout */}
       <Route
@@ -117,6 +128,7 @@ export default function App() {
           </PageLayout>
         }
       />
-    </Routes>
+      </Routes>
+    </>
   );
 }

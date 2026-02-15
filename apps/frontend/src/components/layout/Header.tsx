@@ -160,7 +160,7 @@ export default function Header() {
           id="mobile-menu"
           className={clsx(
             'sm:hidden overflow-hidden transition-all duration-200 ease-in-out',
-            mobileMenuOpen ? 'max-h-64 border-t border-gray-200' : 'max-h-0',
+            mobileMenuOpen ? 'max-h-96 border-t border-gray-200 dark:border-gray-700' : 'max-h-0',
           )}
           role="navigation"
           aria-label={t('nav.mobileNav')}
@@ -186,11 +186,11 @@ export default function Header() {
                   key={to}
                   to={to}
                   className={clsx(
-                    'flex items-center gap-3 rounded-md px-3 py-2 text-base font-medium transition-colors',
+                    'flex items-center gap-3 rounded-md px-3 py-2 min-h-[44px] text-base font-medium transition-colors',
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2',
                     isActive
                       ? 'bg-brand-50 text-brand-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white',
                   )}
                   aria-current={isActive ? 'page' : undefined}
                   onClick={() => setMobileMenuOpen(false)}
@@ -200,6 +200,24 @@ export default function Header() {
                 </Link>
               );
             })}
+
+            {/* Mobile-only controls */}
+            <div className="mt-3 flex items-center gap-2 border-t border-gray-200 pt-3 dark:border-gray-700">
+              <button
+                type="button"
+                onClick={toggleDarkMode}
+                className="inline-flex items-center gap-2 rounded-md px-3 py-2 min-h-[44px] text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {darkMode ? (
+                  <SunIcon className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <MoonIcon className="h-5 w-5" aria-hidden="true" />
+                )}
+                {darkMode ? t('nav.lightMode', 'Light Mode') : t('nav.darkMode', 'Dark Mode')}
+              </button>
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       </header>

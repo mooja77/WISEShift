@@ -7,7 +7,7 @@ import { ScoreOverview } from '../components/results/ScoreOverview';
 import { DomainScoreCard } from '../components/results/DomainScoreCard';
 import { QualitativeSummary } from '../components/results/QualitativeSummary';
 import { DOMAINS } from '@wiseshift/shared';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import PageSkeleton from '../components/common/PageSkeleton';
 import HelpTooltip from '../components/common/HelpTooltip';
 import ExportDropdown from '../components/results/ExportDropdown';
 import WordCloud from '../components/results/WordCloud';
@@ -15,6 +15,12 @@ import InterviewGuide from '../components/results/InterviewGuide';
 import PeerExemplars from '../components/results/PeerExemplars';
 import ReassessmentComparison from '../components/results/ReassessmentComparison';
 import AssessmentTimeline from '../components/results/AssessmentTimeline';
+import {
+  ClipboardDocumentListIcon,
+  ChartBarIcon,
+  DocumentArrowDownIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/outline';
 import { useTour } from '../hooks/useTour';
 import { resultsTourSteps } from '../config/tourSteps';
 import { formatScore } from '../utils/locale';
@@ -62,19 +68,15 @@ export default function ResultsPage() {
   }, [loading, results, hasSeenTour, startTour]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (error || !results) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900">Unable to load results</h2>
-          <p className="mt-2 text-gray-600">{error}</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Unable to load results</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">{error}</p>
           <button onClick={() => navigate('/')} className="btn-primary mt-4">
             Return Home
           </button>
@@ -90,12 +92,12 @@ export default function ResultsPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Assessment Results</h1>
-          <p className="mt-1 text-gray-600">{results.organisationName}</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Assessment Results</h1>
+          <p className="mt-1 text-gray-600 dark:text-gray-400">{results.organisationName}</p>
         </div>
 
         {/* Score Overview */}
@@ -108,7 +110,7 @@ export default function ResultsPage() {
 
         {/* Radar Chart */}
         <div className="mt-8 card">
-          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-gray-900">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
             Performance Overview <HelpTooltip tooltipKey="help.radarChart" />
           </h2>
           <div className="flex justify-center">
@@ -118,7 +120,7 @@ export default function ResultsPage() {
 
         {/* Domain Score Cards */}
         <div className="mt-8">
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">Domain Scores</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">Domain Scores</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {results.domainScores.map((ds) => {
               const domain = DOMAINS.find((d) => d.key === ds.domainKey);
@@ -145,7 +147,7 @@ export default function ResultsPage() {
         {/* Qualitative Summary */}
         {results.qualitativeSummary.length > 0 && (
           <div className="mt-8">
-            <h2 className="mb-4 text-xl font-semibold text-gray-900">Qualitative Evidence</h2>
+            <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">Qualitative Evidence</h2>
             <QualitativeSummary qualitativeSummary={results.qualitativeSummary} />
           </div>
         )}
@@ -153,8 +155,8 @@ export default function ResultsPage() {
         {/* Key Themes Word Cloud */}
         {wordCloudData.length > 0 && (
           <div className="mt-8 card">
-            <h2 className="mb-4 text-xl font-semibold text-gray-900">Key Themes</h2>
-            <p className="mb-4 text-sm text-gray-500">
+            <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">Key Themes</h2>
+            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
               Words that appear most frequently in your narrative responses. Larger, darker words appear more often.
             </p>
             <WordCloud words={wordCloudData} />
@@ -176,40 +178,82 @@ export default function ResultsPage() {
           <InterviewGuide assessmentId={assessmentId!} />
         </div>
 
-        {/* Action Links */}
-        <div className="mt-8 flex flex-wrap gap-4">
-          <Link to={`/action-plan?id=${assessmentId}`} className="btn-primary">
-            View Action Plan
-          </Link>
-          <Link to={`/benchmarks?id=${assessmentId}`} className="btn-secondary">
-            Compare with Benchmarks
-          </Link>
-          <Link to={`/report?id=${assessmentId}`} className="btn-secondary">
-            Print Report
-          </Link>
-          <ExportDropdown assessmentId={assessmentId!} />
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                const res = await reassessmentApi.startReassessment(assessmentId!);
-                const { assessment: newAssessment, accessCode } = res.data.data;
-                toast.success(`Reassessment started! Access code: ${accessCode}`);
-                navigate(`/assessment`);
-              } catch (err) {
-                toast.error('Failed to start reassessment');
-              }
-            }}
-            className="btn-secondary"
-          >
-            Reassess
-          </button>
-          <button
-            onClick={() => navigate('/')}
-            className="btn-secondary"
-          >
-            Return Home
-          </button>
+        {/* What's Next? */}
+        <div className="mt-8">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">What&rsquo;s Next?</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Link
+              to={`/action-plan?id=${assessmentId}`}
+              className="group card-interactive flex flex-col items-start gap-3 p-5"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-400">
+                <ClipboardDocumentListIcon className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Review Your Action Plan</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Get personalised recommendations prioritised by impact and effort for your organisation.
+              </p>
+            </Link>
+
+            <Link
+              to={`/benchmarks?id=${assessmentId}`}
+              className="group card-interactive flex flex-col items-start gap-3 p-5"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
+                <ChartBarIcon className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Compare with Other WISEs</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                See how your scores compare against sector benchmarks from organisations across Europe.
+              </p>
+            </Link>
+
+            <Link
+              to={`/report?id=${assessmentId}`}
+              className="group card-interactive flex flex-col items-start gap-3 p-5"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400">
+                <DocumentArrowDownIcon className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Download Your Report</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Generate a printable PDF summary of your results to share with your team or stakeholders.
+              </p>
+            </Link>
+
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await reassessmentApi.startReassessment(assessmentId!);
+                  const { accessCode } = res.data.data;
+                  toast.success(`Reassessment started! Access code: ${accessCode}`);
+                  navigate(`/assessment`);
+                } catch (err) {
+                  toast.error('Failed to start reassessment');
+                }
+              }}
+              className="card-interactive flex flex-col items-start gap-3 p-5 text-left"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
+                <ArrowPathIcon className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Start a Reassessment</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Repeat the assessment later to track your progress and measure improvement over time.
+              </p>
+            </button>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <ExportDropdown assessmentId={assessmentId!} />
+            <button
+              onClick={() => navigate('/')}
+              className="btn-secondary"
+            >
+              Return Home
+            </button>
+          </div>
         </div>
       </div>
     </div>

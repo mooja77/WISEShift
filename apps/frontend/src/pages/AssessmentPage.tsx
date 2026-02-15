@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { DOMAINS } from '@wiseshift/shared';
 import type { ResponseInput } from '@wiseshift/shared';
-import { UserPlusIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, Bars3Icon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useAssessmentStore } from '../stores/assessmentStore';
 import { useUiStore } from '../stores/uiStore';
 import { useAutoSave } from '../hooks/useAutoSave';
@@ -21,6 +22,8 @@ export default function AssessmentPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [collabOpen, setCollabOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const {
     assessmentId,
     accessCode,
@@ -107,27 +110,39 @@ export default function AssessmentPage() {
 
   const handleComplete = async () => {
     await saveResponses();
-    if (progressPercent < 100) {
-      const proceed = window.confirm(
-        t('assessment.confirmIncomplete', { percent: progressPercent })
-      );
-      if (!proceed) return;
-    }
+    setConfirmOpen(true);
+  };
 
+  const handleConfirmSubmit = async () => {
+    setSubmitting(true);
     try {
       await assessmentApi.complete(assessmentId!);
       completeAssessment();
+      setConfirmOpen(false);
       toast.success(t('assessment.completedSuccess'));
       navigate(`/results?id=${assessmentId}`);
     } catch (err) {
       toast.error(t('assessment.failedSubmit'));
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  // Find incomplete domains for the confirmation modal
+  const incompleteDomains = DOMAINS.filter((domain) => {
+    const required = domain.questions.filter((q) => q.required);
+    return required.some((q) => {
+      const resp = responses[q.id];
+      if (!resp) return true;
+      if (q.type === 'narrative') return !resp.textValue?.trim();
+      return resp.numericValue == null;
+    });
+  });
 
   if (!currentDomain) return null;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Sidebar */}
       <Sidebar
         currentDomainIndex={currentDomainIndex}
@@ -180,6 +195,18 @@ export default function AssessmentPage() {
           </div>
           <div className="mt-2">
             <ProgressBar value={progressPercent} label={t('assessment.overallProgress')} showPercentage />
+            {(() => {
+              const unanswered = totalRequired - answeredRequired;
+              if (unanswered > 0) {
+                const minutesRemaining = unanswered * 2;
+                return (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    ~{minutesRemaining} {minutesRemaining === 1 ? 'minute' : 'minutes'} remaining
+                  </p>
+                );
+              }
+              return null;
+            })()}
           </div>
         </div>
 
@@ -249,6 +276,75 @@ export default function AssessmentPage() {
           assessmentId={assessmentId}
         />
       )}
+
+      {/* Submit Confirmation Modal */}
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel className="mx-auto w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800">
+            <div className="flex flex-col items-center text-center">
+              {progressPercent >= 100 ? (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                  <CheckCircleIcon className="h-7 w-7 text-green-600 dark:text-green-400" />
+                </div>
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                  <ExclamationTriangleIcon className="h-7 w-7 text-amber-600 dark:text-amber-400" />
+                </div>
+              )}
+
+              <DialogTitle className="mt-4 text-lg font-bold text-gray-900 dark:text-gray-100">
+                Submit Your Assessment?
+              </DialogTitle>
+
+              <div className="mt-3 text-3xl font-extrabold text-brand-600 dark:text-brand-400">
+                {progressPercent}%
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">completed</p>
+            </div>
+
+            {progressPercent < 100 && incompleteDomains.length > 0 ? (
+              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  These domains have unanswered questions:
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {incompleteDomains.map((d) => (
+                    <li key={d.key} className="text-sm text-amber-700 dark:text-amber-300">
+                      &bull; {d.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                  All required questions have been answered. Your assessment is ready to submit.
+                </p>
+              </div>
+            )}
+
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+                className="btn-secondary flex-1"
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSubmit}
+                className="btn-primary flex-1"
+                disabled={submitting}
+              >
+                {submitting ? 'Submitting...' : 'Submit Assessment'}
+              </button>
+            </div>
+          </DialogPanel>
+        </div>
+      </Dialog>
     </div>
   );
 }

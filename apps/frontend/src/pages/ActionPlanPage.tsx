@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 import { actionPlanApi } from '../services/api';
 import type { ActionPlan, ActionPlanItem } from '@wiseshift/shared';
 import { ActionPlanList } from '../components/action-plan/ActionPlanList';
 import { PriorityMatrix } from '../components/action-plan/PriorityMatrix';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import PageSkeleton from '../components/common/PageSkeleton';
 import toast from 'react-hot-toast';
 
 export default function ActionPlanPage() {
@@ -70,11 +71,7 @@ export default function ActionPlanPage() {
   }, [assessmentId]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   return (
@@ -92,7 +89,7 @@ export default function ActionPlanPage() {
             <button
               onClick={handleGenerate}
               disabled={generating}
-              className="btn-primary"
+              className={`btn-primary ${generating ? 'btn-loading' : ''}`}
             >
               {generating ? 'Generating...' : actionPlan?.items.length ? 'Regenerate Plan' : 'Generate Plan'}
             </button>
@@ -120,10 +117,27 @@ export default function ActionPlanPage() {
             />
           </>
         ) : (
-          <div className="card text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No Action Plan Yet</h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Click "Generate Plan" to create personalised recommendations based on your assessment scores.
+          <div className="card text-center py-16">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 dark:bg-brand-900/40">
+              <ClipboardDocumentListIcon className="h-8 w-8 text-brand-600 dark:text-brand-400" />
+            </div>
+            <h3 className="mt-6 text-xl font-bold text-gray-900 dark:text-gray-100">
+              Your Personalised Action Plan
+            </h3>
+            <p className="mx-auto mt-3 max-w-md text-sm text-gray-600 dark:text-gray-400">
+              Based on your assessment results, we&rsquo;ll create a step-by-step improvement plan
+              tailored to your organisation — with approximately 8 recommendations across high,
+              medium, and low priority levels.
+            </p>
+            <button
+              onClick={handleGenerate}
+              disabled={generating}
+              className={`btn-primary mt-6 px-8 py-3 text-base ${generating ? 'btn-loading' : ''}`}
+            >
+              {generating ? 'Generating...' : 'Generate My Action Plan'}
+            </button>
+            <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">
+              This typically takes a few seconds
             </p>
           </div>
         )}

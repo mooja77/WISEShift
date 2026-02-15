@@ -100,7 +100,7 @@ export default function DataManagementPage() {
               placeholder="e.g., WISE-ABC123"
               className="input flex-1"
             />
-            <button type="submit" disabled={loading || !accessCode.trim()} className="btn-primary">
+            <button type="submit" disabled={loading || !accessCode.trim()} className={`btn-primary ${loading ? 'btn-loading' : ''}`}>
               {loading ? 'Looking up...' : 'Look Up'}
             </button>
           </form>
