@@ -23,7 +23,7 @@ export default function DataManagementPage() {
     setAction(null);
     try {
       const res = await assessmentApi.resume(accessCode.trim());
-      setAssessment(res.data.data);
+      setAssessment(res.data.data.assessment);
     } catch {
       toast.error('No assessment found for this access code.');
     } finally {
