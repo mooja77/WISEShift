@@ -58,15 +58,15 @@ function tagColor(tag: string): { bg: string; text: string } {
 
 function NarrativeCard({ narrative }: { narrative: NarrativeItem }) {
   return (
-    <div className="rounded-lg border border-gray-100 bg-gray-50/50 px-4 py-3">
+    <div className="rounded-lg border border-gray-100 bg-gray-50/50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/50">
       {/* Question text as subtitle */}
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
         {narrative.questionText}
       </p>
 
       {/* Response text (rendered with basic markdown) */}
       <div
-        className="mt-2 text-sm leading-relaxed text-gray-700"
+        className="mt-2 text-sm leading-relaxed text-gray-700 dark:text-gray-300"
         dangerouslySetInnerHTML={{ __html: renderMarkdown(narrative.text) }}
       />
 
@@ -103,7 +103,7 @@ export function QualitativeSummary({
 }: QualitativeSummaryProps) {
   if (qualitativeSummary.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white px-6 py-10 text-center shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-white px-6 py-10 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <p className="text-sm text-gray-400">
           No qualitative responses have been recorded.
         </p>
@@ -120,8 +120,8 @@ export function QualitativeSummary({
         return (
           <Disclosure key={group.domainKey} as="div">
             {({ open }) => (
-              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                <DisclosureButton className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500">
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <DisclosureButton className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500">
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Domain colour indicator */}
                     <span
@@ -129,10 +129,10 @@ export function QualitativeSummary({
                       style={{ backgroundColor: accentColor }}
                       aria-hidden="true"
                     />
-                    <span className="truncate text-sm font-semibold text-gray-900">
+                    <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
                       {group.domainName}
                     </span>
-                    <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+                    <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                       {group.narratives.length}{' '}
                       {group.narratives.length === 1 ? 'response' : 'responses'}
                     </span>
@@ -146,7 +146,7 @@ export function QualitativeSummary({
                   />
                 </DisclosureButton>
 
-                <DisclosurePanel className="border-t border-gray-100 px-5 pb-5 pt-4">
+                <DisclosurePanel className="border-t border-gray-100 dark:border-gray-700 px-5 pb-5 pt-4">
                   <div className="space-y-3">
                     {group.narratives.map((narrative, idx) => (
                       <NarrativeCard key={idx} narrative={narrative} />

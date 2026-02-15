@@ -40,13 +40,13 @@ export function DomainScoreCard({
   return (
     <div
       data-domain={domainKey}
-      className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
+      className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden dark:border-gray-700 dark:bg-gray-800"
       style={{ borderLeftWidth: 4, borderLeftColor: color }}
     >
       <div className="px-5 py-4">
         {/* Header row: domain name + maturity badge */}
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-sm font-semibold text-gray-900 leading-tight">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">
             {domainName}
           </h3>
 
@@ -71,7 +71,7 @@ export function DomainScoreCard({
 
         {/* Progress bar */}
         <div className="mt-3">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
             <div
               className={clsx(
                 'h-full rounded-full transition-all duration-500 ease-out',

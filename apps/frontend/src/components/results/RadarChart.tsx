@@ -84,8 +84,8 @@ function CustomTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-lg">
-      <p className="mb-1 text-sm font-semibold text-gray-900">{label}</p>
+    <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+      <p className="mb-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{label}</p>
       {payload.map((entry) => (
         <p key={entry.name} className="text-xs" style={{ color: entry.color }}>
           {entry.name === 'score' ? 'Organisation' : 'Benchmark'}:{' '}
