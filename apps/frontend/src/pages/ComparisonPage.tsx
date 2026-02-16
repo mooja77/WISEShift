@@ -42,19 +42,19 @@ export default function ComparisonPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900">Cross-Case Comparison</h1>
-        <p className="mt-1 text-gray-600">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Cross-Case Comparison</h1>
+        <p className="mt-1 text-gray-600 dark:text-gray-400">
           Compare 2-3 completed assessments side-by-side to identify patterns and differences.
         </p>
 
         {/* Input step */}
         <div className="mt-8 card">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">
+          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
             Enter Assessment IDs
           </h2>
-          <p className="mb-4 text-sm text-gray-500">
+          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
             Enter the assessment IDs you want to compare. You can find these in the assessment results URL.
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -102,7 +102,7 @@ export default function ComparisonPage() {
           <>
             {/* Overlaid Radar */}
             <div className="mt-8 card">
-              <h2 className="mb-4 text-xl font-semibold text-gray-900">
+              <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">
                 Performance Comparison
               </h2>
               <div className="flex justify-center">
@@ -122,7 +122,7 @@ export default function ComparisonPage() {
 
             {/* Score Comparison Table */}
             <div className="mt-8 card">
-              <h2 className="mb-4 text-xl font-semibold text-gray-900">
+              <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">
                 Score Comparison
               </h2>
               <ComparisonTable assessments={results} />
@@ -130,7 +130,7 @@ export default function ComparisonPage() {
 
             {/* Qualitative Comparison */}
             <div className="mt-8">
-              <h2 className="mb-4 text-xl font-semibold text-gray-900">
+              <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">
                 Qualitative Comparison
               </h2>
               <QualitativeComparison assessments={results} />
