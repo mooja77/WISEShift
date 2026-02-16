@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useResearchStore } from '../stores/researchStore';
 import { dashboardApi } from '../services/api';
+import { useTour } from '../hooks/useTour';
+import { researchTourSteps } from '../config/tourSteps';
 import ResearchTabs from '../components/research/ResearchTabs';
 import NarrativeExplorer from '../components/research/NarrativeExplorer';
 import ThemeHeatmap from '../components/research/ThemeHeatmap';
@@ -20,6 +22,15 @@ export default function ResearchPage() {
   const { authenticated, activeTab, setAuth, clearAuth } = useResearchStore();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const { hasSeenTour, startTour } = useTour('research', researchTourSteps);
+
+  useEffect(() => {
+    if (authenticated && !hasSeenTour) {
+      const timeout = setTimeout(startTour, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [authenticated, hasSeenTour, startTour]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +76,9 @@ export default function ResearchPage() {
             <button onClick={() => navigate('/')} className="text-sm text-brand-600 hover:text-brand-800 dark:text-brand-400">
               Back to Home
             </button>
+            <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">
+              Want to explore? Try: <code className="font-mono font-bold">DASH-DEMO2025</code>
+            </p>
           </div>
         </div>
       </div>

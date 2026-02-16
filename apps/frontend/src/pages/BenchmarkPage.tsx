@@ -7,6 +7,8 @@ import { BenchmarkRadar } from '../components/benchmark/BenchmarkRadar';
 import { SectorComparison } from '../components/benchmark/SectorComparison';
 import PageSkeleton from '../components/common/PageSkeleton';
 import HelpTooltip from '../components/common/HelpTooltip';
+import { useTour } from '../hooks/useTour';
+import { benchmarkTourSteps } from '../config/tourSteps';
 
 export default function BenchmarkPage() {
   const [searchParams] = useSearchParams();
@@ -43,6 +45,15 @@ export default function BenchmarkPage() {
       setLoading(false);
     }
   };
+
+  const { hasSeenTour, startTour } = useTour('benchmarks', benchmarkTourSteps);
+
+  useEffect(() => {
+    if (!loading && results && !hasSeenTour) {
+      const timeout = setTimeout(startTour, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [loading, results, hasSeenTour, startTour]);
 
   const fetchBenchmark = async (sector: string) => {
     try {

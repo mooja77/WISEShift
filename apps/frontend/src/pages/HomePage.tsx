@@ -286,6 +286,30 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Demo Exploration */}
+        <div className="mt-12 rounded-xl border border-brand-200 bg-brand-50/50 p-6 dark:border-brand-800 dark:bg-brand-900/20">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            Explore with Demo Data
+          </h2>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Not ready to start your own assessment? Explore the full platform using
+            pre-loaded data from 8 example European WISEs — covering sectors from
+            circular economy to digital inclusion, across Germany, France, Ireland,
+            and more.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button onClick={() => navigate('/dashboard')} className="btn-primary">
+              Try the Dashboard
+            </button>
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <span>Use code:</span>
+              <code className="rounded bg-brand-100 px-2 py-0.5 font-mono font-bold text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
+                DASH-DEMO2025
+              </code>
+            </div>
+          </div>
+        </div>
+
         {/* Info Section */}
         <div className="mt-16 grid gap-8 sm:grid-cols-3">
           <div className="text-center">

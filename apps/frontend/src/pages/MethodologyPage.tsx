@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTour } from '../hooks/useTour';
+import { methodologyTourSteps } from '../config/tourSteps';
 
 const DOMAIN_MAPPING = [
   {
@@ -166,6 +169,15 @@ const EXTERNAL_LINKS = [
 ];
 
 export default function MethodologyPage() {
+  const { hasSeenTour, startTour } = useTour('methodology', methodologyTourSteps);
+
+  useEffect(() => {
+    if (!hasSeenTour) {
+      const timeout = setTimeout(startTour, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [hasSeenTour, startTour]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

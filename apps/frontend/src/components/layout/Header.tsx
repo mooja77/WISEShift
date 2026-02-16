@@ -17,7 +17,18 @@ import { useAssessmentStore } from '../../stores/assessmentStore';
 import { useUiStore } from '../../stores/uiStore';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 import { useTour } from '../../hooks/useTour';
-import { homeTourSteps, assessmentTourSteps, resultsTourSteps } from '../../config/tourSteps';
+import type { DriveStep } from 'driver.js';
+import {
+  homeTourSteps,
+  assessmentTourSteps,
+  resultsTourSteps,
+  actionPlanTourSteps,
+  benchmarkTourSteps,
+  dashboardTourSteps,
+  researchTourSteps,
+  comparisonTourSteps,
+  methodologyTourSteps,
+} from '../../config/tourSteps';
 
 const NAV_LINKS = [
   { to: '/', labelKey: 'nav.home', icon: HomeIcon },
@@ -33,12 +44,19 @@ export default function Header() {
   const { darkMode, toggleDarkMode } = useUiStore();
 
   // Determine current page tour
-  const isHome = location.pathname === '/';
-  const isAssessment = location.pathname === '/assessment';
-  const isResults = location.pathname === '/results';
-  const tourSteps = isAssessment ? assessmentTourSteps : isResults ? resultsTourSteps : homeTourSteps;
-  const tourPage = isAssessment ? 'assessment' : isResults ? 'results' : 'home';
-  const { startTour } = useTour(tourPage, tourSteps);
+  const TOUR_MAP: Record<string, { steps: DriveStep[]; page: string }> = {
+    '/': { steps: homeTourSteps, page: 'home' },
+    '/assessment': { steps: assessmentTourSteps, page: 'assessment' },
+    '/results': { steps: resultsTourSteps, page: 'results' },
+    '/action-plan': { steps: actionPlanTourSteps, page: 'actionPlan' },
+    '/benchmarks': { steps: benchmarkTourSteps, page: 'benchmarks' },
+    '/dashboard': { steps: dashboardTourSteps, page: 'dashboard' },
+    '/research': { steps: researchTourSteps, page: 'research' },
+    '/comparison': { steps: comparisonTourSteps, page: 'comparison' },
+    '/methodology': { steps: methodologyTourSteps, page: 'methodology' },
+  };
+  const tourConfig = TOUR_MAP[location.pathname] ?? TOUR_MAP['/'];
+  const { startTour } = useTour(tourConfig.page, tourConfig.steps);
 
   const isAssessmentInProgress = status === 'in_progress' && accessCode;
 

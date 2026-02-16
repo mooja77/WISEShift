@@ -8,6 +8,8 @@ import { InsightsPanel } from '../components/dashboard/InsightsPanel';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import WordCloud from '../components/results/WordCloud';
 import { formatDate, formatScore } from '../utils/locale';
+import { useTour } from '../hooks/useTour';
+import { dashboardTourSteps } from '../config/tourSteps';
 import toast from 'react-hot-toast';
 
 export default function DashboardPage() {
@@ -18,6 +20,15 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState<DashboardInsight[]>([]);
   const [dashboardWordCloud, setDashboardWordCloud] = useState<{ text: string; value: number }[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const { hasSeenTour, startTour } = useTour('dashboard', dashboardTourSteps);
+
+  useEffect(() => {
+    if (authenticated && overview && !hasSeenTour) {
+      const timeout = setTimeout(startTour, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [authenticated, overview, hasSeenTour, startTour]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +90,9 @@ export default function DashboardPage() {
             <button onClick={() => navigate('/')} className="text-sm text-brand-600 hover:text-brand-800">
               Back to Home
             </button>
+            <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">
+              Want to explore? Try the demo code: <code className="font-mono font-bold">DASH-DEMO2025</code>
+            </p>
           </div>
         </div>
       </div>

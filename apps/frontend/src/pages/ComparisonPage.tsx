@@ -1,16 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { comparisonApi } from '../services/api';
 import type { CrossCaseComparison } from '@wiseshift/shared';
 import ComparisonRadarChart from '../components/comparison/ComparisonRadarChart';
 import ComparisonTable from '../components/comparison/ComparisonTable';
 import QualitativeComparison from '../components/comparison/QualitativeComparison';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { useTour } from '../hooks/useTour';
+import { comparisonTourSteps } from '../config/tourSteps';
 import toast from 'react-hot-toast';
 
 export default function ComparisonPage() {
   const [ids, setIds] = useState(['', '', '']);
   const [results, setResults] = useState<CrossCaseComparison[] | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const { hasSeenTour, startTour } = useTour('comparison', comparisonTourSteps);
+
+  useEffect(() => {
+    if (!hasSeenTour) {
+      const timeout = setTimeout(startTour, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [hasSeenTour, startTour]);
 
   const handleCompare = async () => {
     const validIds = ids.filter((id) => id.trim());

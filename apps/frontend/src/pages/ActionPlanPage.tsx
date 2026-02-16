@@ -6,6 +6,8 @@ import type { ActionPlan, ActionPlanItem } from '@wiseshift/shared';
 import { ActionPlanList } from '../components/action-plan/ActionPlanList';
 import { PriorityMatrix } from '../components/action-plan/PriorityMatrix';
 import PageSkeleton from '../components/common/PageSkeleton';
+import { useTour } from '../hooks/useTour';
+import { actionPlanTourSteps } from '../config/tourSteps';
 import toast from 'react-hot-toast';
 
 export default function ActionPlanPage() {
@@ -47,6 +49,15 @@ export default function ActionPlanPage() {
       setGenerating(false);
     }
   };
+
+  const { hasSeenTour, startTour } = useTour('actionPlan', actionPlanTourSteps);
+
+  useEffect(() => {
+    if (!loading && actionPlan && !hasSeenTour) {
+      const timeout = setTimeout(startTour, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [loading, actionPlan, hasSeenTour, startTour]);
 
   const handleUpdateItem = useCallback(async (planId: string, data: { status?: string; notes?: string }) => {
     if (!assessmentId) return;
