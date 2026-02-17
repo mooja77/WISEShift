@@ -18,6 +18,10 @@ import { exportsRoutes } from './routes/exports.js';
 import { dashboardRoutes } from './routes/dashboard.js';
 import { researchRoutes } from './routes/research.js';
 import { researchApiRoutes } from './routes/researchApi.js';
+import { publicApiRoutes } from './routes/publicApi.js';
+import { registryRoutes } from './routes/registry.js';
+import { researcherRoutes } from './routes/researchers.js';
+import { workingGroupRoutes } from './routes/workingGroups.js';
 import { researchAuth } from './middleware/researchAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { auditLog } from './middleware/auditLog.js';
@@ -160,6 +164,31 @@ const researchApiLimiter = rateLimit({
   legacyHeaders: false,
 });
 app.use('/api/v1/research', researchApiLimiter, researchApiRoutes);
+
+// ----- Open Data Public API (no auth required) -----
+const publicApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Rate limit exceeded. Please try again later.' },
+});
+app.use('/api/v1/public', cors(), publicApiLimiter, auditLog, publicApiRoutes);
+
+// ----- WISE Registry (public read, access-code-authenticated write) -----
+app.use('/api/registry', auditLog, registryRoutes);
+
+// ----- Researcher Portal (self-registration, verified auth) -----
+const researcherLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/researchers', researcherLimiter, auditLog, researcherRoutes);
+
+// ----- Working Group Collaboration -----
+app.use('/api/working-groups', auditLog, workingGroupRoutes);
 
 // ----- Production: serve frontend static build -----
 if (IS_PRODUCTION) {

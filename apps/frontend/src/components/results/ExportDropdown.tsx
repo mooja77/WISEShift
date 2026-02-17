@@ -80,6 +80,24 @@ export default function ExportDropdown({ assessmentId }: ExportDropdownProps) {
           'CSV'
         ),
     },
+    {
+      label: 'Case Study (Word)',
+      onClick: () =>
+        handleExport(
+          () => exportApi.caseStudyDocx(assessmentId),
+          `wiseshift-case-study-${assessmentId}.docx`,
+          'Case Study DOCX'
+        ),
+    },
+    {
+      label: 'Case Study (JSON)',
+      onClick: () =>
+        handleExport(
+          () => exportApi.caseStudyJson(assessmentId),
+          `wiseshift-case-study-${assessmentId}.json`,
+          'Case Study JSON'
+        ),
+    },
   ];
 
   return (

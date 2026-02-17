@@ -33,6 +33,13 @@ export default function Footer() {
             >
               Manage My Data
             </Link>
+            <span className="text-gray-300 dark:text-gray-600" aria-hidden="true">|</span>
+            <Link
+              to="/api-docs"
+              className="text-xs font-medium text-gray-500 hover:text-brand-600 dark:text-gray-400 dark:hover:text-brand-400 transition-colors"
+            >
+              Open Data API
+            </Link>
           </nav>
           <p className="text-xs text-gray-400 dark:text-gray-500">
             {t('app.footerAttribution')}

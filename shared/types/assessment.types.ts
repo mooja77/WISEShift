@@ -10,6 +10,8 @@ export interface Question {
   weight: number; // 1.0 for likert, 1.5 for maturity, 0 for narrative
   placeholder?: string;
   tags?: string[];
+  /** i18n key for translating question text, e.g. 'domains.governance.questions.q1.text' */
+  i18nKey?: string;
 }
 
 export interface Domain {

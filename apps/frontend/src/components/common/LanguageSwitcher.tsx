@@ -8,6 +8,9 @@ const LANGUAGES = [
   { code: 'es', label: 'Espa\u00f1ol', flag: 'ES' },
   { code: 'it', label: 'Italiano', flag: 'IT' },
   { code: 'nl', label: 'Nederlands', flag: 'NL' },
+  { code: 'lv', label: 'Latvie\u0161u', flag: 'LV' },
+  { code: 'sr', label: 'Srpski', flag: 'SR' },
+  { code: 'hr', label: 'Hrvatski', flag: 'HR' },
 ] as const;
 
 export default function LanguageSwitcher() {

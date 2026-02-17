@@ -571,6 +571,86 @@ export const DOMAIN_RESOURCES: DomainResources[] = [
       },
     ],
   },
+
+  // ─── Environmental Sustainability & Green Transition ───
+  {
+    domainKey: 'environmental-sustainability',
+    maturityLevel: 'all',
+    resources: [
+      {
+        title: 'EU Green Deal',
+        url: 'https://commission.europa.eu/strategy-and-policy/priorities-2019-2024/european-green-deal_en',
+        type: 'policy',
+        description: 'The EU\'s overarching strategy for climate neutrality by 2050, covering energy, industry, transport, food, and biodiversity.',
+      },
+      {
+        title: 'European Climate Law',
+        url: 'https://climate.ec.europa.eu/eu-action/european-climate-law_en',
+        type: 'policy',
+        description: 'Legally binding EU target of climate neutrality by 2050 and 55% emissions reduction by 2030.',
+      },
+    ],
+  },
+  {
+    domainKey: 'environmental-sustainability',
+    maturityLevel: 'Emerging',
+    resources: [
+      {
+        title: 'EU Circular Economy Action Plan',
+        url: 'https://environment.ec.europa.eu/strategy/circular-economy-action-plan_en',
+        type: 'policy',
+        description: 'EU plan for sustainable products, waste reduction, and circular business models — directly relevant to many WISE productive activities.',
+      },
+    ],
+  },
+  {
+    domainKey: 'environmental-sustainability',
+    maturityLevel: 'Developing',
+    resources: [
+      {
+        title: 'RREUSE — Social Enterprises in the Circular Economy',
+        url: 'https://www.rreuse.org/',
+        type: 'network',
+        description: 'European network of social enterprises active in reuse, repair, and recycling — connecting WISEs in the circular economy.',
+      },
+      {
+        title: 'European Skills Agenda — Green Skills',
+        url: 'https://ec.europa.eu/social/main.jsp?catId=1223&langId=en',
+        type: 'guide',
+        description: 'EU strategy for skills development including green skills as a priority for the just transition.',
+      },
+    ],
+  },
+  {
+    domainKey: 'environmental-sustainability',
+    maturityLevel: 'Established',
+    resources: [
+      {
+        title: 'EU Just Transition Mechanism',
+        url: 'https://commission.europa.eu/strategy-and-policy/priorities-2019-2024/european-green-deal/finance-and-green-deal/just-transition-mechanism_en',
+        type: 'funding',
+        description: 'EU funding mechanism ensuring the green transition is fair and inclusive — directly aligned with WISE social mission.',
+      },
+    ],
+  },
+  {
+    domainKey: 'environmental-sustainability',
+    maturityLevel: 'Advanced',
+    resources: [
+      {
+        title: 'EU Taxonomy Regulation — Environmental Sustainability Criteria',
+        url: 'https://finance.ec.europa.eu/sustainable-finance/tools-and-standards/eu-taxonomy-sustainable-activities_en',
+        type: 'policy',
+        description: 'EU classification system defining environmentally sustainable economic activities — benchmark for advanced environmental practice.',
+      },
+      {
+        title: 'WISESHIFT Horizon Europe Project',
+        url: 'https://cordis.europa.eu/project/id/101182753',
+        type: 'network',
+        description: 'Horizon Europe research project (2025-2029) studying how WISEs can be inclusive AND sustainable, developing policy frameworks and self-assessment tools.',
+      },
+    ],
+  },
 ];
 
 // ─── Helper Functions ───

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
-import { DOMAINS, getMaturityLevel } from '@wiseshift/shared';
-import { calculateDomainScore, calculateOverallScore, identifyStrengths, identifyWeaknesses } from '../utils/scoring.js';
+import { DOMAINS, getMaturityLevel, POLICY_FRAMEWORKS, calculateFrameworkAlignment, getTopAlignedObjectives, getSectorModule, getSectorRecommendation } from '@wiseshift/shared';
+import { calculateDomainScore, calculateOverallScore, identifyStrengths, identifyWeaknesses, calculateSectorScore } from '../utils/scoring.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { extractWordFrequencies } from '../utils/wordFrequency.js';
 
@@ -540,6 +540,328 @@ resultsRoutes.get('/:id/interview-guide/docx', async (req, res, next) => {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     );
     res.send(Buffer.from(buffer));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/assessments/:id/sector-results — Sector-specific scores and recommendations
+resultsRoutes.get('/:id/sector-results', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const assessment = await prisma.assessment.findUnique({
+      where: { id },
+      include: {
+        organisation: true,
+        responses: true,
+        sectorScores: true,
+      },
+    });
+
+    if (!assessment) {
+      throw new AppError('Assessment not found', 404);
+    }
+
+    const sector = assessment.organisation.sector;
+    if (!sector) {
+      return res.json({ success: true, data: null });
+    }
+
+    const sectorModule = getSectorModule(sector);
+    if (!sectorModule) {
+      return res.json({ success: true, data: null });
+    }
+
+    // Calculate or use existing sector score
+    let sectorScore = assessment.sectorScores.find(s => s.sectorKey === sectorModule.key);
+    let score = sectorScore?.score ?? 0;
+
+    if (!sectorScore) {
+      const calc = calculateSectorScore(sectorModule, assessment.responses);
+      score = calc?.score ?? 0;
+    }
+
+    const recommendation = getSectorRecommendation(sectorModule.key, score);
+
+    // Build per-question response data
+    const questionResults = sectorModule.questions.map(q => {
+      const resp = assessment.responses.find(r => r.questionId === q.id);
+      return {
+        questionId: q.id,
+        questionText: q.text,
+        questionType: q.type,
+        value: q.type === 'narrative' ? resp?.textValue || null : resp?.numericValue ?? null,
+        tags: q.tags || [],
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        sectorKey: sectorModule.key,
+        sectorName: sectorModule.name,
+        score,
+        recommendation: recommendation || null,
+        questions: questionResults,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/assessments/:id/policy-alignment — EU Policy alignment mapping
+resultsRoutes.get('/:id/policy-alignment', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const assessment = await prisma.assessment.findUnique({
+      where: { id },
+      include: { domainScores: true },
+    });
+
+    if (!assessment) {
+      throw new AppError('Assessment not found', 404);
+    }
+
+    // Build domain scores map
+    const domainScores: Record<string, number> = {};
+    for (const ds of assessment.domainScores) {
+      if (ds.score > 0) {
+        domainScores[ds.domainKey] = ds.score;
+      }
+    }
+
+    // Calculate alignment for each framework
+    const frameworks = POLICY_FRAMEWORKS.map(fw => {
+      const alignment = calculateFrameworkAlignment(fw, domainScores);
+      return {
+        key: fw.key,
+        name: fw.name,
+        shortName: fw.shortName,
+        description: fw.description,
+        url: fw.url,
+        overallScore: alignment.overallScore,
+        objectives: alignment.objectiveScores.map(obj => {
+          const fullObj = fw.objectives.find(o => o.id === obj.id);
+          return {
+            id: obj.id,
+            name: obj.name,
+            description: fullObj?.description || '',
+            score: obj.score,
+            domainMappings: fullObj?.domainMappings || [],
+          };
+        }),
+      };
+    });
+
+    const topAligned = getTopAlignedObjectives(domainScores, 5);
+
+    res.json({
+      success: true,
+      data: {
+        assessmentId: id,
+        frameworks,
+        topAligned,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/assessments/:id/progress — Enhanced progress tracking with auto-narrative
+resultsRoutes.get('/:id/progress', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const assessment = await prisma.assessment.findUnique({
+      where: { id },
+      include: { organisation: true, domainScores: true },
+    });
+
+    if (!assessment) {
+      throw new AppError('Assessment not found', 404);
+    }
+
+    // Get all completed assessments for this org
+    const allAssessments = await prisma.assessment.findMany({
+      where: {
+        organisationId: assessment.organisationId,
+        status: 'completed',
+        domainScores: { some: {} },
+      },
+      include: { domainScores: true },
+      orderBy: { completedAt: 'asc' },
+    });
+
+    // Get domain goals
+    const goals = await prisma.domainGoal.findMany({
+      where: { organisationId: assessment.organisationId },
+    });
+
+    // Build timeline per domain
+    const domainTimelines: Record<string, { date: string; score: number }[]> = {};
+    for (const a of allAssessments) {
+      const date = (a.completedAt ?? a.createdAt).toISOString();
+      for (const ds of a.domainScores) {
+        if (!domainTimelines[ds.domainKey]) domainTimelines[ds.domainKey] = [];
+        domainTimelines[ds.domainKey].push({ date, score: ds.score });
+      }
+    }
+
+    // Build progress narrative per domain
+    const domainProgress = DOMAINS.map(domain => {
+      const timeline = domainTimelines[domain.key] || [];
+      const goal = goals.find(g => g.domainKey === domain.key);
+      const latest = timeline[timeline.length - 1];
+      const previous = timeline.length > 1 ? timeline[timeline.length - 2] : null;
+
+      let trend: 'improved' | 'declined' | 'unchanged' | 'new' = 'new';
+      let delta = 0;
+      if (previous && latest) {
+        delta = Math.round((latest.score - previous.score) * 100) / 100;
+        trend = delta > 0.1 ? 'improved' : delta < -0.1 ? 'declined' : 'unchanged';
+      }
+
+      // Auto-narrative
+      let narrative = '';
+      if (timeline.length === 1) {
+        narrative = `First assessment: scored ${latest?.score.toFixed(1) ?? 0}/5 in ${domain.name}.`;
+      } else if (trend === 'improved') {
+        narrative = `${domain.name} improved by ${delta.toFixed(1)} points since the previous assessment.`;
+      } else if (trend === 'declined') {
+        narrative = `${domain.name} declined by ${Math.abs(delta).toFixed(1)} points. Consider reviewing recent changes.`;
+      } else {
+        narrative = `${domain.name} score remained stable at ${latest?.score.toFixed(1) ?? 0}/5.`;
+      }
+
+      if (goal) {
+        const gap = goal.targetScore - (latest?.score ?? 0);
+        if (gap <= 0) {
+          narrative += ` Target of ${goal.targetScore.toFixed(1)} has been achieved!`;
+        } else {
+          narrative += ` ${gap.toFixed(1)} points to reach target of ${goal.targetScore.toFixed(1)}.`;
+        }
+      }
+
+      return {
+        domainKey: domain.key,
+        domainName: domain.name,
+        color: domain.color,
+        currentScore: latest?.score ?? 0,
+        previousScore: previous?.score ?? null,
+        delta,
+        trend,
+        goal: goal ? { targetScore: goal.targetScore, targetDate: goal.targetDate?.toISOString() || null, notes: goal.notes } : null,
+        narrative,
+        timeline,
+      };
+    });
+
+    // Suggest reassessment if >6 months since last
+    const lastCompleted = allAssessments[allAssessments.length - 1];
+    const monthsSinceLast = lastCompleted
+      ? (Date.now() - new Date(lastCompleted.completedAt ?? lastCompleted.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30)
+      : 0;
+
+    res.json({
+      success: true,
+      data: {
+        assessmentId: id,
+        organisationName: assessment.organisation.name,
+        totalAssessments: allAssessments.length,
+        firstAssessmentDate: allAssessments[0]?.completedAt?.toISOString() || null,
+        lastAssessmentDate: lastCompleted?.completedAt?.toISOString() || null,
+        suggestReassessment: monthsSinceLast > 6,
+        monthsSinceLastAssessment: Math.round(monthsSinceLast),
+        domainProgress,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/assessments/:id/goals — Get domain goals
+resultsRoutes.get('/:id/goals', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const assessment = await prisma.assessment.findUnique({
+      where: { id },
+      select: { organisationId: true },
+    });
+
+    if (!assessment) {
+      throw new AppError('Assessment not found', 404);
+    }
+
+    const goals = await prisma.domainGoal.findMany({
+      where: { organisationId: assessment.organisationId },
+    });
+
+    const goalsMap: Record<string, { targetScore: number; targetDate: string | null; notes: string | null }> = {};
+    for (const g of goals) {
+      goalsMap[g.domainKey] = {
+        targetScore: g.targetScore,
+        targetDate: g.targetDate?.toISOString() || null,
+        notes: g.notes,
+      };
+    }
+
+    res.json({ success: true, data: goalsMap });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/assessments/:id/goals — Set/update domain goals
+resultsRoutes.put('/:id/goals', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { goals } = req.body;
+
+    if (!goals || typeof goals !== 'object') {
+      throw new AppError('goals object is required', 400);
+    }
+
+    const assessment = await prisma.assessment.findUnique({
+      where: { id },
+      select: { organisationId: true },
+    });
+
+    if (!assessment) {
+      throw new AppError('Assessment not found', 404);
+    }
+
+    const upserted = await Promise.all(
+      Object.entries(goals).map(([domainKey, goalData]: [string, any]) =>
+        prisma.domainGoal.upsert({
+          where: {
+            organisationId_domainKey: {
+              organisationId: assessment.organisationId,
+              domainKey,
+            },
+          },
+          update: {
+            targetScore: goalData.targetScore,
+            targetDate: goalData.targetDate ? new Date(goalData.targetDate) : null,
+            notes: goalData.notes || null,
+          },
+          create: {
+            organisationId: assessment.organisationId,
+            domainKey,
+            targetScore: goalData.targetScore,
+            targetDate: goalData.targetDate ? new Date(goalData.targetDate) : null,
+            notes: goalData.notes || null,
+          },
+        })
+      )
+    );
+
+    res.json({ success: true, data: upserted });
   } catch (err) {
     next(err);
   }

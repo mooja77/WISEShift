@@ -135,6 +135,12 @@ export const exportApi = {
 
   csv: (id: string) =>
     api.get(`/assessments/${id}/export/csv`, { responseType: 'blob' }),
+
+  caseStudyDocx: (id: string) =>
+    api.get(`/assessments/${id}/export/case-study?format=docx`, { responseType: 'blob' }),
+
+  caseStudyJson: (id: string) =>
+    api.get(`/assessments/${id}/export/case-study?format=json`, { responseType: 'blob' }),
 };
 
 // Word Cloud API
@@ -144,6 +150,56 @@ export const wordCloudApi = {
 
   getForDashboard: () =>
     api.get('/dashboard/word-frequencies'),
+};
+
+// Sector API
+export const sectorApi = {
+  getQuestions: (id: string) =>
+    api.get(`/assessments/${id}/sector-questions`),
+
+  getResults: (id: string) =>
+    api.get(`/assessments/${id}/sector-results`),
+};
+
+// Policy Alignment API
+export const policyAlignmentApi = {
+  get: (id: string) =>
+    api.get(`/assessments/${id}/policy-alignment`),
+};
+
+// Public Open Data API
+export const publicDataApi = {
+  getOverview: () => api.get('/v1/public/overview'),
+  getStatistics: () => api.get('/v1/public/statistics'),
+  getBenchmarks: () => api.get('/v1/public/benchmarks'),
+  getAssessments: () => api.get('/v1/public/assessments'),
+};
+
+// Progress API
+export const progressApi = {
+  getProgress: (id: string) =>
+    api.get(`/assessments/${id}/progress`),
+
+  getGoals: (id: string) =>
+    api.get(`/assessments/${id}/goals`),
+
+  setGoals: (id: string, goals: Record<string, { targetScore: number; targetDate?: string; notes?: string }>) =>
+    api.put(`/assessments/${id}/goals`, { goals }),
+};
+
+// Registry API
+export const registryApi = {
+  list: (params?: { country?: string; sector?: string; page?: number; limit?: number }) =>
+    api.get('/registry', { params }),
+
+  getProfile: (slug: string) =>
+    api.get(`/registry/${slug}`),
+
+  optIn: (data: { bio?: string; website?: string; foundingYear?: number; targetPopulations?: string[] }, accessCode: string) =>
+    api.post('/registry/opt-in', data, { headers: { 'x-access-code': accessCode } }),
+
+  updateProfile: (slug: string, data: any, accessCode: string) =>
+    api.put(`/registry/${slug}`, data, { headers: { 'x-access-code': accessCode } }),
 };
 
 // Reassessment API
@@ -329,6 +385,97 @@ export const researchApi = {
 
   compareLayers: (layerId1: string, layerId2: string) =>
     researchClient.post('/layers/compare', { layerId1, layerId2 }),
+};
+
+// Researcher Portal API
+const researcherClient = axios.create({
+  baseURL: '/api/researchers',
+  headers: { 'Content-Type': 'application/json' },
+});
+
+researcherClient.interceptors.request.use(config => {
+  try {
+    const token = localStorage.getItem('wiseshift-researcher-token');
+    if (token) {
+      config.headers['x-researcher-token'] = token;
+    }
+  } catch { /* ignore */ }
+  return config;
+});
+
+export const researcherApi = {
+  register: (data: { email: string; name: string; institution: string }) =>
+    researcherClient.post('/register', data),
+
+  verify: (data: { email: string; verificationCode: string }) =>
+    researcherClient.post('/verify', data),
+
+  getProfile: () =>
+    researcherClient.get('/profile'),
+
+  requestAccess: (data: { ethicsApproval?: string; justification?: string }) =>
+    researcherClient.post('/request-access', data),
+
+  query: (params: {
+    country?: string;
+    sector?: string;
+    size?: string;
+    minScore?: number;
+    maxScore?: number;
+    dateFrom?: string;
+    dateTo?: string;
+    domainKey?: string;
+    page?: number;
+    limit?: number;
+  }) => researcherClient.get('/query', { params }),
+
+  batchDownload: (caseIds: string[], format: 'csv' | 'json') =>
+    researcherClient.post('/batch-download', { caseIds, format }, { responseType: 'blob' }),
+
+  getAccessLog: () =>
+    researcherClient.get('/access-log'),
+};
+
+// Working Group API
+export const workingGroupApi = {
+  create: (data: { name: string; description?: string; sector?: string }, accessCode: string) =>
+    api.post('/working-groups', data, { headers: { 'x-access-code': accessCode } }),
+
+  list: (accessCode: string) =>
+    api.get('/working-groups', { headers: { 'x-access-code': accessCode } }),
+
+  get: (id: string, accessCode: string) =>
+    api.get(`/working-groups/${id}`, { headers: { 'x-access-code': accessCode } }),
+
+  getDashboard: (id: string, accessCode: string) =>
+    api.get(`/working-groups/${id}/dashboard`, { headers: { 'x-access-code': accessCode } }),
+
+  addMember: (id: string, data: { accessCode: string; displayName: string; role?: string }, callerCode: string) =>
+    api.post(`/working-groups/${id}/members`, data, { headers: { 'x-access-code': callerCode } }),
+
+  removeMember: (id: string, memberId: string, accessCode: string) =>
+    api.delete(`/working-groups/${id}/members/${memberId}`, { headers: { 'x-access-code': accessCode } }),
+
+  addAssignment: (id: string, assessmentId: string, accessCode: string) =>
+    api.post(`/working-groups/${id}/assignments`, { assessmentId }, { headers: { 'x-access-code': accessCode } }),
+
+  removeAssignment: (id: string, assignmentId: string, accessCode: string) =>
+    api.delete(`/working-groups/${id}/assignments/${assignmentId}`, { headers: { 'x-access-code': accessCode } }),
+
+  getDiscussions: (id: string, accessCode: string) =>
+    api.get(`/working-groups/${id}/discussions`, { headers: { 'x-access-code': accessCode } }),
+
+  postDiscussion: (id: string, data: { title?: string; content: string; parentId?: string }, accessCode: string) =>
+    api.post(`/working-groups/${id}/discussions`, data, { headers: { 'x-access-code': accessCode } }),
+
+  addDocument: (id: string, data: { title: string; url: string; description?: string }, accessCode: string) =>
+    api.post(`/working-groups/${id}/documents`, data, { headers: { 'x-access-code': accessCode } }),
+
+  removeDocument: (id: string, docId: string, accessCode: string) =>
+    api.delete(`/working-groups/${id}/documents/${docId}`, { headers: { 'x-access-code': accessCode } }),
+
+  getActivities: (id: string, accessCode: string) =>
+    api.get(`/working-groups/${id}/activities`, { headers: { 'x-access-code': accessCode } }),
 };
 
 export default api;

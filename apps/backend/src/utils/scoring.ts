@@ -1,4 +1,5 @@
-import { DOMAINS, getMaturityLevel } from '@wiseshift/shared';
+import { DOMAINS, getMaturityLevel, SECTOR_MODULES } from '@wiseshift/shared';
+import type { SectorModule } from '@wiseshift/shared';
 import type { Response as PrismaResponse } from '@prisma/client';
 
 export interface DomainScoreCalc {
@@ -73,4 +74,43 @@ export function identifyWeaknesses(domainScores: DomainScoreCalc[]): string[] {
     .sort((a, b) => a.score - b.score)
     .slice(0, 3)
     .map(d => d.domainName);
+}
+
+export interface SectorScoreCalc {
+  sectorKey: string;
+  sectorName: string;
+  score: number;
+}
+
+export function calculateSectorScore(
+  sectorModule: SectorModule,
+  responses: PrismaResponse[]
+): SectorScoreCalc | null {
+  const sectorResponses = responses.filter(r =>
+    sectorModule.questions.some(q => q.id === r.questionId)
+  );
+
+  const quantitative = sectorResponses.filter(
+    r => (r.questionType === 'likert' || r.questionType === 'maturity') && r.numericValue != null
+  );
+
+  if (quantitative.length === 0) return null;
+
+  let totalWeight = 0;
+  let weightedSum = 0;
+
+  for (const resp of quantitative) {
+    const question = sectorModule.questions.find(q => q.id === resp.questionId);
+    const weight = question?.weight || 1.0;
+    weightedSum += (resp.numericValue || 0) * weight;
+    totalWeight += weight;
+  }
+
+  const score = totalWeight > 0 ? weightedSum / totalWeight : 0;
+
+  return {
+    sectorKey: sectorModule.key,
+    sectorName: sectorModule.name,
+    score: Math.round(score * 100) / 100,
+  };
 }

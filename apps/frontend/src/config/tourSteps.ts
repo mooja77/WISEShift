@@ -4,14 +4,14 @@ export const homeTourSteps: DriveStep[] = [
   {
     popover: {
       title: 'Welcome to WISEShift',
-      description: 'This self-assessment tool helps Work Integration Social Enterprises evaluate their performance across 8 key domains. Let us show you around!',
+      description: 'This self-assessment tool helps Work Integration Social Enterprises evaluate their performance across 9 key domains. Let us show you around!',
     },
   },
   {
     element: '.grid.grid-cols-2',
     popover: {
       title: 'Assessment Domains',
-      description: 'Your assessment covers 8 domains: from Governance to Impact Measurement. Each domain has a mix of quantitative and qualitative questions.',
+      description: 'Your assessment covers 9 domains: from Governance to Impact Measurement. Each domain has a mix of quantitative and qualitative questions.',
     },
   },
   {
@@ -38,7 +38,7 @@ export const homeTourSteps: DriveStep[] = [
   {
     popover: {
       title: 'Want to Explore First?',
-      description: 'You can try the full app with demo data before starting your own assessment. 8 example European WISEs are pre-loaded with complete assessment data.',
+      description: 'You can try the full app with demo data before starting your own assessment. 8 example European WISEs (demo data) are pre-loaded with complete assessment data.',
     },
   },
   {
@@ -107,7 +107,7 @@ export const resultsTourSteps: DriveStep[] = [
     element: '[role="img"]',
     popover: {
       title: 'Radar Chart',
-      description: 'This spider chart visualises your scores across all 8 domains. A larger, more even shape indicates stronger overall performance.',
+      description: 'This spider chart visualises your scores across all 9 domains. A larger, more even shape indicates stronger overall performance.',
     },
   },
   {
@@ -211,7 +211,7 @@ export const dashboardTourSteps: DriveStep[] = [
     element: '.card:has(.recharts-wrapper), .card:has(canvas)',
     popover: {
       title: 'Sector Averages',
-      description: 'This radar chart shows the average score across all 8 assessment domains. It reveals which areas are strongest and weakest across the sector.',
+      description: 'This radar chart shows the average score across all 9 assessment domains. It reveals which areas are strongest and weakest across the sector.',
     },
   },
   {
@@ -305,7 +305,7 @@ export const methodologyTourSteps: DriveStep[] = [
     element: 'table',
     popover: {
       title: 'Assessment Framework',
-      description: 'Each of the 8 domains maps to established indicators from the EMES Research Network and the ENSIE Impact-WISEs data collection.',
+      description: 'Each of the 9 domains maps to established indicators from the EMES Research Network and the ENSIE Impact-WISEs data collection.',
     },
   },
   {

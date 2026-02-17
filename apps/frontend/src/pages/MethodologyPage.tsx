@@ -44,6 +44,11 @@ const DOMAIN_MAPPING = [
     emes: 'Limited profit distribution (Governance)',
     ensie: 'Policy environment & ecosystem support',
   },
+  {
+    domain: 'Environmental Sustainability',
+    emes: 'Explicit aim to benefit the community (Social)',
+    ensie: 'Environmental impact & circular economy practices',
+  },
 ];
 
 const RESEARCH_FOUNDATIONS = [
@@ -195,7 +200,7 @@ export default function MethodologyPage() {
         <section className="mt-16">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Assessment Framework</h2>
           <p className="mt-3 max-w-4xl text-gray-600 dark:text-gray-400">
-            The WISEShift self-assessment spans 8 domains, each carefully mapped to established
+            The WISEShift self-assessment spans 9 domains, each carefully mapped to established
             European research frameworks. The domain structure synthesises the EMES ideal-type
             indicators with the ENSIE Impact-WISEs empirical dimensions, creating a comprehensive
             yet practical assessment instrument for Work Integration Social Enterprises.

@@ -9,6 +9,7 @@ import {
   ChartBarSquareIcon,
   ClipboardDocumentCheckIcon,
   BookOpenIcon,
+  BuildingLibraryIcon,
   QuestionMarkCircleIcon,
   SunIcon,
   MoonIcon,
@@ -34,6 +35,7 @@ const NAV_LINKS = [
   { to: '/', labelKey: 'nav.home', icon: HomeIcon },
   { to: '/methodology', labelKey: 'nav.methodology', icon: BookOpenIcon },
   { to: '/dashboard', labelKey: 'nav.dashboard', icon: ChartBarSquareIcon },
+  { to: '/registry', labelKey: 'nav.registry', icon: BuildingLibraryIcon },
 ] as const;
 
 export default function Header() {

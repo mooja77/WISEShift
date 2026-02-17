@@ -5,6 +5,7 @@ import { validateAccessCode } from '../middleware/accessCode.js';
 import { generateAccessCode } from '../utils/accessCode.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { getRetentionExpiresAt } from '../middleware/dataRetention.js';
+import { getSectorModule } from '@wiseshift/shared';
 
 export const assessmentRoutes = Router();
 
@@ -329,7 +330,7 @@ assessmentRoutes.post('/:id/complete', async (req, res, next) => {
     }
 
     // Import scoring utilities
-    const { calculateDomainScore, calculateOverallScore } = await import('../utils/scoring.js');
+    const { calculateDomainScore, calculateOverallScore, calculateSectorScore } = await import('../utils/scoring.js');
     const { DOMAINS } = await import('@wiseshift/shared');
 
     // Calculate domain scores
@@ -363,6 +364,28 @@ assessmentRoutes.post('/:id/complete', async (req, res, next) => {
       )
     );
 
+    // Calculate and save sector score if applicable
+    const org = await prisma.organisation.findUnique({ where: { id: assessment.organisationId } });
+    if (org?.sector) {
+      const sectorModule = getSectorModule(org.sector);
+      if (sectorModule) {
+        const sectorScore = calculateSectorScore(sectorModule, assessment.responses);
+        if (sectorScore) {
+          await prisma.sectorScore.upsert({
+            where: {
+              assessmentId_sectorKey: { assessmentId: id, sectorKey: sectorScore.sectorKey },
+            },
+            update: { score: sectorScore.score },
+            create: {
+              assessmentId: id,
+              sectorKey: sectorScore.sectorKey,
+              score: sectorScore.score,
+            },
+          });
+        }
+      }
+    }
+
     // Update assessment
     const updated = await prisma.assessment.update({
       where: { id },
@@ -375,10 +398,41 @@ assessmentRoutes.post('/:id/complete', async (req, res, next) => {
         organisation: true,
         responses: true,
         domainScores: true,
+        sectorScores: true,
       },
     });
 
     res.json({ success: true, data: updated });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/assessments/:id/sector-questions — Get applicable sector module
+assessmentRoutes.get('/:id/sector-questions', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const assessment = await prisma.assessment.findUnique({
+      where: { id },
+      include: { organisation: true },
+    });
+
+    if (!assessment) {
+      throw new AppError('Assessment not found', 404);
+    }
+
+    const sector = assessment.organisation.sector;
+    if (!sector) {
+      return res.json({ success: true, data: null });
+    }
+
+    const sectorModule = getSectorModule(sector);
+    if (!sectorModule) {
+      return res.json({ success: true, data: null });
+    }
+
+    res.json({ success: true, data: sectorModule });
   } catch (err) {
     next(err);
   }

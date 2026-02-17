@@ -218,6 +218,31 @@ export const QUESTION_HELP: Record<string, QuestionHelp> = {
     frameworkReference: 'The EU push for impact measurement is based on the belief that good evidence drives better outcomes. This question asks you to prove it with a concrete example.',
     exampleResponse: 'Our 2023 SROI analysis revealed that our 12-week employment preparation programme had lower returns than expected because many participants weren\'t work-ready when they started. Wellbeing data confirmed this: the first 4 weeks showed minimal improvement in confidence scores. We restructured the programme to include a 4-week "foundations" phase focused on wellbeing, routine-building, and basic skills before employment-focused activities begin. After implementing this change, our transition-to-employment rate increased from 38% to 52%, and participant satisfaction with the programme rose from 3.4 to 4.1 out of 5. We presented these findings at the ENSIE annual conference to share learning with other WISEs.',
   },
+
+  // ─── Environmental Sustainability & Green Transition ───
+  'env-q1': {
+    plainLanguage: 'How seriously does your organisation take environmental sustainability? Think about whether green practices are part of your strategy, not just an afterthought.',
+    frameworkReference: 'The EU Green Deal aims for climate neutrality by 2050, and the European Climate Law makes this legally binding. The WISESHIFT Horizon Europe project (2025-2029) specifically studies how WISEs can be both inclusive AND environmentally sustainable.',
+  },
+  'env-q2': {
+    plainLanguage: 'Do you actually measure your environmental footprint (energy, waste, emissions) and take steps to reduce it? A score of 5 means you have comprehensive data and can show real reductions.',
+    frameworkReference: 'The EU Corporate Sustainability Reporting Directive (CSRD) is expanding environmental reporting across Europe. While most WISEs are below the threshold, measuring your impact now positions you as a leader and prepares for future expectations.',
+  },
+  'env-q3': {
+    plainLanguage: 'Explain how your work activities contribute to a greener economy. Many WISEs already do this — repair, reuse, recycling, urban gardening, green maintenance — this is about recognising and articulating that value.',
+    frameworkReference: 'The EU Circular Economy Action Plan (2020) promotes reuse, repair, and recycling — sectors where many WISEs already operate. The Right to Repair Directive further supports this. The WISESHIFT project studies exactly this intersection of social and environmental value.',
+    exampleResponse: 'Our furniture restoration social enterprise diverts approximately 20 tonnes of furniture from landfill annually. Participants learn repair, upcycling, and woodworking skills while we extend product lifecycles — directly contributing to circular economy goals. We also run a community "Repair Cafe" monthly, teaching basic repair skills to local residents. Our work simultaneously provides employment pathways for long-term unemployed adults and reduces waste, demonstrating the dual social-environmental value model that the WISESHIFT project aims to evidence.',
+  },
+  'env-q4': {
+    plainLanguage: 'Do you help participants and staff develop "green skills" — knowledge about sustainability, energy efficiency, waste reduction, or working in the green economy? These skills are increasingly valuable in the job market.',
+    frameworkReference: 'The EU Just Transition framework says the move to a green economy must be fair — creating opportunities for disadvantaged groups, not leaving them behind. WISEs are uniquely positioned to develop green skills among populations at risk of exclusion. The European Skills Agenda lists green skills as a priority.',
+    exampleResponse: 'All participants complete a 2-day environmental awareness module covering waste management, energy efficiency, and circular economy principles. In our textile workshop, participants learn sustainable fashion concepts — repair, upcycling, and natural dyeing — which are in growing demand from ethical fashion employers. We\'ve added solar panel installation training (accredited Level 2) in partnership with a local renewable energy company, and 8 participants have gained employment in the green energy sector. We also run community workshops on home energy efficiency, reaching approximately 200 local residents per year.',
+  },
+  'env-q5': {
+    plainLanguage: 'Tell a story that shows how your organisation combines helping people AND helping the environment. This is the core of what makes WISEs special in the green transition — they can do both at once.',
+    frameworkReference: 'The WISESHIFT Horizon Europe project is built on the idea that WISEs can be "inclusive AND sustainable by design." This evidence is valuable for EU policy-makers developing the just transition framework.',
+    exampleResponse: 'Our community garden project operates on a former industrial site, combining land remediation with work integration. Participants with mental health conditions work in therapeutic horticulture, growing organic vegetables sold through a weekly community box scheme. The project remediates contaminated soil using phytoremediation techniques, provides green skills training in organic growing and composting, produces local food reducing transport emissions, and has become a biodiversity corridor in an urban area. Last year, 12 participants completed horticultural qualifications, 6 moved into employment in parks and gardens, and the site now hosts 15 species of pollinators. The project was cited in our municipality\'s climate action plan as a model of inclusive green urban regeneration.',
+  },
 };
 
 // ─── Domain-Specific Maturity Level Examples ───
@@ -279,6 +304,13 @@ export const DOMAIN_MATURITY_EXAMPLES: DomainMaturityExample[] = [
   { domainKey: 'impact-measurement', level: 3, example: 'Regular impact measurement using recognised framework (SROI/ToC). Data analysis informs service improvements. Contributing to sector data collection (ENSIE).' },
   { domainKey: 'impact-measurement', level: 4, example: 'Comprehensive data systems with longitudinal tracking. Published SROI. Evidence-based service design. Feeding into EU-level research on WISE effectiveness.' },
   { domainKey: 'impact-measurement', level: 5, example: 'Pioneering impact measurement approaches. Contributing to development of EU impact measurement standards. Academic research partnerships. Data-driven innovation shared across the sector.' },
+
+  // Environmental Sustainability
+  { domainKey: 'environmental-sustainability', level: 1, example: 'No formal environmental awareness. Environmental sustainability is not considered in strategy or operations. No measurement of environmental impact.' },
+  { domainKey: 'environmental-sustainability', level: 2, example: 'Basic awareness of environmental issues. Some ad hoc green practices (recycling, energy saving). Beginning to recognise the environmental value of productive activities.' },
+  { domainKey: 'environmental-sustainability', level: 3, example: 'Environmental targets set and integrated into strategy. Green skills included in participant training. Circular economy practices documented. Basic environmental monitoring in place.' },
+  { domainKey: 'environmental-sustainability', level: 4, example: 'Comprehensive environmental measurement and reporting. Accredited green skills training. Dual social-environmental impact demonstrated. Active in green networks (RREUSE) and EU just transition initiatives.' },
+  { domainKey: 'environmental-sustainability', level: 5, example: 'Recognised as a model for inclusive green transition. Innovative circular economy or green skills programmes replicated by others. Contributing to EU just transition policy. Published environmental impact evidence.' },
 ];
 
 // ─── Helper Functions ───

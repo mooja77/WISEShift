@@ -345,6 +345,48 @@ export const RECOMMENDATION_TEMPLATES: RecommendationTemplate[] = [
     impact: 'medium',
     timeframe: 'long',
   },
+
+  // ─── Environmental Sustainability & Green Transition ───
+  {
+    domainKey: 'environmental-sustainability',
+    currentLevel: 'Emerging',
+    targetLevel: 'Developing',
+    recommendation: 'Assess your environmental footprint and identify circular economy opportunities',
+    description: 'Conduct a basic environmental audit of your operations — energy use, waste streams, water consumption, and transport. Identify where your productive activities already contribute to the circular economy (repair, reuse, recycling) or could be adapted to do so. Consult the EU Circular Economy Action Plan (2020) and the EU Green Deal for frameworks relevant to your sector. Many WISEs already have inherent environmental value that simply needs to be measured and communicated.',
+    effort: 'low',
+    impact: 'high',
+    timeframe: 'short',
+  },
+  {
+    domainKey: 'environmental-sustainability',
+    currentLevel: 'Developing',
+    targetLevel: 'Established',
+    recommendation: 'Integrate environmental targets into strategy and develop green skills training',
+    description: 'Set measurable environmental targets (waste reduction, energy efficiency, carbon footprint) and embed them in your organisational strategy alongside social objectives. Develop green skills training for participants — these are increasingly in demand in the labour market and support the EU Just Transition framework. Explore ESF+ and European Climate Facility funding for green skills programmes. Reference the European Skills Agenda\'s emphasis on green skills as a priority.',
+    effort: 'medium',
+    impact: 'high',
+    timeframe: 'medium',
+  },
+  {
+    domainKey: 'environmental-sustainability',
+    currentLevel: 'Established',
+    targetLevel: 'Advanced',
+    recommendation: 'Demonstrate dual social-environmental impact with EU-aligned measurement',
+    description: 'Develop integrated reporting that demonstrates both social inclusion and environmental sustainability outcomes — the "inclusive AND sustainable" model the WISESHIFT project promotes. Adopt environmental measurement aligned with the EU Taxonomy Regulation criteria where applicable. Pursue eco-certifications relevant to your sector. Participate in RREUSE or relevant green networks to benchmark your environmental performance against European peers.',
+    effort: 'high',
+    impact: 'high',
+    timeframe: 'medium',
+  },
+  {
+    domainKey: 'environmental-sustainability',
+    currentLevel: 'Advanced',
+    targetLevel: 'Leading',
+    recommendation: 'Pioneer the inclusive green transition model and influence EU just transition policy',
+    description: 'Position your organisation as a model for how WISEs can drive the green transition while ensuring social inclusion. Contribute to the WISESHIFT Horizon Europe project\'s evidence base on sustainable WISEs. Share innovative practices through ENSIE, RREUSE, and the EU Social Economy Gateway. Engage with EU just transition policy consultations to ensure disadvantaged workers benefit from the green economy. Develop replicable green WISE models through Erasmus+ KA2 partnerships.',
+    effort: 'high',
+    impact: 'high',
+    timeframe: 'long',
+  },
 ];
 
 export function getRecommendationsForDomain(

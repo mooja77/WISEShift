@@ -21,6 +21,13 @@ import ComparisonPage from './pages/ComparisonPage';
 import MethodologyPage from './pages/MethodologyPage';
 import ResearchPage from './pages/ResearchPage';
 import DataManagementPage from './pages/DataManagementPage';
+import PolicyAlignmentPage from './pages/PolicyAlignmentPage';
+import ApiDocsPage from './pages/ApiDocsPage';
+import ProgressPage from './pages/ProgressPage';
+import RegistryPage from './pages/RegistryPage';
+import RegistryProfilePage from './pages/RegistryProfilePage';
+import ResearcherPortalPage from './pages/ResearcherPortalPage';
+import WorkingGroupPage from './pages/WorkingGroupPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -109,6 +116,62 @@ export default function App() {
         element={
           <PageLayout>
             <ResearchPage />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/policy-alignment"
+        element={
+          <PageLayout>
+            <PolicyAlignmentPage />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/api-docs"
+        element={
+          <PageLayout>
+            <ApiDocsPage />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/progress"
+        element={
+          <PageLayout>
+            <ProgressPage />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/registry"
+        element={
+          <PageLayout>
+            <RegistryPage />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/registry/:slug"
+        element={
+          <PageLayout>
+            <RegistryProfilePage />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/researcher-portal"
+        element={
+          <PageLayout>
+            <ResearcherPortalPage />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/working-groups"
+        element={
+          <PageLayout>
+            <WorkingGroupPage />
           </PageLayout>
         }
       />

@@ -50,7 +50,7 @@ export default function ThemeHeatmap() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Theme Heatmap</h2>
-          <p className="text-sm text-gray-500">Rows = your tags, columns = 8 domains. Cell intensity shows tag frequency.</p>
+          <p className="text-sm text-gray-500">Rows = your tags, columns = 9 domains. Cell intensity shows tag frequency.</p>
         </div>
         <CodebookExport />
       </div>

@@ -14,12 +14,13 @@
     "closeMenu": "Fermer le menu",
     "accessCode": "Code d'accès à l'évaluation :",
     "primaryNav": "Navigation principale",
-    "mobileNav": "Navigation mobile"
+    "mobileNav": "Navigation mobile",
+    "registry": "Registre"
   },
   "home": {
     "title": "WISE",
     "subtitle": "Outil d'auto-évaluation",
-    "description": "Un cadre complet d'auto-évaluation pour les Entreprises Sociales d'Insertion par le Travail à travers l'Europe. Évaluez votre organisation selon 8 domaines clés basés sur les indicateurs EMES, identifiez vos forces et axes d'amélioration, et générez des plans d'action alignés sur la politique européenne de l'économie sociale.",
+    "description": "Un cadre complet d'auto-évaluation pour les Entreprises Sociales d'Insertion par le Travail à travers l'Europe. Évaluez votre organisation selon 9 domaines clés basés sur les indicateurs EMES, identifiez vos forces et axes d'amélioration, et générez des plans d'action alignés sur la politique européenne de l'économie sociale.",
     "continueAssessment": "Continuer l'évaluation",
     "continueDescription": "Vous avez une évaluation en cours. Votre code d'accès est :",
     "startNew": "Démarrer une nouvelle évaluation",
@@ -28,7 +29,7 @@
     "startAssessment": "Démarrer l'évaluation",
     "creating": "Création en cours...",
     "questions": "Questions",
-    "questionsDescription": "Réparties sur 8 domaines, avec un mélange de questions quantitatives et qualitatives",
+    "questionsDescription": "Réparties sur 9 domaines, avec un mélange de questions quantitatives et qualitatives",
     "maturityLevels": "Niveaux de maturité",
     "maturityLevelsDescription": "D'Émergent à Leader — comprenez où vous en êtes et où vous allez",
     "reports": "Rapports",
@@ -226,7 +227,7 @@
     "maturitySelector": "Sélectionnez le niveau de maturité qui décrit le mieux la pratique actuelle de votre organisation. Le niveau 1 (Émergent) signifie que vous débutez, tandis que le niveau 5 (Leader) signifie que vous êtes un exemple dans ce domaine.",
     "likertScale": "Indiquez votre degré d'accord ou de désaccord avec l'énoncé. 1 = Pas du tout d'accord, 5 = Tout à fait d'accord. Choisissez l'option qui reflète le mieux la situation actuelle de votre organisation.",
     "scoreCalculation": "Votre score global est la moyenne pondérée de tous les scores par domaine. Les questions Likert (échelle 1-5) et les évaluations de maturité sont combinées, les questions de maturité étant pondérées 1,5x.",
-    "radarChart": "Ce diagramme radar montre vos scores sur les 8 domaines d'évaluation. Chaque axe représente un domaine (échelle 0-5). Une forme plus large et plus régulière indique une performance globale plus forte.",
+    "radarChart": "Ce diagramme radar montre vos scores sur les 9 domaines d'évaluation. Chaque axe représente un domaine (échelle 0-5). Une forme plus large et plus régulière indique une performance globale plus forte.",
     "benchmarkData": "Les données de référence proviennent des enquêtes ENSIE Impact-WISEs, de l'ESEM et du projet PERSE. Comparez vos scores aux moyennes sectorielles pour identifier vos forces et axes de développement relatifs.",
     "domain": {
       "governance-democracy": "Gouvernance et Démocratie évalue comment votre organisation prend des décisions, implique les parties prenantes et maintient des processus démocratiques conformes aux principes EMES.",
@@ -236,7 +237,8 @@
       "economic-sustainability": "Durabilité Économique évalue la santé financière, la diversification des revenus et l'équilibre entre mission sociale et viabilité économique.",
       "stakeholder-engagement": "Engagement des Parties Prenantes évalue comment vous identifiez, communiquez avec et impliquez les parties prenantes clés dans les activités de votre organisation.",
       "support-infrastructure": "Infrastructure de Soutien examine les systèmes, partenariats et ressources qui permettent à votre organisation de remplir efficacement sa mission.",
-      "impact-measurement": "Mesure d'Impact et Apprentissage évalue comment vous mesurez les résultats, utilisez les données pour l'amélioration et démontrez votre impact social."
+      "impact-measurement": "Mesure d'Impact et Apprentissage évalue comment vous mesurez les résultats, utilisez les données pour l'amélioration et démontrez votre impact social.",
+      "environmental-sustainability": "Environmental Sustainability & Green Transition assesses your environmental practices, circular economy contributions, green skills development, and alignment with the EU Green Deal and just transition framework."
     }
   },
   "saveConfidence": {
@@ -289,7 +291,7 @@
   "tour": {
     "home": {
       "welcome": "Bienvenue sur WISEShift",
-      "welcomeDesc": "Cet outil d'auto-évaluation aide les Entreprises Sociales d'Insertion par le Travail à évaluer leur organisation selon 8 domaines clés.",
+      "welcomeDesc": "Cet outil d'auto-évaluation aide les Entreprises Sociales d'Insertion par le Travail à évaluer leur organisation selon 9 domaines clés.",
       "domains": "8 Domaines d'évaluation",
       "domainsDesc": "Votre organisation sera évaluée sur la gouvernance, la mission sociale, les parcours d'emploi, et plus encore.",
       "startForm": "Commencez ici",
@@ -317,7 +319,7 @@
       "scoreOverview": "Votre score",
       "scoreOverviewDesc": "C'est votre score global d'évaluation sur 5, combinant les résultats de tous les domaines.",
       "radarChart": "Vue d'ensemble des performances",
-      "radarChartDesc": "Le diagramme radar montre vos forces et axes de développement sur les 8 domaines.",
+      "radarChartDesc": "Le diagramme radar montre vos forces et axes de développement sur les 9 domaines.",
       "domainCards": "Détails par domaine",
       "domainCardsDesc": "Chaque carte montre votre score de domaine, niveau de maturité et retour spécifique.",
       "qualitative": "Données qualitatives",
@@ -414,7 +416,7 @@
     "editNote": "Modifier la note",
     "saveNote": "Enregistrer la note",
     "deleteNote": "Supprimer la note",
-    "heatmapDescription": "Lignes = vos étiquettes, colonnes = 8 domaines. L'intensité des cellules montre la fréquence des étiquettes.",
+    "heatmapDescription": "Lignes = vos étiquettes, colonnes = 9 domaines. L'intensité des cellules montre la fréquence des étiquettes.",
     "drilldown": "Passages étiquetés",
     "copyForPaper": "Copier pour article",
     "exportWord": "Exporter en Word",
@@ -428,5 +430,115 @@
     "progressBar": "{{label}} : {{value}}% terminé",
     "maturityLevel": "Niveau de maturité : {{level}}",
     "domainScore": "{{domain}} : {{score}} sur 5, maturité {{level}}"
+  },
+  "domains": {
+    "governance": {
+      "name": "Governance & Democracy",
+      "shortName": "Governance",
+      "description": "Democratic decision-making structures, organisational autonomy, stakeholder participation, and transparent governance aligned with EMES indicators and the EU social economy framework.",
+      "questions": {
+        "q1": { "text": "How would you rate the overall maturity of your governance structures and democratic decision-making processes, as reflected in the EMES indicators for social enterprise?" },
+        "q2": { "text": "To what extent are participants (workers/trainees) involved in organisational decision-making, reflecting the EMES participatory governance principle?" },
+        "q3": { "text": "Describe how your board or governing body is composed. What stakeholder groups are represented, and how does this reflect the EMES principle of democratic control?" },
+        "q4": { "text": "What mechanisms exist for transparency and accountability in your organisation, consistent with EU social economy standards?" },
+        "q5": { "text": "Provide an example of a significant decision where multiple stakeholder perspectives were actively sought and incorporated, demonstrating participatory governance in practice." }
+      }
+    },
+    "socialMission": {
+      "name": "Social Mission & Impact",
+      "shortName": "Social Mission",
+      "description": "Clarity of social mission focused on helping people at risk of permanent labour market exclusion through productive activity, alignment with the European Pillar of Social Rights, and contribution to UN SDGs.",
+      "questions": {
+        "q1": { "text": "How would you rate the maturity of your social mission definition, integration, and impact measurement in line with the EU definition of WISEs?" },
+        "q2": { "text": "To what extent does your organisation prioritise social outcomes — particularly labour market integration for disadvantaged groups — alongside financial sustainability?" },
+        "q3": { "text": "Describe your organisation's social mission and the specific populations or communities you serve, with reference to their risk of permanent labour market exclusion." },
+        "q4": { "text": "What social outcomes have you achieved in the past 12 months? Provide specific evidence, drawing on ENSIE-aligned impact indicators where possible." },
+        "q5": { "text": "How does your organisation contribute to the broader community beyond your direct participants, including alignment with EU social cohesion goals?" }
+      }
+    },
+    "employment": {
+      "name": "Employment Pathways",
+      "shortName": "Employment",
+      "description": "Quality of supported and transitional employment, social insertion pathways, professional reintegration, career progression, and skill development — reflecting EU employment integration models.",
+      "questions": {
+        "q1": { "text": "How would you rate the maturity of your employment pathways — including supported employment, transitional employment, and professional reintegration support systems?" },
+        "q2": { "text": "To what extent does your organisation provide structured skill development and accredited training aligned with recognised qualification frameworks?" },
+        "q3": { "text": "Describe the employment or social insertion model your organisation uses, including elements of supported employment, transitional employment, or professional reintegration." },
+        "q4": { "text": "What transition outcomes have your participants achieved? Include data on professional reintegration and employment retention where available." },
+        "q5": { "text": "Share an example of a participant's social insertion journey through your organisation, illustrating the pathway from exclusion to integration." }
+      }
+    },
+    "culture": {
+      "name": "Organisational Culture",
+      "shortName": "Culture",
+      "description": "Inclusion values grounded in the European Charter of Fundamental Rights, participant agency and voice, dignity, trauma-informed practice, and staff capacity.",
+      "questions": {
+        "q1": { "text": "How would you rate the maturity of your organisational culture in terms of inclusion, dignity, and participant agency — reflecting the values of the European Charter of Fundamental Rights?" },
+        "q2": { "text": "To what extent do participants have genuine voice and influence over their own work experience and support, consistent with EU rights-based approaches?" },
+        "q3": { "text": "Describe how your organisation promotes dignity, respect, and non-discrimination in daily operations, aligned with the European Charter of Fundamental Rights." },
+        "q4": { "text": "How do you invest in staff capacity and wellbeing to sustain a trauma-informed, rights-based organisational culture?" },
+        "q5": { "text": "Provide an example of how participant feedback has led to a meaningful change in your organisation, demonstrating genuine voice and agency." }
+      }
+    },
+    "economic": {
+      "name": "Economic Sustainability",
+      "shortName": "Economic",
+      "description": "Revenue diversification, commercial viability, financial planning, and the balance between earned revenue, public contracts, and subsidies — informed by EU state aid rules, social procurement directives, and ESF+ funding.",
+      "questions": {
+        "q1": { "text": "How would you rate the maturity of your financial sustainability and economic model within the EU social enterprise landscape?" },
+        "q2": { "text": "What proportion of your revenue comes from commercial trading (as opposed to grants, public subsidies, or ESF+ programme funding)?" },
+        "q3": { "text": "Describe your organisation's revenue model and how you balance commercial activity with social mission, referencing relevant EU funding and procurement frameworks." },
+        "q4": { "text": "What financial planning and risk management practices do you have in place to ensure long-term economic sustainability?" },
+        "q5": { "text": "How has your financial model evolved over time, and what are your plans for future sustainability within the evolving EU social economy landscape?" }
+      }
+    },
+    "stakeholders": {
+      "name": "Stakeholder Engagement",
+      "shortName": "Stakeholders",
+      "description": "Employer partnerships, community connections, government relationships, and engagement with European WISE networks including ENSIE, RREUSE, CECOP-CICOPA, and the Euclid Network.",
+      "questions": {
+        "q1": { "text": "How would you rate the maturity of your stakeholder engagement and partnership development, including engagement with EU-level WISE networks?" },
+        "q2": { "text": "How effectively does your organisation engage with employers for participant placement, social insertion, and sustained employment integration?" },
+        "q3": { "text": "Describe your key external partnerships and how they support your social insertion mission, including any EU-funded collaborative projects." },
+        "q4": { "text": "How do you engage with and contribute to the broader European WISE and social enterprise sector?" },
+        "q5": { "text": "Share an example of a partnership — local, national, or European — that has significantly enhanced your social impact." }
+      }
+    },
+    "support": {
+      "name": "Support Infrastructure",
+      "shortName": "Support",
+      "description": "Wrap-around services and accompaniment (accompagnement socioprofessionnel), training provision, mentoring, graduated support, and accessibility — drawing on European approaches to integrated support.",
+      "questions": {
+        "q1": { "text": "How would you rate the maturity of your support infrastructure, including wrap-around services and socio-professional accompaniment?" },
+        "q2": { "text": "To what extent does your organisation provide individualised, graduated accompaniment and support that adapts to participant needs over time?" },
+        "q3": { "text": "Describe the range of support services and accompaniment your organisation provides or connects participants to." },
+        "q4": { "text": "How do you ensure your services and accompaniment are accessible to diverse participants, including those with complex and multiple barriers?" },
+        "q5": { "text": "Share an example of how your support infrastructure and accompaniment made a critical difference for a participant facing complex barriers to social insertion." }
+      }
+    },
+    "impactMeasurement": {
+      "name": "Impact Measurement & Learning",
+      "shortName": "Impact & Learning",
+      "description": "Data collection, outcomes tracking using SROI and Theory of Change methodologies, alignment with ENSIE's Impact-WISEs framework and ESEM indicators, and continuous improvement — as promoted by the EU Social Economy Action Plan.",
+      "questions": {
+        "q1": { "text": "How would you rate the maturity of your impact measurement and organisational learning practices, considering EU frameworks such as ENSIE's Impact-WISEs and the European Social Enterprise Monitor (ESEM)?" },
+        "q2": { "text": "How systematically does your organisation collect and use outcome data to improve services, aligned with European impact measurement standards?" },
+        "q3": { "text": "Describe your approach to measuring social impact and tracking participant outcomes, including any use of SROI, Theory of Change, or ENSIE's Impact-WISEs framework." },
+        "q4": { "text": "How does your organisation use evidence and data to drive continuous improvement, in line with the EU Social Economy Action Plan's emphasis on learning organisations?" },
+        "q5": { "text": "Provide an example of how data or evidence — including insights from SROI analysis, Theory of Change review, or ENSIE benchmarking — led to a significant improvement in your services or outcomes." }
+      }
+    },
+    "environmentalSustainability": {
+      "name": "Environmental Sustainability & Green Transition",
+      "shortName": "Sustainability",
+      "description": "Environmental impact awareness, circular economy practices, green skills development, resource efficiency, and alignment with the EU Green Deal, European Climate Law, and the just transition framework.",
+      "questions": {
+        "q1": { "text": "How would you rate the maturity of your organisation's environmental sustainability practices, including awareness of the EU Green Deal and circular economy principles?" },
+        "q2": { "text": "To what extent does your organisation measure and actively reduce its environmental impact (energy use, waste, emissions, resource consumption)?" },
+        "q3": { "text": "Describe how your organisation contributes to the circular economy or environmental sustainability through its productive activities, and how this intersects with your social mission." },
+        "q4": { "text": "How does your organisation develop green skills and environmental awareness among participants, staff, and the wider community?" },
+        "q5": { "text": "Share an example of how your organisation has combined environmental sustainability with social inclusion — demonstrating that WISEs can be both green and inclusive by design." }
+      }
+    }
   }
 }

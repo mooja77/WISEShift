@@ -12,6 +12,7 @@ export const DOMAINS: Domain[] = [
     questions: [
       {
         id: 'gov-q1',
+        i18nKey: 'domains.governance.questions.q1.text',
         domainKey: 'governance',
         text: 'How would you rate the overall maturity of your governance structures and democratic decision-making processes, as reflected in the EMES indicators for social enterprise?',
         type: 'maturity',
@@ -22,6 +23,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'gov-q2',
+        i18nKey: 'domains.governance.questions.q2.text',
         domainKey: 'governance',
         text: 'To what extent are participants (workers/trainees) involved in organisational decision-making, reflecting the EMES participatory governance principle?',
         type: 'likert',
@@ -32,6 +34,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'gov-q3',
+        i18nKey: 'domains.governance.questions.q3.text',
         domainKey: 'governance',
         text: 'Describe how your board or governing body is composed. What stakeholder groups are represented, and how does this reflect the EMES principle of democratic control?',
         type: 'narrative',
@@ -43,6 +46,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'gov-q4',
+        i18nKey: 'domains.governance.questions.q4.text',
         domainKey: 'governance',
         text: 'What mechanisms exist for transparency and accountability in your organisation, consistent with EU social economy standards?',
         type: 'narrative',
@@ -54,6 +58,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'gov-q5',
+        i18nKey: 'domains.governance.questions.q5.text',
         domainKey: 'governance',
         text: 'Provide an example of a significant decision where multiple stakeholder perspectives were actively sought and incorporated, demonstrating participatory governance in practice.',
         type: 'narrative',
@@ -77,6 +82,7 @@ export const DOMAINS: Domain[] = [
     questions: [
       {
         id: 'sm-q1',
+        i18nKey: 'domains.socialMission.questions.q1.text',
         domainKey: 'social-mission',
         text: 'How would you rate the maturity of your social mission definition, integration, and impact measurement in line with the EU definition of WISEs?',
         type: 'maturity',
@@ -87,6 +93,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'sm-q2',
+        i18nKey: 'domains.socialMission.questions.q2.text',
         domainKey: 'social-mission',
         text: 'To what extent does your organisation prioritise social outcomes — particularly labour market integration for disadvantaged groups — alongside financial sustainability?',
         type: 'likert',
@@ -97,6 +104,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'sm-q3',
+        i18nKey: 'domains.socialMission.questions.q3.text',
         domainKey: 'social-mission',
         text: 'Describe your organisation\'s social mission and the specific populations or communities you serve, with reference to their risk of permanent labour market exclusion.',
         type: 'narrative',
@@ -108,6 +116,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'sm-q4',
+        i18nKey: 'domains.socialMission.questions.q4.text',
         domainKey: 'social-mission',
         text: 'What social outcomes have you achieved in the past 12 months? Provide specific evidence, drawing on ENSIE-aligned impact indicators where possible.',
         type: 'narrative',
@@ -119,6 +128,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'sm-q5',
+        i18nKey: 'domains.socialMission.questions.q5.text',
         domainKey: 'social-mission',
         text: 'How does your organisation contribute to the broader community beyond your direct participants, including alignment with EU social cohesion goals?',
         type: 'narrative',
@@ -142,6 +152,7 @@ export const DOMAINS: Domain[] = [
     questions: [
       {
         id: 'emp-q1',
+        i18nKey: 'domains.employment.questions.q1.text',
         domainKey: 'employment',
         text: 'How would you rate the maturity of your employment pathways — including supported employment, transitional employment, and professional reintegration support systems?',
         type: 'maturity',
@@ -152,6 +163,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'emp-q2',
+        i18nKey: 'domains.employment.questions.q2.text',
         domainKey: 'employment',
         text: 'To what extent does your organisation provide structured skill development and accredited training aligned with recognised qualification frameworks?',
         type: 'likert',
@@ -162,6 +174,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'emp-q3',
+        i18nKey: 'domains.employment.questions.q3.text',
         domainKey: 'employment',
         text: 'Describe the employment or social insertion model your organisation uses, including elements of supported employment, transitional employment, or professional reintegration.',
         type: 'narrative',
@@ -173,6 +186,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'emp-q4',
+        i18nKey: 'domains.employment.questions.q4.text',
         domainKey: 'employment',
         text: 'What transition outcomes have your participants achieved? Include data on professional reintegration and employment retention where available.',
         type: 'narrative',
@@ -184,6 +198,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'emp-q5',
+        i18nKey: 'domains.employment.questions.q5.text',
         domainKey: 'employment',
         text: 'Share an example of a participant\'s social insertion journey through your organisation, illustrating the pathway from exclusion to integration.',
         type: 'narrative',
@@ -207,6 +222,7 @@ export const DOMAINS: Domain[] = [
     questions: [
       {
         id: 'cul-q1',
+        i18nKey: 'domains.culture.questions.q1.text',
         domainKey: 'culture',
         text: 'How would you rate the maturity of your organisational culture in terms of inclusion, dignity, and participant agency — reflecting the values of the European Charter of Fundamental Rights?',
         type: 'maturity',
@@ -217,6 +233,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'cul-q2',
+        i18nKey: 'domains.culture.questions.q2.text',
         domainKey: 'culture',
         text: 'To what extent do participants have genuine voice and influence over their own work experience and support, consistent with EU rights-based approaches?',
         type: 'likert',
@@ -227,6 +244,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'cul-q3',
+        i18nKey: 'domains.culture.questions.q3.text',
         domainKey: 'culture',
         text: 'Describe how your organisation promotes dignity, respect, and non-discrimination in daily operations, aligned with the European Charter of Fundamental Rights.',
         type: 'narrative',
@@ -238,6 +256,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'cul-q4',
+        i18nKey: 'domains.culture.questions.q4.text',
         domainKey: 'culture',
         text: 'How do you invest in staff capacity and wellbeing to sustain a trauma-informed, rights-based organisational culture?',
         type: 'narrative',
@@ -249,6 +268,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'cul-q5',
+        i18nKey: 'domains.culture.questions.q5.text',
         domainKey: 'culture',
         text: 'Provide an example of how participant feedback has led to a meaningful change in your organisation, demonstrating genuine voice and agency.',
         type: 'narrative',
@@ -272,6 +292,7 @@ export const DOMAINS: Domain[] = [
     questions: [
       {
         id: 'eco-q1',
+        i18nKey: 'domains.economic.questions.q1.text',
         domainKey: 'economic',
         text: 'How would you rate the maturity of your financial sustainability and economic model within the EU social enterprise landscape?',
         type: 'maturity',
@@ -282,6 +303,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'eco-q2',
+        i18nKey: 'domains.economic.questions.q2.text',
         domainKey: 'economic',
         text: 'What proportion of your revenue comes from commercial trading (as opposed to grants, public subsidies, or ESF+ programme funding)?',
         type: 'likert',
@@ -292,6 +314,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'eco-q3',
+        i18nKey: 'domains.economic.questions.q3.text',
         domainKey: 'economic',
         text: 'Describe your organisation\'s revenue model and how you balance commercial activity with social mission, referencing relevant EU funding and procurement frameworks.',
         type: 'narrative',
@@ -303,6 +326,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'eco-q4',
+        i18nKey: 'domains.economic.questions.q4.text',
         domainKey: 'economic',
         text: 'What financial planning and risk management practices do you have in place to ensure long-term economic sustainability?',
         type: 'narrative',
@@ -314,6 +338,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'eco-q5',
+        i18nKey: 'domains.economic.questions.q5.text',
         domainKey: 'economic',
         text: 'How has your financial model evolved over time, and what are your plans for future sustainability within the evolving EU social economy landscape?',
         type: 'narrative',
@@ -337,6 +362,7 @@ export const DOMAINS: Domain[] = [
     questions: [
       {
         id: 'stk-q1',
+        i18nKey: 'domains.stakeholders.questions.q1.text',
         domainKey: 'stakeholders',
         text: 'How would you rate the maturity of your stakeholder engagement and partnership development, including engagement with EU-level WISE networks?',
         type: 'maturity',
@@ -347,6 +373,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'stk-q2',
+        i18nKey: 'domains.stakeholders.questions.q2.text',
         domainKey: 'stakeholders',
         text: 'How effectively does your organisation engage with employers for participant placement, social insertion, and sustained employment integration?',
         type: 'likert',
@@ -357,6 +384,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'stk-q3',
+        i18nKey: 'domains.stakeholders.questions.q3.text',
         domainKey: 'stakeholders',
         text: 'Describe your key external partnerships and how they support your social insertion mission, including any EU-funded collaborative projects.',
         type: 'narrative',
@@ -368,6 +396,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'stk-q4',
+        i18nKey: 'domains.stakeholders.questions.q4.text',
         domainKey: 'stakeholders',
         text: 'How do you engage with and contribute to the broader European WISE and social enterprise sector?',
         type: 'narrative',
@@ -379,6 +408,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'stk-q5',
+        i18nKey: 'domains.stakeholders.questions.q5.text',
         domainKey: 'stakeholders',
         text: 'Share an example of a partnership — local, national, or European — that has significantly enhanced your social impact.',
         type: 'narrative',
@@ -402,6 +432,7 @@ export const DOMAINS: Domain[] = [
     questions: [
       {
         id: 'sup-q1',
+        i18nKey: 'domains.support.questions.q1.text',
         domainKey: 'support',
         text: 'How would you rate the maturity of your support infrastructure, including wrap-around services and socio-professional accompaniment?',
         type: 'maturity',
@@ -412,6 +443,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'sup-q2',
+        i18nKey: 'domains.support.questions.q2.text',
         domainKey: 'support',
         text: 'To what extent does your organisation provide individualised, graduated accompaniment and support that adapts to participant needs over time?',
         type: 'likert',
@@ -422,6 +454,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'sup-q3',
+        i18nKey: 'domains.support.questions.q3.text',
         domainKey: 'support',
         text: 'Describe the range of support services and accompaniment your organisation provides or connects participants to.',
         type: 'narrative',
@@ -433,6 +466,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'sup-q4',
+        i18nKey: 'domains.support.questions.q4.text',
         domainKey: 'support',
         text: 'How do you ensure your services and accompaniment are accessible to diverse participants, including those with complex and multiple barriers?',
         type: 'narrative',
@@ -444,6 +478,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'sup-q5',
+        i18nKey: 'domains.support.questions.q5.text',
         domainKey: 'support',
         text: 'Share an example of how your support infrastructure and accompaniment made a critical difference for a participant facing complex barriers to social insertion.',
         type: 'narrative',
@@ -467,6 +502,7 @@ export const DOMAINS: Domain[] = [
     questions: [
       {
         id: 'im-q1',
+        i18nKey: 'domains.impactMeasurement.questions.q1.text',
         domainKey: 'impact-measurement',
         text: 'How would you rate the maturity of your impact measurement and organisational learning practices, considering EU frameworks such as ENSIE\'s Impact-WISEs and the European Social Enterprise Monitor (ESEM)?',
         type: 'maturity',
@@ -477,6 +513,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'im-q2',
+        i18nKey: 'domains.impactMeasurement.questions.q2.text',
         domainKey: 'impact-measurement',
         text: 'How systematically does your organisation collect and use outcome data to improve services, aligned with European impact measurement standards?',
         type: 'likert',
@@ -487,6 +524,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'im-q3',
+        i18nKey: 'domains.impactMeasurement.questions.q3.text',
         domainKey: 'impact-measurement',
         text: 'Describe your approach to measuring social impact and tracking participant outcomes, including any use of SROI, Theory of Change, or ENSIE\'s Impact-WISEs framework.',
         type: 'narrative',
@@ -498,6 +536,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'im-q4',
+        i18nKey: 'domains.impactMeasurement.questions.q4.text',
         domainKey: 'impact-measurement',
         text: 'How does your organisation use evidence and data to drive continuous improvement, in line with the EU Social Economy Action Plan\'s emphasis on learning organisations?',
         type: 'narrative',
@@ -509,6 +548,7 @@ export const DOMAINS: Domain[] = [
       },
       {
         id: 'im-q5',
+        i18nKey: 'domains.impactMeasurement.questions.q5.text',
         domainKey: 'impact-measurement',
         text: 'Provide an example of how data or evidence — including insights from SROI analysis, Theory of Change review, or ENSIE benchmarking — led to a significant improvement in your services or outcomes.',
         type: 'narrative',
@@ -517,6 +557,76 @@ export const DOMAINS: Domain[] = [
         weight: 0,
         placeholder: 'Share an example of data-driven improvement, referencing the measurement framework or methodology used...',
         tags: ['evidence-impact', 'evidence'],
+      },
+    ],
+  },
+
+  // ─── Domain 9: Environmental Sustainability & Green Transition ───
+  {
+    key: 'environmental-sustainability',
+    name: 'Environmental Sustainability & Green Transition',
+    shortName: 'Sustainability',
+    description: 'Environmental impact awareness, circular economy practices, green skills development, resource efficiency, and alignment with the EU Green Deal, European Climate Law, and the just transition framework — reflecting the WISESHIFT project\'s focus on WISEs that are inclusive AND sustainable by design.',
+    icon: 'GlobeEuropeAfricaIcon',
+    color: '#22C55E', // green
+    questions: [
+      {
+        id: 'env-q1',
+        i18nKey: 'domains.environmentalSustainability.questions.q1.text',
+        domainKey: 'environmental-sustainability',
+        text: 'How would you rate the maturity of your organisation\'s environmental sustainability practices, including awareness of the EU Green Deal and circular economy principles?',
+        type: 'maturity',
+        description: 'Consider whether environmental sustainability is embedded in your strategy, operations, and culture. The EU Green Deal aims for climate neutrality by 2050, and the European Climate Law makes this legally binding. The Circular Economy Action Plan (2020) promotes designing out waste through reuse, repair, and recycling — sectors where many WISEs already operate. The WISESHIFT Horizon Europe project (2025-2029) studies how WISEs can be both socially inclusive and environmentally sustainable.',
+        required: true,
+        weight: 1.5,
+        tags: ['green-transition', 'circular-economy'],
+      },
+      {
+        id: 'env-q2',
+        i18nKey: 'domains.environmentalSustainability.questions.q2.text',
+        domainKey: 'environmental-sustainability',
+        text: 'To what extent does your organisation measure and actively reduce its environmental impact (energy use, waste, emissions, resource consumption)?',
+        type: 'likert',
+        description: '1 = No environmental measurement or reduction efforts, 5 = Comprehensive environmental monitoring with published targets and demonstrated reductions. The EU Corporate Sustainability Reporting Directive (CSRD) is extending environmental reporting requirements across the economy. While most WISEs are below the CSRD thresholds, adopting basic environmental metrics demonstrates leadership and prepares for evolving expectations. The EU Taxonomy Regulation defines which activities qualify as environmentally sustainable.',
+        required: true,
+        weight: 1.0,
+        tags: ['environmental-impact', 'measurement'],
+      },
+      {
+        id: 'env-q3',
+        i18nKey: 'domains.environmentalSustainability.questions.q3.text',
+        domainKey: 'environmental-sustainability',
+        text: 'Describe how your organisation contributes to the circular economy or environmental sustainability through its productive activities, and how this intersects with your social mission.',
+        type: 'narrative',
+        description: 'Many WISEs operate in inherently circular sectors: repair, reuse, recycling, upcycling, urban agriculture, green maintenance, and renewable energy installation. Describe how your productive activities contribute to environmental goals while simultaneously providing work integration pathways. Reference the EU Circular Economy Action Plan (2020), the Right to Repair Directive, or the Waste Framework Directive where relevant. The WISESHIFT project specifically studies the intersection of social inclusion and environmental sustainability in WISEs.',
+        required: true,
+        weight: 0,
+        placeholder: 'Describe how your productive activities contribute to circular economy or environmental goals while supporting work integration...',
+        tags: ['circular-economy', 'social-environmental'],
+      },
+      {
+        id: 'env-q4',
+        i18nKey: 'domains.environmentalSustainability.questions.q4.text',
+        domainKey: 'environmental-sustainability',
+        text: 'How does your organisation develop green skills and environmental awareness among participants, staff, and the wider community?',
+        type: 'narrative',
+        description: 'The EU Green Deal emphasises that the green transition must be a just transition — creating opportunities for all, including disadvantaged workers. WISEs are uniquely positioned to develop green skills (energy efficiency, waste management, sustainable agriculture, eco-design) among populations at risk of exclusion. The European Skills Agenda includes green skills as a priority, and ESF+ funding supports green skills development. Describe any green skills training, environmental awareness programmes, or community environmental initiatives your organisation delivers.',
+        required: true,
+        weight: 0,
+        placeholder: 'Describe green skills training, environmental awareness programmes, or community initiatives your organisation provides...',
+        tags: ['green-skills', 'just-transition'],
+      },
+      {
+        id: 'env-q5',
+        i18nKey: 'domains.environmentalSustainability.questions.q5.text',
+        domainKey: 'environmental-sustainability',
+        text: 'Share an example of how your organisation has combined environmental sustainability with social inclusion — demonstrating that WISEs can be both green and inclusive by design.',
+        type: 'narrative',
+        description: 'The WISESHIFT Horizon Europe project is built on the premise that WISEs can simultaneously advance social inclusion and environmental sustainability. Provide a concrete example: a green product or service that creates work integration opportunities, an environmental initiative that engages disadvantaged communities, or a circular economy innovation that addresses both social and environmental challenges. This evidence is particularly valuable for EU policy-makers developing the just transition framework.',
+        required: false,
+        weight: 0,
+        placeholder: 'Share an example of combined environmental and social impact — demonstrating the "inclusive AND sustainable" WISE model...',
+        tags: ['dual-impact', 'evidence'],
       },
     ],
   },

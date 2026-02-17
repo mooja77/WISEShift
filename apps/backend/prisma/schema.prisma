@@ -8,17 +8,54 @@ datasource db {
 }
 
 model Organisation {
-  id             String       @id @default(cuid())
+  id             String        @id @default(cuid())
   name           String
-  accessCode     String       @unique
+  accessCode     String        @unique
   country        String?
   region         String?
   sector         String?
   size           String?
   legalStructure String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  assessments    Assessment[]
+  domainGoals    DomainGoal[]
+  wiseProfile    WISEProfile?
+}
+
+model DomainGoal {
+  id             String       @id @default(cuid())
+  organisationId String
+  domainKey      String
+  targetScore    Float
+  targetDate     DateTime?
+  notes          String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  assessments    Assessment[]
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, domainKey])
+}
+
+model WISEProfile {
+  id              String       @id @default(cuid())
+  organisationId  String       @unique
+  slug            String       @unique
+  isPublic        Boolean      @default(false)
+  bio             String?
+  logoUrl         String?
+  website         String?
+  socialLinks     String?      // JSON
+  foundingYear    Int?
+  targetPopulations String?    // JSON array
+  sectors         String?      // JSON array
+  country         String?
+  region          String?
+  maturitySummary String?      // JSON: { overall, level }
+  strengths       String?      // JSON array of top 3 domain names
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
 }
 
 model Assessment {
@@ -34,7 +71,9 @@ model Assessment {
   organisation         Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   responses            Response[]
   domainScores         DomainScore[]
+  sectorScores         SectorScore[]
   actionPlans          ActionPlan[]
+  groupAssignments     WorkingGroupAssignment[]
 }
 
 model Response {
@@ -89,6 +128,17 @@ model ActionPlan {
   completedAt    DateTime?
   createdAt      DateTime   @default(now())
   assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model SectorScore {
+  id           String     @id @default(cuid())
+  assessmentId String
+  sectorKey    String
+  score        Float
+  createdAt    DateTime   @default(now())
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, sectorKey])
 }
 
 model Benchmark {
@@ -214,4 +264,104 @@ model LayerShare {
   sharedWith     DashboardAccess @relation("sharedLayers", fields: [sharedWithId], references: [id], onDelete: Cascade)
 
   @@unique([codingLayerId, sharedWithId])
+}
+
+// ─── Phase 4A: Researcher Portal ───
+
+model ResearcherAccount {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  name             String
+  institution      String
+  accessLevel      String    @default("registered") // public | registered | approved
+  verificationCode String?
+  verified         Boolean   @default(false)
+  ethicsApproval   String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  dataAccessLogs   DataAccessLog[]
+}
+
+model DataAccessLog {
+  id           String            @id @default(cuid())
+  researcherId String
+  endpoint     String
+  queryParams  String?           // JSON
+  resultCount  Int?
+  createdAt    DateTime          @default(now())
+  researcher   ResearcherAccount @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+}
+
+// ─── Phase 4C: Working Group Collaboration ───
+
+model WorkingGroup {
+  id          String                 @id @default(cuid())
+  name        String
+  description String?
+  sector      String?
+  createdBy   String                 // access code of creator
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  members     WorkingGroupMember[]
+  assignments WorkingGroupAssignment[]
+  discussions Discussion[]
+  documents   DocumentLink[]
+  activities  ActivityEntry[]
+}
+
+model WorkingGroupMember {
+  id             String       @id @default(cuid())
+  workingGroupId String
+  accessCode     String       // organisation access code
+  displayName    String
+  role           String       @default("member") // admin | member | observer
+  joinedAt       DateTime     @default(now())
+  workingGroup   WorkingGroup @relation(fields: [workingGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([workingGroupId, accessCode])
+}
+
+model WorkingGroupAssignment {
+  id             String       @id @default(cuid())
+  workingGroupId String
+  assessmentId   String
+  assignedBy     String       // access code
+  assignedAt     DateTime     @default(now())
+  workingGroup   WorkingGroup @relation(fields: [workingGroupId], references: [id], onDelete: Cascade)
+  assessment     Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@unique([workingGroupId, assessmentId])
+}
+
+model Discussion {
+  id             String       @id @default(cuid())
+  workingGroupId String
+  authorName     String
+  title          String?
+  content        String
+  parentId       String?      // for threaded replies
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  workingGroup   WorkingGroup @relation(fields: [workingGroupId], references: [id], onDelete: Cascade)
+}
+
+model DocumentLink {
+  id             String       @id @default(cuid())
+  workingGroupId String
+  title          String
+  url            String
+  description    String?
+  addedBy        String       // display name
+  createdAt      DateTime     @default(now())
+  workingGroup   WorkingGroup @relation(fields: [workingGroupId], references: [id], onDelete: Cascade)
+}
+
+model ActivityEntry {
+  id             String       @id @default(cuid())
+  workingGroupId String
+  actorName      String
+  action         String       // joined | posted | assigned | uploaded | commented
+  detail         String?
+  createdAt      DateTime     @default(now())
+  workingGroup   WorkingGroup @relation(fields: [workingGroupId], references: [id], onDelete: Cascade)
 }

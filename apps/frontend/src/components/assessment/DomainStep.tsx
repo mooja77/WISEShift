@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Domain, ResponseInput } from '@wiseshift/shared';
 import QuestionRenderer from './QuestionRenderer';
 import HelpTooltip from '../common/HelpTooltip';
@@ -22,11 +23,18 @@ function getDisplayValue(
   return response.numericValue;
 }
 
+// Convert domain key to camelCase i18n key (e.g., 'social-mission' → 'socialMission')
+function domainI18nKey(key: string): string {
+  return key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+}
+
 export default function DomainStep({
   domain,
   responses,
   onResponseChange,
 }: DomainStepProps) {
+  const { t } = useTranslation();
+  const i18nPrefix = `domains.${domainI18nKey(domain.key)}`;
   const answeredCount = domain.questions.filter(
     (q) => responses[q.id] !== undefined
   ).length;
@@ -49,10 +57,10 @@ export default function DomainStep({
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
-                {domain.name}
+                {t(`${i18nPrefix}.name`, domain.name)}
                 <HelpTooltip tooltipKey={`help.domain.${domain.key}`} />
               </h2>
-              <p className="mt-0.5 text-sm text-gray-500">{domain.description}</p>
+              <p className="mt-0.5 text-sm text-gray-500">{t(`${i18nPrefix}.description`, domain.description)}</p>
             </div>
             {/* Progress indicator */}
             <div className="shrink-0 text-right">
