@@ -196,7 +196,7 @@ if (IS_PRODUCTION) {
 
   // SPA catch-all: serve index.html for non-API routes
   app.get('*', (req: Request, res: Response, next: NextFunction) => {
-    if (req.path.startsWith('/api')) {
+    if (req.path.startsWith('/api/') || req.path === '/api') {
       return next();
     }
     res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
