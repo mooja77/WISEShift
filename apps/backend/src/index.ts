@@ -22,6 +22,8 @@ import { publicApiRoutes } from './routes/publicApi.js';
 import { registryRoutes } from './routes/registry.js';
 import { researcherRoutes } from './routes/researchers.js';
 import { workingGroupRoutes } from './routes/workingGroups.js';
+import { adminRoutes } from './routes/admin.js';
+import { canvasRoutes } from './routes/canvasRoutes.js';
 import { researchAuth } from './middleware/researchAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { auditLog } from './middleware/auditLog.js';
@@ -155,6 +157,7 @@ app.use('/api/assessments', reportRoutes);
 app.use('/api/assessments', exportsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/research', researchAuth, researchRoutes);
+app.use('/api/research', researchAuth, canvasRoutes);
 
 // ----- Versioned Research API (Phase 6D) -----
 const researchApiLimiter = rateLimit({
@@ -189,6 +192,15 @@ app.use('/api/researchers', researcherLimiter, auditLog, researcherRoutes);
 
 // ----- Working Group Collaboration -----
 app.use('/api/working-groups', auditLog, workingGroupRoutes);
+
+// ----- Admin Bulk Import -----
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/admin', adminLimiter, adminRoutes);
 
 // ----- Production: serve frontend static build -----
 if (IS_PRODUCTION) {

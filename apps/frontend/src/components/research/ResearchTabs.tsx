@@ -11,6 +11,7 @@ const TABS = [
   { key: 'trends' as const, label: 'Trends' },
   { key: 'layers' as const, label: 'Layers' },
   { key: 'exports' as const, label: 'Exports' },
+  { key: 'canvas' as const, label: 'Coding Canvas' },
 ] as const;
 
 export default function ResearchTabs() {

@@ -15,6 +15,7 @@ import IRRPanel from '../components/research/IRRPanel';
 import TrendsPanel from '../components/research/TrendsPanel';
 import ExportPanel from '../components/research/ExportPanel';
 import LayerManager from '../components/research/LayerManager';
+import CodingCanvas from '../components/canvas/CodingCanvas';
 import toast from 'react-hot-toast';
 
 export default function ResearchPage() {
@@ -85,9 +86,11 @@ export default function ResearchPage() {
     );
   }
 
+  const isCanvasTab = activeTab === 'canvas';
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className={isCanvasTab ? 'px-4 py-4' : 'mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'}>
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
@@ -106,7 +109,7 @@ export default function ResearchPage() {
         <ResearchTabs />
 
         {/* Tab content */}
-        <div className="mt-6">
+        <div className={isCanvasTab ? 'mt-2' : 'mt-6'}>
           {activeTab === 'explorer' && <NarrativeExplorer />}
           {activeTab === 'heatmap' && <ThemeHeatmap />}
           {activeTab === 'quotes' && <QuoteBoard />}
@@ -117,6 +120,7 @@ export default function ResearchPage() {
           {activeTab === 'trends' && <TrendsPanel />}
           {activeTab === 'layers' && <LayerManager />}
           {activeTab === 'exports' && <ExportPanel />}
+          {activeTab === 'canvas' && <CodingCanvas />}
         </div>
       </div>
     </div>

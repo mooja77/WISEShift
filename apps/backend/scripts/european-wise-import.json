@@ -1,0 +1,78 @@
+{
+  "format": "simplified",
+  "dryRun": false,
+  "assessments": [
+    {
+      "organisation": { "name": "Kooperativ Kreislauf e.G.", "country": "Germany", "region": "North Rhine-Westphalia", "sector": "Circular Economy & Reuse", "size": "51-200 employees", "legalStructure": "Cooperative / SCE (European Cooperative Society)" },
+      "domainScores": { "governance": 4.0, "social-mission": 4.6, "employment": 3.6, "culture": 4.0, "economic": 3.0, "stakeholders": 3.6, "support": 3.4, "impact-measurement": 3.0, "environmental-sustainability": 4.2 }
+    },
+    {
+      "organisation": { "name": "Les Jardins Solidaires SCOP", "country": "France", "region": "Ile-de-France", "sector": "Agriculture & Market Gardens", "size": "11-50 employees", "legalStructure": "Cooperative / SCE (European Cooperative Society)" },
+      "domainScores": { "governance": 3.0, "social-mission": 3.6, "employment": 2.6, "culture": 3.0, "economic": 2.0, "stakeholders": 2.6, "support": 3.0, "impact-measurement": 2.0, "environmental-sustainability": 3.8 }
+    },
+    {
+      "organisation": { "name": "Cooperativa Sociale Il Ponte", "country": "Italy", "region": "Lombardy", "sector": "Social Care & Health", "size": "201-500 employees", "legalStructure": "Cooperative / SCE (European Cooperative Society)" },
+      "domainScores": { "governance": 3.6, "social-mission": 4.0, "employment": 3.0, "culture": 4.0, "economic": 2.0, "stakeholders": 3.0, "support": 3.6, "impact-measurement": 2.6, "environmental-sustainability": 2.4 }
+    },
+    {
+      "organisation": { "name": "Empresa de Insercion Futuro Verde S.L.", "country": "Spain", "region": "Basque Country", "sector": "Green & Environmental Services", "size": "11-50 employees", "legalStructure": "Social Enterprise" },
+      "domainScores": { "governance": 2.4, "social-mission": 3.0, "employment": 2.4, "culture": 2.6, "economic": 2.0, "stakeholders": 3.0, "support": 2.0, "impact-measurement": 2.0, "environmental-sustainability": 3.6 }
+    },
+    {
+      "organisation": { "name": "ReStore Solidaire SC", "country": "Belgium", "region": "Wallonia", "sector": "Second-Hand & Social Retail", "size": "11-50 employees", "legalStructure": "Social Enterprise" },
+      "domainScores": { "governance": 3.0, "social-mission": 3.4, "employment": 3.0, "culture": 3.0, "economic": 3.0, "stakeholders": 2.4, "support": 2.6, "impact-measurement": 2.0, "environmental-sustainability": 3.2 }
+    },
+    {
+      "organisation": { "name": "Stichting Werkplaats Nieuw Perspectief", "country": "Netherlands", "region": "South Holland", "sector": "Construction & Trades", "size": "11-50 employees", "legalStructure": "Foundation" },
+      "domainScores": { "governance": 2.0, "social-mission": 2.4, "employment": 2.6, "culture": 2.0, "economic": 1.6, "stakeholders": 1.4, "support": 2.0, "impact-measurement": 1.0, "environmental-sustainability": 1.8 }
+    },
+    {
+      "organisation": { "name": "Socialokonomisk Cafe Faellesskabet", "country": "Denmark", "region": "Capital Region", "sector": "Food & Hospitality", "size": "1-10 employees", "legalStructure": "Social Enterprise" },
+      "domainScores": { "governance": 1.6, "social-mission": 2.0, "employment": 2.0, "culture": 2.6, "economic": 1.4, "stakeholders": 1.6, "support": 2.0, "impact-measurement": 1.0, "environmental-sustainability": 2.0 }
+    },
+    {
+      "organisation": { "name": "Emmaus Solidarite SCOP", "country": "France", "region": "Nouvelle-Aquitaine", "sector": "Circular Economy & Reuse", "size": "51-200 employees", "legalStructure": "Cooperative / SCE (European Cooperative Society)" },
+      "domainScores": { "governance": 4.2, "social-mission": 4.4, "employment": 3.8, "culture": 4.2, "economic": 3.2, "stakeholders": 3.8, "support": 3.6, "impact-measurement": 3.4, "environmental-sustainability": 4.4 }
+    },
+    {
+      "organisation": { "name": "Fundacion Trinijove", "country": "Spain", "region": "Catalonia", "sector": "Food & Hospitality", "size": "51-200 employees", "legalStructure": "Foundation" },
+      "domainScores": { "governance": 3.8, "social-mission": 4.2, "employment": 3.4, "culture": 3.8, "economic": 3.2, "stakeholders": 3.6, "support": 3.2, "impact-measurement": 3.0, "environmental-sustainability": 3.4 }
+    },
+    {
+      "organisation": { "name": "Werkstatt Bremen GmbH", "country": "Germany", "region": "Bremen", "sector": "Digital & ICT Services", "size": "51-200 employees", "legalStructure": "Social Enterprise" },
+      "domainScores": { "governance": 3.4, "social-mission": 3.8, "employment": 3.6, "culture": 3.4, "economic": 3.8, "stakeholders": 3.2, "support": 2.8, "impact-measurement": 3.2, "environmental-sustainability": 3.0 }
+    },
+    {
+      "organisation": { "name": "Collectif T.E.S.S. SARL-S", "country": "Luxembourg", "region": "Luxembourg", "sector": "Green & Environmental Services", "size": "11-50 employees", "legalStructure": "Social Enterprise" },
+      "domainScores": { "governance": 3.6, "social-mission": 4.0, "employment": 3.2, "culture": 3.8, "economic": 2.8, "stakeholders": 3.0, "support": 3.0, "impact-measurement": 2.8, "environmental-sustainability": 4.0 }
+    },
+    {
+      "organisation": { "name": "Cooperativa Sociale Camelot", "country": "Italy", "region": "Veneto", "sector": "Agriculture & Market Gardens", "size": "11-50 employees", "legalStructure": "Cooperative / SCE (European Cooperative Society)" },
+      "domainScores": { "governance": 3.2, "social-mission": 3.6, "employment": 2.8, "culture": 3.4, "economic": 2.4, "stakeholders": 2.8, "support": 2.4, "impact-measurement": 2.2, "environmental-sustainability": 3.6 }
+    },
+    {
+      "organisation": { "name": "Resurse Partajate Asociatia", "country": "Romania", "region": "Bucharest", "sector": "Digital & ICT Services", "size": "1-10 employees", "legalStructure": "Association" },
+      "domainScores": { "governance": 2.2, "social-mission": 2.8, "employment": 2.0, "culture": 2.4, "economic": 2.2, "stakeholders": 2.0, "support": 1.8, "impact-measurement": 1.4, "environmental-sustainability": 1.6 }
+    },
+    {
+      "organisation": { "name": "Samhall AB Goteborg", "country": "Sweden", "region": "Vastra Gotaland", "sector": "Construction & Trades", "size": "201-500 employees", "legalStructure": "Social Enterprise" },
+      "domainScores": { "governance": 4.4, "social-mission": 4.6, "employment": 4.0, "culture": 4.2, "economic": 3.8, "stakeholders": 3.8, "support": 3.6, "impact-measurement": 3.8, "environmental-sustainability": 3.4 }
+    },
+    {
+      "organisation": { "name": "Kofoeds Skole", "country": "Denmark", "region": "Capital Region", "sector": "Food & Hospitality", "size": "51-200 employees", "legalStructure": "Foundation" },
+      "domainScores": { "governance": 3.6, "social-mission": 4.2, "employment": 3.0, "culture": 3.8, "economic": 2.4, "stakeholders": 3.2, "support": 3.4, "impact-measurement": 2.8, "environmental-sustainability": 2.6 }
+    },
+    {
+      "organisation": { "name": "Grupo Gureak S.Coop.", "country": "Spain", "region": "Basque Country", "sector": "Social Care & Health", "size": "500+ employees", "legalStructure": "Cooperative / SCE (European Cooperative Society)" },
+      "domainScores": { "governance": 4.5, "social-mission": 4.8, "employment": 4.0, "culture": 4.3, "economic": 3.8, "stakeholders": 4.0, "support": 3.5, "impact-measurement": 4.2, "environmental-sustainability": 3.6 }
+    },
+    {
+      "organisation": { "name": "Jardin de Cocagne de Liege ASBL", "country": "Belgium", "region": "Wallonia", "sector": "Agriculture & Market Gardens", "size": "11-50 employees", "legalStructure": "Association" },
+      "domainScores": { "governance": 3.0, "social-mission": 3.8, "employment": 2.8, "culture": 3.2, "economic": 2.2, "stakeholders": 3.0, "support": 2.8, "impact-measurement": 2.4, "environmental-sustainability": 4.2 }
+    },
+    {
+      "organisation": { "name": "Grunhof Wien GmbH", "country": "Austria", "region": "Vienna", "sector": "Green & Environmental Services", "size": "11-50 employees", "legalStructure": "Social Enterprise" },
+      "domainScores": { "governance": 3.4, "social-mission": 3.6, "employment": 3.0, "culture": 3.2, "economic": 2.8, "stakeholders": 3.0, "support": 2.6, "impact-measurement": 2.6, "environmental-sustainability": 4.0 }
+    }
+  ]
+}

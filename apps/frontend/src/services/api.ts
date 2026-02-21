@@ -5,6 +5,22 @@ import type {
   CreateHighlightInput,
   UpsertNoteInput,
   CreateQuotePinInput,
+  CreateCanvasInput,
+  CreateTranscriptInput,
+  UpdateTranscriptInput,
+  CreateQuestionInput,
+  UpdateQuestionInput,
+  CreateMemoInput,
+  UpdateMemoInput,
+  CreateCodingInput,
+  UpdateCodingInput,
+  SaveLayoutInput,
+  CreateCaseInput,
+  UpdateCaseInput,
+  CreateRelationInput,
+  CreateComputedNodeInput,
+  UpdateComputedNodeInput,
+  AutoCodeInput,
 } from '@wiseshift/shared';
 
 const api = axios.create({
@@ -385,6 +401,96 @@ export const researchApi = {
 
   compareLayers: (layerId1: string, layerId2: string) =>
     researchClient.post('/layers/compare', { layerId1, layerId2 }),
+
+  // ─── Coding Canvas ───
+  getCanvases: () =>
+    researchClient.get('/canvas'),
+
+  createCanvas: (data: CreateCanvasInput) =>
+    researchClient.post('/canvas', data),
+
+  getCanvas: (canvasId: string) =>
+    researchClient.get(`/canvas/${canvasId}`),
+
+  updateCanvas: (canvasId: string, data: Partial<CreateCanvasInput>) =>
+    researchClient.put(`/canvas/${canvasId}`, data),
+
+  deleteCanvas: (canvasId: string) =>
+    researchClient.delete(`/canvas/${canvasId}`),
+
+  addTranscript: (canvasId: string, data: CreateTranscriptInput) =>
+    researchClient.post(`/canvas/${canvasId}/transcripts`, data),
+
+  updateTranscript: (canvasId: string, tid: string, data: UpdateTranscriptInput) =>
+    researchClient.put(`/canvas/${canvasId}/transcripts/${tid}`, data),
+
+  deleteTranscript: (canvasId: string, tid: string) =>
+    researchClient.delete(`/canvas/${canvasId}/transcripts/${tid}`),
+
+  addQuestion: (canvasId: string, data: CreateQuestionInput) =>
+    researchClient.post(`/canvas/${canvasId}/questions`, data),
+
+  updateQuestion: (canvasId: string, qid: string, data: UpdateQuestionInput) =>
+    researchClient.put(`/canvas/${canvasId}/questions/${qid}`, data),
+
+  deleteQuestion: (canvasId: string, qid: string) =>
+    researchClient.delete(`/canvas/${canvasId}/questions/${qid}`),
+
+  addMemo: (canvasId: string, data: CreateMemoInput) =>
+    researchClient.post(`/canvas/${canvasId}/memos`, data),
+
+  updateMemo: (canvasId: string, mid: string, data: UpdateMemoInput) =>
+    researchClient.put(`/canvas/${canvasId}/memos/${mid}`, data),
+
+  deleteMemo: (canvasId: string, mid: string) =>
+    researchClient.delete(`/canvas/${canvasId}/memos/${mid}`),
+
+  createCoding: (canvasId: string, data: CreateCodingInput) =>
+    researchClient.post(`/canvas/${canvasId}/codings`, data),
+
+  deleteCoding: (canvasId: string, codingId: string) =>
+    researchClient.delete(`/canvas/${canvasId}/codings/${codingId}`),
+
+  saveLayout: (canvasId: string, data: SaveLayoutInput) =>
+    researchClient.put(`/canvas/${canvasId}/layout`, data),
+
+  // Coding updates (annotations)
+  updateCoding: (canvasId: string, codingId: string, data: UpdateCodingInput) =>
+    researchClient.put(`/canvas/${canvasId}/codings/${codingId}`, data),
+
+  // Cases
+  createCase: (canvasId: string, data: CreateCaseInput) =>
+    researchClient.post(`/canvas/${canvasId}/cases`, data),
+
+  updateCase: (canvasId: string, caseId: string, data: UpdateCaseInput) =>
+    researchClient.put(`/canvas/${canvasId}/cases/${caseId}`, data),
+
+  deleteCase: (canvasId: string, caseId: string) =>
+    researchClient.delete(`/canvas/${canvasId}/cases/${caseId}`),
+
+  // Relations
+  createRelation: (canvasId: string, data: CreateRelationInput) =>
+    researchClient.post(`/canvas/${canvasId}/relations`, data),
+
+  deleteRelation: (canvasId: string, relId: string) =>
+    researchClient.delete(`/canvas/${canvasId}/relations/${relId}`),
+
+  // Computed Nodes
+  createComputedNode: (canvasId: string, data: CreateComputedNodeInput) =>
+    researchClient.post(`/canvas/${canvasId}/computed`, data),
+
+  updateComputedNode: (canvasId: string, nodeId: string, data: UpdateComputedNodeInput) =>
+    researchClient.put(`/canvas/${canvasId}/computed/${nodeId}`, data),
+
+  deleteComputedNode: (canvasId: string, nodeId: string) =>
+    researchClient.delete(`/canvas/${canvasId}/computed/${nodeId}`),
+
+  runComputedNode: (canvasId: string, nodeId: string) =>
+    researchClient.post(`/canvas/${canvasId}/computed/${nodeId}/run`),
+
+  // Auto-Code
+  autoCode: (canvasId: string, data: AutoCodeInput) =>
+    researchClient.post(`/canvas/${canvasId}/auto-code`, data),
 };
 
 // Researcher Portal API

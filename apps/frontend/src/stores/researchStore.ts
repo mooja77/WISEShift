@@ -11,7 +11,8 @@ type ResearchTab =
   | 'irr'
   | 'trends'
   | 'layers'
-  | 'exports';
+  | 'exports'
+  | 'canvas';
 
 interface ResearchState {
   dashboardCode: string | null;
