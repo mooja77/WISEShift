@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useResearchStore } from '../stores/researchStore';
 import { dashboardApi } from '../services/api';
 import { useTour } from '../hooks/useTour';
-import { researchTourSteps } from '../config/tourSteps';
+import { researchTourSteps, canvasTourSteps } from '../config/tourSteps';
 import ResearchTabs from '../components/research/ResearchTabs';
 import NarrativeExplorer from '../components/research/NarrativeExplorer';
 import ThemeHeatmap from '../components/research/ThemeHeatmap';
@@ -25,6 +25,7 @@ export default function ResearchPage() {
   const [loading, setLoading] = useState(false);
 
   const { hasSeenTour, startTour } = useTour('research', researchTourSteps);
+  const { hasSeenTour: hasSeenCanvasTour, startTour: startCanvasTour } = useTour('canvas', canvasTourSteps);
 
   useEffect(() => {
     if (authenticated && !hasSeenTour) {
@@ -32,6 +33,14 @@ export default function ResearchPage() {
       return () => clearTimeout(timeout);
     }
   }, [authenticated, hasSeenTour, startTour]);
+
+  // Auto-trigger canvas tour on first visit to canvas tab
+  useEffect(() => {
+    if (authenticated && activeTab === 'canvas' && !hasSeenCanvasTour) {
+      const timeout = setTimeout(startCanvasTour, 600);
+      return () => clearTimeout(timeout);
+    }
+  }, [authenticated, activeTab, hasSeenCanvasTour, startCanvasTour]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();

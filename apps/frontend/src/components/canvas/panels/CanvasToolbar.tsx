@@ -51,7 +51,7 @@ export default function CanvasToolbar() {
 
   return (
     <>
-      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
+      <div data-tour="canvas-toolbar" className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
         <div className="flex items-center gap-3">
           <button
             onClick={closeCanvas}
@@ -89,6 +89,7 @@ export default function CanvasToolbar() {
           ) : (
             <>
               <button
+                data-tour="canvas-btn-transcript"
                 onClick={() => setShowTranscriptModal(true)}
                 className="flex items-center gap-1.5 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
               >
@@ -98,6 +99,7 @@ export default function CanvasToolbar() {
                 Transcript
               </button>
               <button
+                data-tour="canvas-btn-question"
                 onClick={() => setShowQuestionInput(true)}
                 className="flex items-center gap-1.5 rounded-md bg-purple-50 px-3 py-1.5 text-xs font-medium text-purple-700 hover:bg-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
               >
@@ -107,6 +109,7 @@ export default function CanvasToolbar() {
                 Question
               </button>
               <button
+                data-tour="canvas-btn-memo"
                 onClick={handleAddMemo}
                 className="flex items-center gap-1.5 rounded-md bg-yellow-50 px-3 py-1.5 text-xs font-medium text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-900/50"
               >
@@ -121,6 +124,7 @@ export default function CanvasToolbar() {
 
               {/* Auto-Code button */}
               <button
+                data-tour="canvas-btn-autocode"
                 onClick={() => setShowAutoCode(true)}
                 className="flex items-center gap-1.5 rounded-md bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
               >
@@ -132,6 +136,7 @@ export default function CanvasToolbar() {
 
               {/* Cases button */}
               <button
+                data-tour="canvas-btn-cases"
                 onClick={() => setShowCaseManager(true)}
                 className="flex items-center gap-1.5 rounded-md bg-teal-50 px-3 py-1.5 text-xs font-medium text-teal-700 hover:bg-teal-100 dark:bg-teal-900/30 dark:text-teal-300 dark:hover:bg-teal-900/50"
               >
@@ -143,6 +148,7 @@ export default function CanvasToolbar() {
 
               {/* Hierarchy button */}
               <button
+                data-tour="canvas-btn-hierarchy"
                 onClick={() => setShowHierarchy(true)}
                 className="flex items-center gap-1.5 rounded-md bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               >
@@ -154,6 +160,7 @@ export default function CanvasToolbar() {
 
               {/* Coding Stripes toggle */}
               <button
+                data-tour="canvas-btn-stripes"
                 onClick={toggleCodingStripes}
                 className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${showCodingStripes
                   ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300'

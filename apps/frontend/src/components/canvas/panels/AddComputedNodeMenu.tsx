@@ -37,7 +37,7 @@ export default function AddComputedNodeMenu() {
   };
 
   return (
-    <div className="relative" ref={ref}>
+    <div data-tour="canvas-btn-query" className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50"

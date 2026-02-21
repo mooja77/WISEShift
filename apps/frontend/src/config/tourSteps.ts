@@ -245,7 +245,7 @@ export const researchTourSteps: DriveStep[] = [
     },
   },
   {
-    element: '[role="tablist"], .flex.flex-wrap.gap-2',
+    element: '[data-tour="research-tabs"]',
     popover: {
       title: 'Research Tools',
       description: 'Switch between tools: explore narrative responses, view theme heatmaps, run statistical analyses, and export data for tools like NVivo.',
@@ -268,6 +268,19 @@ export const researchTourSteps: DriveStep[] = [
     popover: {
       title: 'Export for Research',
       description: 'Use the Exports tab to download data in CSV, Excel, or JSON format. Qualitative exports are formatted for direct import into NVivo or ATLAS.ti.',
+    },
+  },
+  {
+    element: '[data-tour="research-tab-canvas"]',
+    popover: {
+      title: 'Coding Canvas',
+      description: 'This tab opens a visual coding workspace — like a digital whiteboard for analysing interview transcripts. Click it to create canvases and start coding.',
+    },
+  },
+  {
+    popover: {
+      title: 'Canvas Features',
+      description: 'Inside the Coding Canvas you can add transcripts, create research questions, auto-code text, group by cases, and run queries like word clouds and statistics.',
     },
   },
 ];
@@ -320,6 +333,108 @@ export const methodologyTourSteps: DriveStep[] = [
     popover: {
       title: 'EU Policy Alignment',
       description: 'The assessment supports alignment with the EU Social Economy Action Plan, the European Pillar of Social Rights, and the UN Sustainable Development Goals.',
+    },
+  },
+];
+
+export const canvasTourSteps: DriveStep[] = [
+  {
+    popover: {
+      title: 'Welcome to the Coding Canvas',
+      description: 'This is your visual workspace for analysing interview transcripts. Think of it as a digital whiteboard where you can organise, code, and explore qualitative data.',
+    },
+  },
+  {
+    element: '[data-tour="canvas-btn-transcript"]',
+    popover: {
+      title: 'Add Your Interview Text',
+      description: 'Click here to paste in an interview transcript or any text you want to analyse. You can add as many as you need.',
+    },
+  },
+  {
+    element: '[data-tour="canvas-btn-question"]',
+    popover: {
+      title: 'Create Research Questions',
+      description: 'Add the questions you want to explore. These become colour-coded labels you can attach to parts of your transcripts.',
+    },
+  },
+  {
+    element: '[data-tour="canvas-btn-memo"]',
+    popover: {
+      title: 'Jot Down Notes',
+      description: 'Click here to create a memo — a sticky note for your thoughts, observations, or ideas as you analyse.',
+    },
+  },
+  {
+    element: '[data-tour="canvas-flow-area"]',
+    popover: {
+      title: 'Your Workspace',
+      description: 'This is where everything lives. Drag items around, zoom in and out, and draw connections between transcripts and questions to code your data.',
+    },
+  },
+  {
+    element: '[data-tour="canvas-btn-autocode"]',
+    popover: {
+      title: 'Auto-Code Your Transcripts',
+      description: 'Let the tool scan your text for keywords and patterns automatically. It highlights matching passages so you can review and approve them.',
+    },
+  },
+  {
+    element: '[data-tour="canvas-btn-cases"]',
+    popover: {
+      title: 'Group by Case',
+      description: 'Create cases to group transcripts by participant, site, or any category. This helps you compare across different people or places.',
+    },
+  },
+  {
+    element: '[data-tour="canvas-btn-hierarchy"]',
+    popover: {
+      title: 'Organise into Themes',
+      description: 'Build a hierarchy of your research questions — group related questions under broader themes to see the big picture.',
+    },
+  },
+  {
+    element: '[data-tour="canvas-btn-stripes"]',
+    popover: {
+      title: 'Coding Stripes',
+      description: 'Toggle this to see coloured stripes alongside your transcripts, showing which parts have been coded and to which questions.',
+    },
+  },
+  {
+    element: '[data-tour="canvas-btn-query"]',
+    popover: {
+      title: 'Run Analysis Queries',
+      description: 'Add analysis nodes like word clouds, statistics, framework matrices, and more. Each one appears as a card you can position on the canvas.',
+    },
+  },
+  {
+    popover: {
+      title: 'Coding: Connect Transcript to Question',
+      description: 'To code text, select a passage in a transcript, then drag a line from the transcript to a question. The coded segment will be saved automatically.',
+    },
+  },
+  {
+    popover: {
+      title: 'Detail Panel',
+      description: 'When you click a question node, a panel opens on the right showing all the text segments you have coded to that question. You can annotate or remove codings here.',
+    },
+  },
+  {
+    popover: {
+      title: 'Relations Between Items',
+      description: 'Drag a line between two cases or two questions to create a relationship — like "supports", "contradicts", or "influences".',
+    },
+  },
+  {
+    popover: {
+      title: 'Works in Dark Mode',
+      description: 'Everything on the canvas works in both light and dark mode. Use the moon/sun button in the top navigation to switch.',
+    },
+  },
+  {
+    popover: {
+      title: 'You Are Ready to Analyse!',
+      description: 'Start by adding a transcript and a research question, then code away. You can always come back — your work is saved automatically.',
     },
   },
 ];

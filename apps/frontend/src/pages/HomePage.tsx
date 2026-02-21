@@ -107,7 +107,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
       {/* Hero Section */}
       <div className="mx-auto max-w-7xl px-4 pt-16 pb-12 sm:px-6 lg:px-8">
-        <div className="text-center">
+        <div data-tour="home-hero" className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl md:text-6xl">
             <span className="block">{t('home.title')}</span>
             <span className="block text-brand-600">{t('home.subtitle')}</span>
@@ -118,7 +118,7 @@ export default function HomePage() {
         </div>
 
         {/* Domain Overview Cards */}
-        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
+        <div data-tour="home-domains" className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
           {DOMAINS.map((domain) => (
             <div
               key={domain.key}
@@ -166,7 +166,7 @@ export default function HomePage() {
           )}
 
           {/* Start New Assessment */}
-          <div className="card lg:col-span-2">
+          <div data-tour="home-start-form" className="card lg:col-span-2">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('home.startNew')}</h2>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               {t('home.startNewDescription')}
@@ -287,7 +287,7 @@ export default function HomePage() {
         </div>
 
         {/* Demo Exploration */}
-        <div className="mt-12 rounded-xl border border-brand-200 bg-brand-50/50 p-6 dark:border-brand-800 dark:bg-brand-900/20">
+        <div data-tour="home-demo" className="mt-12 rounded-xl border border-brand-200 bg-brand-50/50 p-6 dark:border-brand-800 dark:bg-brand-900/20">
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
             Explore with Demo Data
           </h2>

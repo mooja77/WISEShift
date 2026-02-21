@@ -18,11 +18,12 @@ export default function ResearchTabs() {
   const { activeTab, setActiveTab } = useResearchStore();
 
   return (
-    <div className="border-b border-gray-200 dark:border-gray-700">
+    <div data-tour="research-tabs" className="border-b border-gray-200 dark:border-gray-700">
       <nav className="-mb-px flex overflow-x-auto scrollbar-hide" aria-label="Research workspace tabs">
         {TABS.map(tab => (
           <button
             key={tab.key}
+            data-tour={`research-tab-${tab.key}`}
             onClick={() => setActiveTab(tab.key)}
             className={`whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium transition-colors shrink-0 ${
               activeTab === tab.key

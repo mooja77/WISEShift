@@ -114,7 +114,7 @@ export default function DashboardPage() {
         <p className="mt-1 text-gray-600 dark:text-gray-400">Aggregate view across all completed assessments, aligned with EU social economy frameworks</p>
 
         {/* Stats */}
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div data-tour="dash-stats" className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="card text-center">
             <p className="text-3xl font-bold text-brand-600">{overview.completedAssessments}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
@@ -146,7 +146,7 @@ export default function DashboardPage() {
         )}
 
         {/* Two columns */}
-        <div className="mt-8 grid gap-8 lg:grid-cols-2">
+        <div data-tour="dash-distributions" className="mt-8 grid gap-8 lg:grid-cols-2">
           {/* Maturity Distribution */}
           <div className="card">
             <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Maturity Distribution</h2>
@@ -211,7 +211,7 @@ export default function DashboardPage() {
         )}
 
         {/* Compare Assessments & Research Links */}
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div data-tour="dash-actions" className="mt-8 flex flex-wrap gap-3">
           <button
             onClick={() => navigate('/comparison')}
             className="btn-secondary"

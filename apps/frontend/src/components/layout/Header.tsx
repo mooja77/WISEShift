@@ -15,9 +15,11 @@ import {
   MoonIcon,
 } from '@heroicons/react/24/outline';
 import { useAssessmentStore } from '../../stores/assessmentStore';
+import { useResearchStore } from '../../stores/researchStore';
 import { useUiStore } from '../../stores/uiStore';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 import { useTour } from '../../hooks/useTour';
+import FullTourButton from './FullTourButton';
 import type { DriveStep } from 'driver.js';
 import {
   homeTourSteps,
@@ -29,6 +31,7 @@ import {
   researchTourSteps,
   comparisonTourSteps,
   methodologyTourSteps,
+  canvasTourSteps,
 } from '../../config/tourSteps';
 
 const NAV_LINKS = [
@@ -43,6 +46,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { accessCode, status } = useAssessmentStore();
+  const { activeTab: researchActiveTab } = useResearchStore();
   const { darkMode, toggleDarkMode } = useUiStore();
 
   // Determine current page tour
@@ -57,7 +61,11 @@ export default function Header() {
     '/comparison': { steps: comparisonTourSteps, page: 'comparison' },
     '/methodology': { steps: methodologyTourSteps, page: 'methodology' },
   };
-  const tourConfig = TOUR_MAP[location.pathname] ?? TOUR_MAP['/'];
+  // Use canvas tour when on research page with canvas tab active
+  const isCanvasActive = location.pathname === '/research' && researchActiveTab === 'canvas';
+  const tourConfig = isCanvasActive
+    ? { steps: canvasTourSteps, page: 'canvas' }
+    : (TOUR_MAP[location.pathname] ?? TOUR_MAP['/']);
   const { startTour } = useTour(tourConfig.page, tourConfig.steps);
 
   const isAssessmentInProgress = status === 'in_progress' && accessCode;
@@ -139,6 +147,7 @@ export default function Header() {
               <QuestionMarkCircleIcon className="h-4 w-4" aria-hidden="true" />
               {t('tour.takeATour')}
             </button>
+            <FullTourButton />
             <LanguageSwitcher />
             <button
               type="button"

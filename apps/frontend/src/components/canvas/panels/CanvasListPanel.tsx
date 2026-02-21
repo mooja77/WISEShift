@@ -39,7 +39,7 @@ export default function CanvasListPanel() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div data-tour="canvas-list" className="mx-auto max-w-3xl">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Coding Canvases</h2>
@@ -48,6 +48,7 @@ export default function CanvasListPanel() {
           </p>
         </div>
         <button
+          data-tour="canvas-new-btn"
           onClick={() => setShowForm(!showForm)}
           className="btn-primary text-sm"
         >
@@ -107,7 +108,7 @@ export default function CanvasListPanel() {
         </div>
       )}
 
-      <div className="space-y-3">
+      <div data-tour="canvas-cards" className="space-y-3">
         {canvases.map(canvas => (
           <div
             key={canvas.id}

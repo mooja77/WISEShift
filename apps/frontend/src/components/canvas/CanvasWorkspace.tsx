@@ -329,7 +329,7 @@ export default function CanvasWorkspace() {
     <div className="flex h-full">
       <div className="flex flex-1 flex-col">
         <CanvasToolbar />
-        <div className="relative flex-1">
+        <div data-tour="canvas-flow-area" className="relative flex-1">
           <ReactFlow
             nodes={nodes}
             edges={edges}

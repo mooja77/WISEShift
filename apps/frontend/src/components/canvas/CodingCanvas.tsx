@@ -7,7 +7,7 @@ export default function CodingCanvas() {
 
   if (activeCanvasId) {
     return (
-      <div className="h-[calc(100vh-200px)] min-h-[500px]">
+      <div data-tour="canvas-workspace-wrapper" className="h-[calc(100vh-200px)] min-h-[500px]">
         <CanvasWorkspace />
       </div>
     );
