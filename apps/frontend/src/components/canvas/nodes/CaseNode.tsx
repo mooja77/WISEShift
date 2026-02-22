@@ -28,24 +28,24 @@ export default function CaseNode({ data, id }: NodeProps) {
   const attrs = typeof caseRecord.attributes === 'object' ? caseRecord.attributes : {};
 
   return (
-    <div className="w-[260px] rounded-lg border-2 border-teal-300 shadow-md dark:border-teal-700">
+    <div className="w-[260px] rounded-xl border-2 border-teal-300/60 shadow-node transition-all duration-200 hover:shadow-node-hover hover:-translate-y-0.5 dark:border-teal-700/60">
       <Handle
         type="source"
         position={Position.Right}
         id={`case-source-${id}`}
-        className="!h-3 !w-3 !border-2 !border-teal-500 !bg-teal-500"
+        className="!h-3 !w-3 !border-2 !border-teal-500 !bg-teal-500 transition-all duration-200"
         style={{ top: '50%' }}
       />
       <Handle
         type="target"
         position={Position.Left}
         id={`case-target-${id}`}
-        className="!h-3 !w-3 !border-2 !border-teal-500 !bg-teal-500"
+        className="!h-3 !w-3 !border-2 !border-teal-500 !bg-teal-500 transition-all duration-200"
         style={{ top: '50%' }}
       />
 
       {/* Header */}
-      <div className="drag-handle flex items-center justify-between rounded-t-md bg-teal-50 px-3 py-2 cursor-grab dark:bg-teal-900/30">
+      <div className="drag-handle flex items-center justify-between rounded-t-lg bg-gradient-to-r from-teal-50 to-teal-50/60 px-3 py-2.5 cursor-grab dark:from-teal-900/30 dark:to-teal-900/15">
         <div className="flex items-center gap-2 min-w-0">
           <svg className="h-4 w-4 shrink-0 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
@@ -64,7 +64,7 @@ export default function CaseNode({ data, id }: NodeProps) {
       </div>
 
       {/* Body */}
-      <div className="bg-white px-3 py-2 dark:bg-gray-800 rounded-b-md">
+      <div className="bg-white px-3 py-2 dark:bg-gray-800 rounded-b-xl">
         {/* Attributes as badges */}
         {Object.keys(attrs).length > 0 && (
           <div className="flex flex-wrap gap-1 mb-2">

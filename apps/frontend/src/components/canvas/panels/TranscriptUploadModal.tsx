@@ -22,9 +22,9 @@ export default function TranscriptUploadModal({ onSubmit, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800"
+        className="modal-content w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl backdrop-blur-xl ring-1 ring-black/5 dark:bg-gray-800"
         onClick={e => e.stopPropagation()}
       >
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Add Transcript</h3>

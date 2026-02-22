@@ -20,6 +20,7 @@ import {
   createComputedNodeSchema,
   updateComputedNodeSchema,
   autoCodeSchema,
+  mergeQuestionsSchema,
 } from '../middleware/validation.js';
 import {
   searchTranscripts,
@@ -29,6 +30,9 @@ import {
   computeComparison,
   computeWordFrequency,
   computeClusters,
+  computeCodingQuery,
+  computeSentiment,
+  computeTreemap,
 } from '../utils/textAnalysis.js';
 
 export const canvasRoutes = Router();
@@ -364,6 +368,48 @@ canvasRoutes.delete('/canvas/:id/cases/:caseId', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ─── Merge Questions ───
+
+canvasRoutes.post('/canvas/:id/questions/merge', validate(mergeQuestionsSchema), async (req, res, next) => {
+  try {
+    const dashboardAccessId = (req as any).dashboardAccessId;
+    await getOwnedCanvas(req.params.id, dashboardAccessId);
+    const { sourceId, targetId } = req.body;
+
+    // Verify both questions belong to this canvas
+    const [source, target] = await Promise.all([
+      prisma.canvasQuestion.findUnique({ where: { id: sourceId } }),
+      prisma.canvasQuestion.findUnique({ where: { id: targetId } }),
+    ]);
+    if (!source || source.canvasId !== req.params.id) {
+      return next(new AppError('Source question not found in this canvas', 400));
+    }
+    if (!target || target.canvasId !== req.params.id) {
+      return next(new AppError('Target question not found in this canvas', 400));
+    }
+
+    // Move all codings from source to target, then delete source
+    await prisma.$transaction([
+      prisma.canvasTextCoding.updateMany({
+        where: { questionId: sourceId, canvasId: req.params.id },
+        data: { questionId: targetId },
+      }),
+      // Re-parent any children of the source
+      prisma.canvasQuestion.updateMany({
+        where: { parentQuestionId: sourceId, canvasId: req.params.id },
+        data: { parentQuestionId: targetId },
+      }),
+      prisma.canvasQuestion.delete({ where: { id: sourceId } }),
+    ]);
+
+    const codingCount = await prisma.canvasTextCoding.count({
+      where: { questionId: targetId, canvasId: req.params.id },
+    });
+
+    res.json({ success: true, data: { targetId, codingCount } });
+  } catch (err) { next(err); }
+});
+
 // ─── Relations ───
 
 canvasRoutes.post('/canvas/:id/relations', validate(createRelationSchema), async (req, res, next) => {
@@ -486,6 +532,20 @@ canvasRoutes.post('/canvas/:id/computed/:nodeId/run', async (req, res, next) => 
         break;
       case 'cluster':
         result = computeClusters(codings, config.k || 3, config.questionIds);
+        break;
+      case 'codingquery':
+        result = computeCodingQuery(codings, transcripts, config.conditions || []);
+        break;
+      case 'sentiment':
+        result = computeSentiment(codings, transcripts, questions, config.scope || 'all', config.scopeId);
+        break;
+      case 'treemap':
+        result = computeTreemap(
+          codings,
+          questions.map(q => ({ ...q, parentQuestionId: q.parentQuestionId })),
+          config.metric || 'count',
+          config.questionIds,
+        );
         break;
       default:
         return next(new AppError(`Unknown node type: ${node.nodeType}`, 400));

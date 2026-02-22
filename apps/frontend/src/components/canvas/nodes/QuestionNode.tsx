@@ -48,7 +48,7 @@ export default function QuestionNode({ data, id }: NodeProps) {
 
   return (
     <div
-      className={`w-[280px] rounded-lg border-2 shadow-md transition-shadow ${isSelected ? 'ring-2 ring-offset-2' : ''}`}
+      className={`w-[280px] rounded-xl border-2 shadow-node transition-all duration-200 hover:shadow-node-hover hover:-translate-y-0.5 ${isSelected ? 'ring-2 ring-offset-2' : ''}`}
       style={{
         borderColor: nodeData.color,
         ...(isSelected ? { ringColor: nodeData.color } : {}),
@@ -59,7 +59,7 @@ export default function QuestionNode({ data, id }: NodeProps) {
         type="target"
         position={Position.Left}
         id={`question-target-${id}`}
-        className="!h-4 !w-4 !border-2"
+        className="!h-4 !w-4 !border-2 transition-all duration-200"
         style={{ borderColor: nodeData.color, backgroundColor: nodeData.color, top: '50%' }}
       />
       {/* Source handle for relations */}
@@ -67,14 +67,14 @@ export default function QuestionNode({ data, id }: NodeProps) {
         type="source"
         position={Position.Right}
         id={`question-source-${id}`}
-        className="!h-3 !w-3 !border-2"
+        className="!h-3 !w-3 !border-2 transition-all duration-200"
         style={{ borderColor: nodeData.color, backgroundColor: nodeData.color, top: '50%' }}
       />
 
       {/* Drag handle header */}
       <div
-        className="drag-handle flex items-center justify-between rounded-t-md px-3 py-2 cursor-grab"
-        style={{ backgroundColor: `${nodeData.color}15` }}
+        className="drag-handle flex items-center justify-between rounded-t-lg px-3 py-2.5 cursor-grab"
+        style={{ background: `linear-gradient(135deg, ${nodeData.color}12, ${nodeData.color}08)` }}
       >
         <div className="flex items-center gap-2 min-w-0">
           <div className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: nodeData.color }} />
@@ -111,7 +111,7 @@ export default function QuestionNode({ data, id }: NodeProps) {
       </div>
 
       {/* Question body */}
-      <div className="bg-white px-3 py-2 dark:bg-gray-800 rounded-b-md">
+      <div className="bg-white px-3 py-2 dark:bg-gray-800 rounded-b-xl">
         {/* Parent breadcrumb */}
         {parentQuestion && (
           <div className="flex items-center gap-1 mb-1.5 text-[10px] text-gray-400">

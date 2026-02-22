@@ -38,19 +38,19 @@ export default function ComputedNodeShell({
   };
 
   return (
-    <div className="w-[360px] rounded-lg border-2 shadow-md" style={{ borderColor: color }}>
+    <div className="w-[360px] rounded-xl border-2 shadow-node transition-all duration-200 hover:shadow-node-hover hover:-translate-y-0.5" style={{ borderColor: color }}>
       <Handle
         type="target"
         position={Position.Left}
         id={`computed-target-${nodeId}`}
-        className="!h-3 !w-3 !border-2"
+        className="!h-3 !w-3 !border-2 transition-all duration-200"
         style={{ borderColor: color, backgroundColor: color, top: '50%' }}
       />
 
       {/* Header */}
       <div
-        className="drag-handle flex items-center justify-between rounded-t-md px-3 py-2 cursor-grab"
-        style={{ backgroundColor: `${color}15` }}
+        className="drag-handle flex items-center justify-between rounded-t-lg px-3 py-2.5 cursor-grab"
+        style={{ background: `linear-gradient(135deg, ${color}12, ${color}08)` }}
       >
         <div className="flex items-center gap-2 min-w-0">
           <span style={{ color }}>{icon}</span>
@@ -99,7 +99,7 @@ export default function ComputedNodeShell({
       </div>
 
       {/* Body */}
-      <div className="bg-white dark:bg-gray-800 rounded-b-md nodrag nowheel">
+      <div className="bg-white dark:bg-gray-800 rounded-b-xl nodrag nowheel">
         {error && (
           <div className="px-3 py-1.5 text-xs text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400">
             {error}

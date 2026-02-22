@@ -1,9 +1,13 @@
-import { useCallback, useRef, useMemo } from 'react';
+import { useCallback, useRef, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
 import { useCanvasStore } from '../../../stores/canvasStore';
 import CodingStripesOverlay from '../panels/CodingStripesOverlay';
+import CodingDensityBar from '../CodingDensityBar';
+import TranscriptContextMenu from '../TranscriptContextMenu';
 import type { CanvasTextCoding, CanvasQuestion, CanvasCase } from '@wiseshift/shared';
+import toast from 'react-hot-toast';
 
 export interface TranscriptNodeData {
   transcriptId: string;
@@ -119,8 +123,9 @@ function HighlightedTranscript({
 
 export default function TranscriptNode({ data, id }: NodeProps) {
   const textRef = useRef<HTMLDivElement>(null);
-  const { activeCanvas, pendingSelection, setPendingSelection, deleteTranscript, showCodingStripes } = useCanvasStore();
+  const { activeCanvas, pendingSelection, setPendingSelection, deleteTranscript, showCodingStripes, codeInVivo, spreadToParagraph } = useCanvasStore();
   const nodeData = data as unknown as TranscriptNodeData;
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const codings = useMemo(
     () => (activeCanvas?.codings ?? []).filter((c: CanvasTextCoding) => c.transcriptId === nodeData.transcriptId),
@@ -165,12 +170,42 @@ export default function TranscriptNode({ data, id }: NodeProps) {
     });
   }, [nodeData.content, nodeData.transcriptId, setPendingSelection]);
 
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    if (!pendingSelection || pendingSelection.transcriptId !== nodeData.transcriptId) return;
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  }, [pendingSelection, nodeData.transcriptId]);
+
+  const handleCodeInVivo = useCallback(async () => {
+    if (!pendingSelection || pendingSelection.transcriptId !== nodeData.transcriptId) return;
+    try {
+      await codeInVivo(pendingSelection.transcriptId, pendingSelection.startOffset, pendingSelection.endOffset, pendingSelection.codedText);
+      window.getSelection()?.removeAllRanges();
+      toast.success('In-vivo code created');
+    } catch {
+      toast.error('Failed to create in-vivo code');
+    }
+    setContextMenu(null);
+  }, [pendingSelection, nodeData.transcriptId, codeInVivo]);
+
+  const handleSpreadToParagraph = useCallback(async () => {
+    if (!pendingSelection || pendingSelection.transcriptId !== nodeData.transcriptId) return;
+    try {
+      await spreadToParagraph(pendingSelection.transcriptId, pendingSelection.startOffset, pendingSelection.endOffset, pendingSelection.codedText);
+      window.getSelection()?.removeAllRanges();
+      toast.success('Spread to paragraph — new code created');
+    } catch {
+      toast.error('Failed to spread to paragraph');
+    }
+    setContextMenu(null);
+  }, [pendingSelection, nodeData.transcriptId, spreadToParagraph]);
+
   const hasSelection = pendingSelection?.transcriptId === nodeData.transcriptId;
 
   return (
-    <div className="w-[400px] rounded-lg border border-blue-200 bg-white shadow-md dark:border-blue-800 dark:bg-gray-800">
+    <div className="w-[400px] rounded-xl border border-blue-200/60 bg-white shadow-node transition-all duration-200 hover:shadow-node-hover hover:-translate-y-0.5 dark:border-blue-800/60 dark:bg-gray-800">
       {/* Drag handle header */}
-      <div className="drag-handle flex items-center justify-between rounded-t-lg bg-blue-50 px-3 py-2 cursor-grab dark:bg-blue-900/30">
+      <div className="drag-handle flex items-center justify-between rounded-t-xl bg-gradient-to-r from-blue-50 to-blue-50/60 px-3 py-2.5 cursor-grab dark:from-blue-900/30 dark:to-blue-900/15">
         <div className="flex items-center gap-2 min-w-0">
           <svg className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
@@ -193,7 +228,7 @@ export default function TranscriptNode({ data, id }: NodeProps) {
         </button>
       </div>
 
-      {/* Scrollable text body with optional coding stripes */}
+      {/* Scrollable text body with optional coding stripes + density bar */}
       <div className="relative">
         {showCodingStripes && codings.length > 0 && (
           <CodingStripesOverlay
@@ -203,11 +238,20 @@ export default function TranscriptNode({ data, id }: NodeProps) {
             containerHeight={300}
           />
         )}
+        {codings.length > 0 && (
+          <CodingDensityBar
+            contentLength={nodeData.content.length}
+            codings={codings}
+            questions={questions}
+            height={300}
+          />
+        )}
         <div
           ref={textRef}
           className="nodrag nowheel max-h-[300px] overflow-y-auto px-3 py-2"
-          style={showCodingStripes && codings.length > 0 ? { paddingLeft: `${([...new Set(codings.map(c => c.questionId))].length * 6) + 12}px` } : undefined}
+          style={{ paddingLeft: codings.length > 0 ? (showCodingStripes ? `${([...new Set(codings.map(c => c.questionId))].length * 6) + 20}px` : '20px') : undefined }}
           onMouseUp={handleMouseUp}
+          onContextMenu={handleContextMenu}
         >
           <p className="whitespace-pre-wrap text-xs leading-relaxed text-gray-700 dark:text-gray-300 select-text">
             <HighlightedTranscript text={nodeData.content} codings={codings} questions={questions} />
@@ -229,9 +273,22 @@ export default function TranscriptNode({ data, id }: NodeProps) {
         type="source"
         position={Position.Right}
         id={`transcript-source-${id}`}
-        className={`!h-4 !w-4 !border-2 !border-blue-500 transition-opacity ${hasSelection ? '!bg-blue-500 opacity-100' : '!bg-blue-200 opacity-50'}`}
+        className={`!h-4 !w-4 !border-2 !border-blue-500 transition-all duration-200 ${hasSelection ? '!bg-blue-500 opacity-100' : '!bg-blue-200 opacity-50'}`}
         style={{ top: '50%' }}
       />
+
+      {/* Right-click context menu — portal to body so CSS transforms don't break fixed positioning */}
+      {contextMenu && hasSelection && createPortal(
+        <TranscriptContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          hasSelection={hasSelection}
+          onCodeInVivo={handleCodeInVivo}
+          onSpreadToParagraph={handleSpreadToParagraph}
+          onClose={() => setContextMenu(null)}
+        />,
+        document.body,
+      )}
     </div>
   );
 }

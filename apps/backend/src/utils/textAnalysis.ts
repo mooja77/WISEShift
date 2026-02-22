@@ -506,3 +506,260 @@ export function computeClusters(
 
   return { clusters };
 }
+
+// ─── 8. Coding Query (Boolean AND/OR/NOT) ───
+
+interface TranscriptLookup {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export function computeCodingQuery(
+  codings: CodingData[],
+  transcripts: TranscriptLookup[],
+  conditions: { questionId: string; operator: 'AND' | 'OR' | 'NOT' }[],
+) {
+  if (conditions.length === 0) return { matches: [], totalMatches: 0 };
+
+  const transcriptMap = new Map<string, TranscriptLookup>();
+  transcripts.forEach(t => transcriptMap.set(t.id, t));
+
+  // Group codings by transcript
+  const byTranscript = new Map<string, CodingData[]>();
+  for (const c of codings) {
+    const arr = byTranscript.get(c.transcriptId) || [];
+    arr.push(c);
+    byTranscript.set(c.transcriptId, arr);
+  }
+
+  const matches: { transcriptId: string; transcriptTitle: string; text: string; startOffset: number; endOffset: number }[] = [];
+
+  for (const [tid, tCodings] of byTranscript) {
+    const transcript = transcriptMap.get(tid);
+    if (!transcript) continue;
+
+    // Get codings for the first condition's question
+    const firstQ = conditions[0].questionId;
+    const baseCodes = tCodings.filter(c => c.questionId === firstQ);
+
+    for (const baseCode of baseCodes) {
+      let include = true;
+
+      for (let i = 1; i < conditions.length; i++) {
+        const cond = conditions[i];
+        const qCodes = tCodings.filter(c => c.questionId === cond.questionId);
+
+        // Check overlap with base coding
+        const hasOverlap = qCodes.some(c => {
+          const overlapStart = Math.max(baseCode.startOffset, c.startOffset);
+          const overlapEnd = Math.min(baseCode.endOffset, c.endOffset);
+          return overlapEnd > overlapStart;
+        });
+
+        if (cond.operator === 'AND' && !hasOverlap) { include = false; break; }
+        if (cond.operator === 'OR') { /* OR always includes — just expands the base set */ }
+        if (cond.operator === 'NOT' && hasOverlap) { include = false; break; }
+      }
+
+      if (include) {
+        matches.push({
+          transcriptId: tid,
+          transcriptTitle: transcript.title,
+          text: baseCode.codedText,
+          startOffset: baseCode.startOffset,
+          endOffset: baseCode.endOffset,
+        });
+      }
+    }
+
+    // For OR conditions, also include codings from OR-questions not already matched
+    for (let i = 1; i < conditions.length; i++) {
+      if (conditions[i].operator !== 'OR') continue;
+      const orCodes = tCodings.filter(c => c.questionId === conditions[i].questionId);
+      for (const oc of orCodes) {
+        const alreadyMatched = matches.some(m =>
+          m.transcriptId === tid && m.startOffset === oc.startOffset && m.endOffset === oc.endOffset
+        );
+        if (!alreadyMatched) {
+          matches.push({
+            transcriptId: tid,
+            transcriptTitle: transcript.title,
+            text: oc.codedText,
+            startOffset: oc.startOffset,
+            endOffset: oc.endOffset,
+          });
+        }
+      }
+    }
+  }
+
+  return { matches: matches.slice(0, 100), totalMatches: matches.length };
+}
+
+// ─── 9. Sentiment Analysis (AFINN-style) ───
+
+const AFINN_LEXICON: Record<string, number> = {
+  // Positive words
+  'good': 3, 'great': 3, 'excellent': 4, 'amazing': 4, 'wonderful': 4,
+  'fantastic': 4, 'outstanding': 5, 'superb': 5, 'brilliant': 4, 'awesome': 4,
+  'love': 3, 'loved': 3, 'like': 2, 'enjoy': 2, 'happy': 3, 'pleased': 3,
+  'satisfied': 2, 'delighted': 4, 'thrilled': 4, 'excited': 3, 'grateful': 3,
+  'thankful': 2, 'beautiful': 3, 'best': 3, 'better': 2, 'improve': 2,
+  'improved': 2, 'improvement': 2, 'success': 3, 'successful': 3, 'win': 3,
+  'won': 3, 'strong': 2, 'strength': 2, 'positive': 2, 'benefit': 2,
+  'beneficial': 2, 'effective': 2, 'efficient': 2, 'helpful': 2, 'hope': 2,
+  'hopeful': 2, 'inspire': 3, 'inspired': 3, 'innovative': 3, 'progress': 2,
+  'valuable': 2, 'support': 2, 'supported': 2, 'encourage': 2, 'encouraged': 2,
+  'proud': 3, 'confident': 2, 'trust': 2, 'trusted': 2, 'impressive': 3,
+  'remarkable': 3, 'perfect': 3, 'exceptional': 4, 'incredible': 4,
+  'nice': 2, 'kind': 2, 'generous': 3, 'warm': 2, 'friendly': 2,
+  'safe': 1, 'secure': 2, 'comfortable': 2, 'fun': 3, 'interesting': 2,
+  'fascinating': 3, 'engaging': 2, 'rewarding': 2, 'worthy': 2,
+  'agree': 1, 'advantage': 2, 'achieve': 2, 'achievement': 3,
+  'capable': 2, 'commitment': 2, 'committed': 2, 'opportunity': 2,
+  // Negative words
+  'bad': -3, 'terrible': -4, 'horrible': -4, 'awful': -4, 'worst': -4,
+  'poor': -2, 'worse': -3, 'negative': -2, 'fail': -3, 'failed': -3,
+  'failure': -3, 'problem': -2, 'issue': -1, 'concern': -1, 'concerned': -2,
+  'worried': -2, 'worry': -2, 'fear': -2, 'afraid': -2, 'angry': -3,
+  'frustrate': -3, 'frustrated': -3, 'frustrating': -3, 'annoyed': -2,
+  'annoying': -2, 'disappoint': -3, 'disappointed': -3, 'disappointing': -3,
+  'sad': -2, 'unhappy': -2, 'unfortunate': -2, 'unfortunately': -2,
+  'hate': -4, 'hated': -4, 'dislike': -2, 'difficult': -1, 'hard': -1,
+  'struggle': -2, 'struggling': -2, 'suffer': -3, 'suffering': -3,
+  'pain': -2, 'painful': -2, 'stress': -2, 'stressed': -2, 'stressful': -2,
+  'weak': -2, 'weakness': -2, 'lack': -2, 'lacking': -2, 'loss': -3,
+  'lost': -2, 'miss': -1, 'missing': -2, 'damage': -3, 'damaged': -3,
+  'harm': -3, 'harmful': -3, 'danger': -3, 'dangerous': -3,
+  'risk': -1, 'risky': -2, 'threat': -3, 'crisis': -3,
+  'conflict': -2, 'disagree': -2, 'wrong': -2, 'mistake': -2,
+  'error': -2, 'fault': -2, 'blame': -2, 'complain': -2, 'complaint': -2,
+  'reject': -3, 'rejected': -3, 'deny': -2, 'denied': -2,
+  'confuse': -2, 'confused': -2, 'confusing': -2, 'unclear': -1,
+  'impossible': -3, 'useless': -3, 'worthless': -4, 'boring': -2,
+  'tired': -2, 'exhausted': -3, 'overwhelm': -3, 'overwhelmed': -3,
+  'abuse': -4, 'corrupt': -4, 'corruption': -4, 'unfair': -3,
+  'unjust': -3, 'inequality': -2, 'barrier': -2, 'obstacle': -2,
+  'neglect': -3, 'neglected': -3, 'ignore': -2, 'ignored': -2,
+};
+
+function scoreSentiment(text: string): { score: number; magnitude: number } {
+  const words = text.toLowerCase().replace(/[^a-z0-9\s'-]/g, ' ').split(/\s+/);
+  let totalScore = 0;
+  let magnitude = 0;
+  let matched = 0;
+
+  for (const word of words) {
+    const s = AFINN_LEXICON[word];
+    if (s !== undefined) {
+      totalScore += s;
+      magnitude += Math.abs(s);
+      matched++;
+    }
+  }
+
+  return {
+    score: matched > 0 ? totalScore / matched : 0,
+    magnitude,
+  };
+}
+
+interface QuestionWithParent extends QuestionData {
+  parentQuestionId?: string | null;
+}
+
+export function computeSentiment(
+  codings: CodingData[],
+  transcripts: TranscriptLookup[],
+  questions: QuestionData[],
+  scope: string,
+  scopeId?: string,
+) {
+  let filteredCodings = codings;
+  if (scope === 'question' && scopeId) {
+    filteredCodings = codings.filter(c => c.questionId === scopeId);
+  } else if (scope === 'transcript' && scopeId) {
+    filteredCodings = codings.filter(c => c.transcriptId === scopeId);
+  }
+
+  let positive = 0, negative = 0, neutral = 0;
+  let totalScore = 0;
+
+  for (const c of filteredCodings) {
+    const { score } = scoreSentiment(c.codedText);
+    if (score > 0.2) positive++;
+    else if (score < -0.2) negative++;
+    else neutral++;
+    totalScore += score;
+  }
+
+  const averageScore = filteredCodings.length > 0 ? totalScore / filteredCodings.length : 0;
+
+  // Group by scope for per-item breakdown
+  const groupByKey = scope === 'transcript' ? 'transcriptId' : 'questionId';
+  const groupMap = new Map<string, CodingData[]>();
+  for (const c of filteredCodings) {
+    const key = (c as any)[groupByKey];
+    const arr = groupMap.get(key) || [];
+    arr.push(c);
+    groupMap.set(key, arr);
+  }
+
+  const labelMap = new Map<string, string>();
+  if (scope === 'transcript' || scope === 'all') {
+    transcripts.forEach(t => labelMap.set(t.id, t.title));
+  }
+  if (scope === 'question' || scope === 'all') {
+    questions.forEach(q => labelMap.set(q.id, q.text));
+  }
+
+  const items = Array.from(groupMap.entries()).map(([id, groupCodings]) => {
+    const allText = groupCodings.map(c => c.codedText).join(' ');
+    const { score, magnitude } = scoreSentiment(allText);
+    return {
+      id,
+      label: labelMap.get(id) || id,
+      score,
+      magnitude,
+      sampleText: groupCodings[0]?.codedText.slice(0, 80) || '',
+    };
+  }).sort((a, b) => b.score - a.score);
+
+  return {
+    overall: { positive, negative, neutral, averageScore },
+    items,
+  };
+}
+
+// ─── 10. Treemap / Theme Map ───
+
+export function computeTreemap(
+  codings: CodingData[],
+  questions: QuestionWithParent[],
+  metric: string,
+  questionIds?: string[],
+) {
+  const filteredQuestions = questionIds?.length
+    ? questions.filter(q => questionIds.includes(q.id))
+    : questions;
+
+  const nodes = filteredQuestions.map(q => {
+    const qCodings = codings.filter(c => c.questionId === q.id);
+    const size = metric === 'characters'
+      ? qCodings.reduce((sum, c) => sum + (c.endOffset - c.startOffset), 0)
+      : qCodings.length;
+
+    return {
+      id: q.id,
+      name: q.text,
+      size,
+      color: q.color,
+      parentId: q.parentQuestionId || undefined,
+    };
+  }).filter(n => n.size > 0);
+
+  const total = nodes.reduce((sum, n) => sum + n.size, 0);
+
+  return { nodes, total };
+}

@@ -25,6 +25,9 @@ import StatsNode from './nodes/StatsNode';
 import ComparisonNode from './nodes/ComparisonNode';
 import WordCloudNode from './nodes/WordCloudNode';
 import ClusterNode from './nodes/ClusterNode';
+import CodingQueryNode from './nodes/CodingQueryNode';
+import SentimentNode from './nodes/SentimentNode';
+import TreemapNode from './nodes/TreemapNode';
 import CodingEdge from './edges/CodingEdge';
 import RelationEdge from './edges/RelationEdge';
 import CanvasToolbar from './panels/CanvasToolbar';
@@ -54,6 +57,9 @@ const nodeTypes = {
   comparison: ComparisonNode,
   wordcloud: WordCloudNode,
   cluster: ClusterNode,
+  codingquery: CodingQueryNode,
+  sentiment: SentimentNode,
+  treemap: TreemapNode,
 };
 
 const edgeTypes = {
@@ -73,12 +79,14 @@ export default function CanvasWorkspace() {
     saveLayout,
     selectedQuestionId,
     addRelation,
+    mergeQuestions,
   } = useCanvasStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [relationLabel, setRelationLabel] = useState<{ show: boolean; source: string; target: string }>({ show: false, source: '', target: '' });
+  const [mergeConfirm, setMergeConfirm] = useState<{ show: boolean; sourceId: string; targetId: string; sourceName: string; targetName: string }>({ show: false, sourceId: '', targetId: '', sourceName: '', targetName: '' });
 
   // Build nodes from canvas data
   const buildNodes = useCallback((): Node[] => {
@@ -246,7 +254,23 @@ export default function CanvasWorkspace() {
         return;
       }
 
-      // Case-to-Case, Question-to-Question, or Question-to-Case: create relation
+      // Question-to-Question: offer merge or relation
+      if (sourceId.startsWith('question-') && targetId.startsWith('question-')) {
+        const srcQid = sourceId.replace('question-', '');
+        const tgtQid = targetId.replace('question-', '');
+        const srcQ = activeCanvas?.questions.find(q => q.id === srcQid);
+        const tgtQ = activeCanvas?.questions.find(q => q.id === tgtQid);
+        setMergeConfirm({
+          show: true,
+          sourceId: srcQid,
+          targetId: tgtQid,
+          sourceName: srcQ?.text || 'Source',
+          targetName: tgtQ?.text || 'Target',
+        });
+        return;
+      }
+
+      // Case-to-Case, Question-to-Case: create relation
       const validRelationSources = ['case-', 'question-'];
       const isValidSource = validRelationSources.some(prefix => sourceId.startsWith(prefix));
       const isValidTarget = validRelationSources.some(prefix => targetId.startsWith(prefix));
@@ -258,8 +282,18 @@ export default function CanvasWorkspace() {
 
       toast.error('Invalid connection. Drag from transcript to question, or between cases/questions.');
     },
-    [pendingSelection, createCoding, setPendingSelection],
+    [pendingSelection, createCoding, setPendingSelection, activeCanvas?.questions, mergeQuestions],
   );
+
+  const handleMerge = async () => {
+    try {
+      await mergeQuestions(mergeConfirm.sourceId, mergeConfirm.targetId);
+      toast.success('Questions merged successfully');
+    } catch {
+      toast.error('Failed to merge questions');
+    }
+    setMergeConfirm({ show: false, sourceId: '', targetId: '', sourceName: '', targetName: '' });
+  };
 
   const handleCreateRelation = async (label: string) => {
     const { source, target } = relationLabel;
@@ -321,6 +355,9 @@ export default function CanvasWorkspace() {
       case 'comparison': return '#EC4899';
       case 'wordcloud': return '#6366F1';
       case 'cluster': return '#14B8A6';
+      case 'codingquery': return '#DC2626';
+      case 'sentiment': return '#F59E0B';
+      case 'treemap': return '#8B5CF6';
       default: return '#6B7280';
     }
   }, []);
@@ -340,24 +377,29 @@ export default function CanvasWorkspace() {
             edgeTypes={edgeTypes}
             fitView
             fitViewOptions={{ padding: 0.2 }}
-            className="bg-gray-50 dark:bg-gray-900"
+            className="bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900"
             proOptions={{ hideAttribution: true }}
           >
-            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#d1d5db" />
-            <Controls className="!bg-white !shadow-md dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700" />
+            <Background variant={BackgroundVariant.Dots} gap={24} size={0.8} color="#d1d5db40" />
+            <Controls className="!bg-white/90 !backdrop-blur-sm !shadow-node !rounded-xl dark:!bg-gray-800/90 !border-gray-200 dark:!border-gray-700" />
             <MiniMap
               nodeColor={minimapColor}
-              maskColor="rgba(0,0,0,0.1)"
-              className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700"
+              maskColor="rgba(0,0,0,0.06)"
+              className="!bg-white/90 !backdrop-blur-sm !rounded-xl !shadow-node dark:!bg-gray-800/90 !border-gray-200 dark:!border-gray-700"
             />
           </ReactFlow>
 
           {/* Empty state overlay */}
           {activeCanvas && activeCanvas.transcripts.length === 0 && activeCanvas.questions.length === 0 && (
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center animate-fade-in">
               <div className="text-center">
-                <p className="text-lg text-gray-400 dark:text-gray-500">Empty canvas</p>
-                <p className="mt-1 text-sm text-gray-300 dark:text-gray-600">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800">
+                  <svg className="h-8 w-8 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                  </svg>
+                </div>
+                <p className="text-lg font-medium text-gray-400 dark:text-gray-500">Empty canvas</p>
+                <p className="mt-1.5 text-sm text-gray-300 dark:text-gray-600">
                   Add a transcript and research questions using the toolbar above
                 </p>
               </div>
@@ -366,11 +408,43 @@ export default function CanvasWorkspace() {
 
           {/* Relation label prompt */}
           {relationLabel.show && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30">
+            <div className="modal-backdrop absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
               <RelationLabelPrompt
                 onSubmit={handleCreateRelation}
                 onCancel={() => setRelationLabel({ show: false, source: '', target: '' })}
               />
+            </div>
+          )}
+
+          {/* Merge questions confirm */}
+          {mergeConfirm.show && (
+            <div className="modal-backdrop absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+              <div className="modal-content rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-gray-800 w-80">
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Merge Questions</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                  Merge <strong>"{mergeConfirm.sourceName}"</strong> into <strong>"{mergeConfirm.targetName}"</strong>?
+                  All codings from the source will be moved to the target and the source will be deleted.
+                </p>
+                <div className="flex gap-2">
+                  <button onClick={handleMerge} className="btn-primary h-8 px-3 text-xs">Merge</button>
+                  <button
+                    onClick={() => {
+                      // Fall back to creating a relation instead
+                      setMergeConfirm({ show: false, sourceId: '', targetId: '', sourceName: '', targetName: '' });
+                      setRelationLabel({ show: true, source: `question-${mergeConfirm.sourceId}`, target: `question-${mergeConfirm.targetId}` });
+                    }}
+                    className="rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-750"
+                  >
+                    Create Relation Instead
+                  </button>
+                  <button
+                    onClick={() => setMergeConfirm({ show: false, sourceId: '', targetId: '', sourceName: '', targetName: '' })}
+                    className="text-xs text-gray-400 hover:text-gray-600"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -394,14 +468,14 @@ function RelationLabelPrompt({
   const presets = ['influences', 'contradicts', 'supports', 'causes', 'is-part-of'];
 
   return (
-    <div className="rounded-lg bg-white p-4 shadow-xl dark:bg-gray-800 w-72">
+    <div className="modal-content rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-gray-800 w-72">
       <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Relationship Label</h4>
       <div className="flex flex-wrap gap-1 mb-2">
         {presets.map(p => (
           <button
             key={p}
             onClick={() => onSubmit(p)}
-            className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            className="btn-canvas rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           >
             {p}
           </button>

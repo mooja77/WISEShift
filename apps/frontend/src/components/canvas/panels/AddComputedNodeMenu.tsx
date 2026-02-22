@@ -11,6 +11,9 @@ const NODE_OPTIONS: { type: ComputedNodeType; label: string; description: string
   { type: 'comparison', label: 'Comparison', description: 'Compare transcript profiles', color: '#EC4899' },
   { type: 'wordcloud', label: 'Word Cloud', description: 'Frequency visualization', color: '#6366F1' },
   { type: 'cluster', label: 'Clustering', description: 'Group similar segments', color: '#14B8A6' },
+  { type: 'codingquery', label: 'Coding Query', description: 'Boolean AND/OR/NOT queries', color: '#DC2626' },
+  { type: 'sentiment', label: 'Sentiment', description: 'Emotional tone analysis', color: '#F59E0B' },
+  { type: 'treemap', label: 'Theme Map', description: 'Visual theme proportions', color: '#8B5CF6' },
 ];
 
 export default function AddComputedNodeMenu() {
@@ -52,12 +55,12 @@ export default function AddComputedNodeMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-56 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div className="dropdown-enter absolute right-0 top-full z-50 mt-1 w-56 rounded-xl border border-gray-200/60 bg-white/95 shadow-node backdrop-blur-xl dark:border-gray-700 dark:bg-gray-800/95">
           {NODE_OPTIONS.map(opt => (
             <button
               key={opt.type}
               onClick={() => handleAdd(opt.type, opt.label)}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-750 first:rounded-t-lg last:rounded-b-lg"
+              className="btn-canvas flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors duration-100 hover:bg-gray-50 dark:hover:bg-gray-750 first:rounded-t-xl last:rounded-b-xl"
             >
               <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: opt.color }} />
               <div>

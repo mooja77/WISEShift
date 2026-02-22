@@ -188,9 +188,14 @@ export const createRelationSchema = z.object({
 });
 
 export const createComputedNodeSchema = z.object({
-  nodeType: z.enum(['search', 'cooccurrence', 'matrix', 'stats', 'comparison', 'wordcloud', 'cluster']),
+  nodeType: z.enum(['search', 'cooccurrence', 'matrix', 'stats', 'comparison', 'wordcloud', 'cluster', 'codingquery', 'sentiment', 'treemap']),
   label: z.string().min(1).max(200),
   config: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const mergeQuestionsSchema = z.object({
+  sourceId: z.string().min(1),
+  targetId: z.string().min(1),
 });
 
 export const updateComputedNodeSchema = z.object({

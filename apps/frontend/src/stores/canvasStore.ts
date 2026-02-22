@@ -91,6 +91,11 @@ interface CanvasState {
   // Auto-Code
   autoCode: (questionId: string, pattern: string, mode: 'keyword' | 'regex', transcriptIds?: string[]) => Promise<{ created: number }>;
 
+  // In-Vivo / Spread / Merge
+  codeInVivo: (transcriptId: string, startOffset: number, endOffset: number, codedText: string) => Promise<CanvasQuestion>;
+  spreadToParagraph: (transcriptId: string, startOffset: number, endOffset: number, codedText: string) => Promise<void>;
+  mergeQuestions: (sourceId: string, targetId: string) => Promise<void>;
+
   // UI toggles
   toggleCodingStripes: () => void;
 }
@@ -464,6 +469,47 @@ export const useCanvasStore = create<CanvasState>()((set, get) => ({
       }));
     }
     return { created };
+  },
+
+  // ─── In-Vivo Coding ───
+
+  codeInVivo: async (transcriptId, startOffset, endOffset, codedText) => {
+    const question = await get().addQuestion(codedText);
+    await get().createCoding(transcriptId, question.id, startOffset, endOffset, codedText);
+    return question;
+  },
+
+  // ─── Spread to Paragraph ───
+
+  spreadToParagraph: async (transcriptId, startOffset, endOffset, codedText) => {
+    const { activeCanvas, addQuestion, createCoding } = get();
+    if (!activeCanvas) throw new Error('No canvas open');
+    const transcript = activeCanvas.transcripts.find(t => t.id === transcriptId);
+    if (!transcript) throw new Error('Transcript not found');
+
+    const content = transcript.content;
+
+    // Find paragraph boundaries (double newline or start/end of text)
+    let paraStart = content.lastIndexOf('\n\n', startOffset);
+    paraStart = paraStart === -1 ? 0 : paraStart + 2;
+
+    let paraEnd = content.indexOf('\n\n', endOffset);
+    paraEnd = paraEnd === -1 ? content.length : paraEnd;
+
+    const paragraphText = content.slice(paraStart, paraEnd).trim();
+    if (!paragraphText) return;
+
+    const question = await addQuestion(codedText);
+    await createCoding(transcriptId, question.id, paraStart, paraEnd, paragraphText);
+  },
+
+  // ─── Merge Questions ───
+
+  mergeQuestions: async (sourceId, targetId) => {
+    const { activeCanvasId, refreshCanvas } = get();
+    if (!activeCanvasId) throw new Error('No canvas open');
+    await researchApi.mergeQuestions(activeCanvasId, sourceId, targetId);
+    await refreshCanvas();
   },
 
   // ─── UI toggles ───

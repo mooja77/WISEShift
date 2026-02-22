@@ -25,7 +25,7 @@ export default function MemoNode({ data }: NodeProps) {
 
   return (
     <div
-      className="w-[220px] rounded-lg shadow-md"
+      className="w-[220px] rounded-xl shadow-node transition-all duration-200 hover:shadow-node-hover hover:-translate-y-0.5"
       style={{ backgroundColor: nodeData.color }}
     >
       {/* Drag handle */}

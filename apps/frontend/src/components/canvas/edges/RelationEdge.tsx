@@ -44,12 +44,12 @@ export default function RelationEdge({
         className="pointer-events-auto"
       >
         <div className="flex items-center justify-center gap-1">
-          <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-gray-600 shadow-sm border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
+          <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-600 shadow-sm border border-gray-200/60 backdrop-blur-sm dark:bg-gray-800/90 dark:text-gray-300 dark:border-gray-700/60">
             {edgeData?.label || 'relates to'}
           </span>
           <button
             onClick={() => edgeData?.relationId && deleteRelation(edgeData.relationId)}
-            className="rounded-full bg-white p-0.5 text-gray-300 hover:text-red-500 shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700"
+            className="rounded-full bg-white/90 p-0.5 text-gray-300 hover:text-red-500 shadow-sm border border-gray-200/60 backdrop-blur-sm dark:bg-gray-800/90 dark:border-gray-700/60"
             title="Delete relation"
           >
             <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

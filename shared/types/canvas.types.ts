@@ -93,7 +93,8 @@ export interface CanvasRelation {
 
 export type ComputedNodeType =
   | 'search' | 'cooccurrence' | 'matrix'
-  | 'stats' | 'comparison' | 'wordcloud' | 'cluster';
+  | 'stats' | 'comparison' | 'wordcloud' | 'cluster'
+  | 'codingquery' | 'sentiment' | 'treemap';
 
 export interface CanvasComputedNode {
   id: string;
@@ -166,6 +167,41 @@ export interface ClusterResult {
     segments: { codingId: string; text: string; }[];
     keywords: string[];
   }[];
+}
+
+// ─── Coding Query (Boolean) ───
+export interface CodingQueryConfig {
+  conditions: { questionId: string; operator: 'AND' | 'OR' | 'NOT' }[];
+}
+export interface CodingQueryResult {
+  matches: { transcriptId: string; transcriptTitle: string; text: string; startOffset: number; endOffset: number }[];
+  totalMatches: number;
+}
+
+// ─── Sentiment Analysis ───
+export interface SentimentConfig {
+  scope: 'all' | 'question' | 'transcript';
+  scopeId?: string;
+}
+export interface SentimentResult {
+  overall: { positive: number; negative: number; neutral: number; averageScore: number };
+  items: { id: string; label: string; score: number; magnitude: number; sampleText: string }[];
+}
+
+// ─── Treemap / Theme Map ───
+export interface TreemapConfig {
+  metric: 'count' | 'characters';
+  questionIds?: string[];
+}
+export interface TreemapResult {
+  nodes: { id: string; name: string; size: number; color: string; parentId?: string }[];
+  total: number;
+}
+
+// ─── Merge Questions ───
+export interface MergeQuestionsInput {
+  sourceId: string;
+  targetId: string;
 }
 
 // Full canvas with all related data

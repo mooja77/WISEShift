@@ -491,6 +491,10 @@ export const researchApi = {
   // Auto-Code
   autoCode: (canvasId: string, data: AutoCodeInput) =>
     researchClient.post(`/canvas/${canvasId}/auto-code`, data),
+
+  // Merge Questions
+  mergeQuestions: (canvasId: string, sourceId: string, targetId: string) =>
+    researchClient.post(`/canvas/${canvasId}/questions/merge`, { sourceId, targetId }),
 };
 
 // Researcher Portal API

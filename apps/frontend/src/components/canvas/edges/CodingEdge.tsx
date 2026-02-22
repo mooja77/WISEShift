@@ -46,8 +46,9 @@ export default function CodingEdge({
         style={{
           ...style,
           stroke: color,
-          strokeWidth: hovered ? 3 : 2,
+          strokeWidth: hovered ? 2.5 : 1.5,
           strokeDasharray: undefined,
+          transition: 'stroke-width 200ms ease',
         }}
       />
       {hovered && edgeData && (
@@ -60,7 +61,7 @@ export default function CodingEdge({
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
           >
-            <div className="max-w-[200px] rounded-lg bg-gray-900 px-3 py-2 text-xs text-white shadow-lg">
+            <div className="edge-tooltip-enter max-w-[200px] rounded-xl bg-gray-900 px-3 py-2 text-xs text-white shadow-lg backdrop-blur-sm ring-1 ring-white/10">
               <p className="line-clamp-3 leading-relaxed">
                 "{edgeData.codedText}"
               </p>
