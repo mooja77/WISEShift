@@ -10,6 +10,7 @@ import {
   type Edge,
   type OnConnect,
   type NodeChange,
+  type ReactFlowInstance,
   BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -85,6 +86,8 @@ export default function CanvasWorkspace() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fitViewTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rfInstanceRef = useRef<ReactFlowInstance | null>(null);
   const [relationLabel, setRelationLabel] = useState<{ show: boolean; source: string; target: string }>({ show: false, source: '', target: '' });
   const [mergeConfirm, setMergeConfirm] = useState<{ show: boolean; sourceId: string; targetId: string; sourceName: string; targetName: string }>({ show: false, sourceId: '', targetId: '', sourceName: '', targetName: '' });
 
@@ -214,6 +217,11 @@ export default function CanvasWorkspace() {
   useEffect(() => {
     setNodes(buildNodes());
     setEdges(buildEdges());
+    // Fit view after nodes render with their actual dimensions
+    if (fitViewTimeoutRef.current) clearTimeout(fitViewTimeoutRef.current);
+    fitViewTimeoutRef.current = setTimeout(() => {
+      rfInstanceRef.current?.fitView({ padding: 0.4, maxZoom: 0.8 });
+    }, 200);
   }, [activeCanvas, buildNodes, buildEdges, setNodes, setEdges]);
 
   // Handle connection: create coding or relation
@@ -375,16 +383,17 @@ export default function CanvasWorkspace() {
             onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onInit={(instance) => { rfInstanceRef.current = instance; }}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             fitView
-            fitViewOptions={{ padding: 0.3, maxZoom: 0.8 }}
+            fitViewOptions={{ padding: 0.4, maxZoom: 0.8 }}
             minZoom={0.15}
             className="bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900"
             proOptions={{ hideAttribution: true }}
           >
             <Background variant={BackgroundVariant.Dots} gap={24} size={0.8} color="#d1d5db40" />
-            <Controls className="!bg-white/90 !backdrop-blur-sm !shadow-node !rounded-xl dark:!bg-gray-800/90 !border-gray-200 dark:!border-gray-700" />
+            <Controls fitViewOptions={{ padding: 0.4, maxZoom: 0.8 }} className="!bg-white/90 !backdrop-blur-sm !shadow-node !rounded-xl dark:!bg-gray-800/90 !border-gray-200 dark:!border-gray-700" />
             <MiniMap
               nodeColor={minimapColor}
               maskColor="rgba(0,0,0,0.06)"
