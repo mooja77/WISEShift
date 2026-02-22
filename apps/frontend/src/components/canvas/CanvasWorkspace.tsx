@@ -98,7 +98,7 @@ export default function CanvasWorkspace() {
 
     activeCanvas.transcripts.forEach((t: CanvasTranscript, i: number) => {
       const nodeId = `transcript-${t.id}`;
-      const pos = posMap.get(nodeId) || { x: 50, y: 50 + i * 400 };
+      const pos = posMap.get(nodeId) || { x: 50, y: 50 + i * 500 };
       result.push({
         id: nodeId,
         type: 'transcript',
@@ -115,7 +115,7 @@ export default function CanvasWorkspace() {
 
     activeCanvas.questions.forEach((q: CanvasQuestion, i: number) => {
       const nodeId = `question-${q.id}`;
-      const pos = posMap.get(nodeId) || { x: 550, y: 50 + i * 200 };
+      const pos = posMap.get(nodeId) || { x: 550, y: 50 + i * 280 };
       result.push({
         id: nodeId,
         type: 'question',
@@ -131,7 +131,7 @@ export default function CanvasWorkspace() {
 
     activeCanvas.memos.forEach((m: CanvasMemo, i: number) => {
       const nodeId = `memo-${m.id}`;
-      const pos = posMap.get(nodeId) || { x: 900, y: 50 + i * 250 };
+      const pos = posMap.get(nodeId) || { x: 900, y: 50 + i * 300 };
       result.push({
         id: nodeId,
         type: 'memo',
@@ -149,7 +149,7 @@ export default function CanvasWorkspace() {
     // Case nodes
     (activeCanvas.cases ?? []).forEach((c: CanvasCase, i: number) => {
       const nodeId = `case-${c.id}`;
-      const pos = posMap.get(nodeId) || { x: -350, y: 50 + i * 250 };
+      const pos = posMap.get(nodeId) || { x: -400, y: 50 + i * 300 };
       result.push({
         id: nodeId,
         type: 'case',
@@ -159,10 +159,12 @@ export default function CanvasWorkspace() {
       });
     });
 
-    // Computed nodes
+    // Computed nodes — 2-column grid to reduce vertical extent
     (activeCanvas.computedNodes ?? []).forEach((cn: CanvasComputedNode, i: number) => {
       const nodeId = `computed-${cn.id}`;
-      const pos = posMap.get(nodeId) || { x: 1200, y: 50 + i * 350 };
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const pos = posMap.get(nodeId) || { x: 1250 + col * 400, y: 50 + row * 420 };
       result.push({
         id: nodeId,
         type: cn.nodeType,
@@ -376,7 +378,8 @@ export default function CanvasWorkspace() {
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             fitView
-            fitViewOptions={{ padding: 0.2 }}
+            fitViewOptions={{ padding: 0.3, maxZoom: 0.8 }}
+            minZoom={0.15}
             className="bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900"
             proOptions={{ hideAttribution: true }}
           >
