@@ -23,7 +23,7 @@ import { registryRoutes } from './routes/registry.js';
 import { researcherRoutes } from './routes/researchers.js';
 import { workingGroupRoutes } from './routes/workingGroups.js';
 import { adminRoutes } from './routes/admin.js';
-import { canvasRoutes } from './routes/canvasRoutes.js';
+import { canvasRoutes, canvasPublicRoutes } from './routes/canvasRoutes.js';
 import { researchAuth } from './middleware/researchAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { auditLog } from './middleware/auditLog.js';
@@ -158,6 +158,7 @@ app.use('/api/assessments', exportsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/research', researchAuth, researchRoutes);
 app.use('/api/research', researchAuth, canvasRoutes);
+app.use('/api/research', canvasPublicRoutes);
 
 // ----- Versioned Research API (Phase 6D) -----
 const researchApiLimiter = rateLimit({

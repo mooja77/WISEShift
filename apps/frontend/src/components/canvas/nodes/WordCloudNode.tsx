@@ -12,7 +12,7 @@ export interface WordCloudNodeData {
 
 const CLOUD_COLORS = ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#EF4444', '#6366F1', '#14B8A6'];
 
-export default function WordCloudNode({ data, id }: NodeProps) {
+export default function WordCloudNode({ data, id, selected }: NodeProps) {
   const nodeData = data as unknown as WordCloudNodeData;
   const { activeCanvas, updateComputedNode } = useCanvasStore();
   const node = activeCanvas?.computedNodes.find((n: CanvasComputedNode) => n.id === nodeData.computedNodeId);
@@ -77,6 +77,9 @@ export default function WordCloudNode({ data, id }: NodeProps) {
       icon={icon}
       color="#6366F1"
       onConfigure={() => { setSelectedQId(config?.questionId || ''); setEditing(true); }}
+      selected={selected}
+      collapsed={(data as any).collapsed}
+      zoomLevel={(data as any).zoomLevel}
     >
       {editing && (
         <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2 space-y-2">

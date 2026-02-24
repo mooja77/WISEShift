@@ -16,6 +16,8 @@ export interface CanvasTranscript {
   content: string;
   sortOrder: number;
   caseId?: string | null;
+  sourceType?: string | null;
+  sourceId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -63,6 +65,7 @@ export interface CanvasNodePosition {
   y: number;
   width?: number;
   height?: number;
+  collapsed?: boolean;
 }
 
 // ─── Cases ───
@@ -198,6 +201,18 @@ export interface TreemapResult {
   total: number;
 }
 
+// ─── Canvas Sharing ───
+
+export interface CanvasShare {
+  id: string;
+  canvasId: string;
+  shareCode: string;
+  createdBy: string;
+  expiresAt?: string | null;
+  cloneCount: number;
+  createdAt: string;
+}
+
 // ─── Merge Questions ───
 export interface MergeQuestionsInput {
   sourceId: string;
@@ -226,6 +241,8 @@ export interface CreateCanvasInput {
 export interface CreateTranscriptInput {
   title: string;
   content: string;
+  sourceType?: string;
+  sourceId?: string;
 }
 
 export interface UpdateTranscriptInput {
@@ -278,7 +295,12 @@ export interface SaveLayoutInput {
     y: number;
     width?: number;
     height?: number;
+    collapsed?: boolean;
   }[];
+}
+
+export interface ReassignCodingInput {
+  newQuestionId: string;
 }
 
 export interface CreateCaseInput {

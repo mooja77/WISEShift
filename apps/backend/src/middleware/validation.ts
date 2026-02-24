@@ -54,6 +54,7 @@ export const addCollaboratorSchema = z.object({
 
 export const narrativeSearchSchema = z.object({
   search: z.string().optional(),
+  assessmentId: z.string().optional(),
   domainKeys: z.array(z.string()).optional(),
   countries: z.array(z.string()).optional(),
   sectors: z.array(z.string()).optional(),
@@ -114,6 +115,17 @@ export const updateCanvasSchema = z.object({
 export const createTranscriptSchema = z.object({
   title: z.string().min(1, 'Transcript title is required').max(200),
   content: z.string().min(1, 'Transcript content is required'),
+  sourceType: z.string().max(50).optional(),
+  sourceId: z.string().max(200).optional(),
+});
+
+export const importNarrativesSchema = z.object({
+  responseIds: z.array(z.string().min(1)).min(1, 'At least one response ID is required').max(100),
+});
+
+export const importFromCanvasSchema = z.object({
+  sourceCanvasId: z.string().min(1),
+  transcriptIds: z.array(z.string().min(1)).min(1, 'At least one transcript ID is required').max(100),
 });
 
 export const updateTranscriptSchema = z.object({
@@ -162,7 +174,12 @@ export const saveLayoutSchema = z.object({
     y: z.number(),
     width: z.number().optional(),
     height: z.number().optional(),
+    collapsed: z.boolean().optional(),
   })),
+});
+
+export const reassignCodingSchema = z.object({
+  newQuestionId: z.string().min(1),
 });
 
 export const updateCodingSchema = z.object({
@@ -184,6 +201,10 @@ export const createRelationSchema = z.object({
   fromId: z.string().min(1),
   toType: z.enum(['case', 'question']),
   toId: z.string().min(1),
+  label: z.string().min(1).max(200),
+});
+
+export const updateRelationSchema = z.object({
   label: z.string().min(1).max(200),
 });
 

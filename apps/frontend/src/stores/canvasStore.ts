@@ -13,6 +13,7 @@ import type {
   ComputedNodeType,
 } from '@wiseshift/shared';
 import { researchApi } from '../services/api';
+import toast from 'react-hot-toast';
 
 interface PendingSelection {
   transcriptId: string;
@@ -39,6 +40,7 @@ interface CanvasState {
 
   // UI toggles
   showCodingStripes: boolean;
+  savingLayout: boolean;
 
   // Actions
   fetchCanvases: () => Promise<void>;
@@ -66,6 +68,7 @@ interface CanvasState {
   createCoding: (transcriptId: string, questionId: string, startOffset: number, endOffset: number, codedText: string) => Promise<CanvasTextCoding>;
   deleteCoding: (codingId: string) => Promise<void>;
   updateCodingAnnotation: (codingId: string, annotation: string | null) => Promise<void>;
+  reassignCoding: (codingId: string, newQuestionId: string) => Promise<void>;
 
   // Layout
   saveLayout: (positions: CanvasNodePosition[]) => Promise<void>;
@@ -80,6 +83,7 @@ interface CanvasState {
 
   // Relations
   addRelation: (fromType: 'case' | 'question', fromId: string, toType: 'case' | 'question', toId: string, label: string) => Promise<CanvasRelation>;
+  updateRelation: (relId: string, label: string) => Promise<void>;
   deleteRelation: (relId: string) => Promise<void>;
 
   // Computed Nodes
@@ -96,6 +100,10 @@ interface CanvasState {
   spreadToParagraph: (transcriptId: string, startOffset: number, endOffset: number, codedText: string) => Promise<void>;
   mergeQuestions: (sourceId: string, targetId: string) => Promise<void>;
 
+  // Import
+  importNarratives: (responseIds: string[]) => Promise<void>;
+  importFromCanvas: (sourceCanvasId: string, transcriptIds: string[]) => Promise<void>;
+
   // UI toggles
   toggleCodingStripes: () => void;
 }
@@ -109,6 +117,7 @@ export const useCanvasStore = create<CanvasState>()((set, get) => ({
   pendingSelection: null,
   selectedQuestionId: null,
   showCodingStripes: false,
+  savingLayout: false,
 
   fetchCanvases: async () => {
     set({ loading: true, error: null });
@@ -232,7 +241,9 @@ export const useCanvasStore = create<CanvasState>()((set, get) => ({
       activeCanvas: s.activeCanvas
         ? {
             ...s.activeCanvas,
-            questions: s.activeCanvas.questions.filter((q: CanvasQuestion) => q.id !== qid),
+            questions: s.activeCanvas.questions
+              .filter((q: CanvasQuestion) => q.id !== qid)
+              .map((q: CanvasQuestion) => q.parentQuestionId === qid ? { ...q, parentQuestionId: null } : q),
             codings: s.activeCanvas.codings.filter((c: CanvasTextCoding) => c.questionId !== qid),
           }
         : null,
@@ -316,19 +327,38 @@ export const useCanvasStore = create<CanvasState>()((set, get) => ({
     }));
   },
 
+  reassignCoding: async (codingId, newQuestionId) => {
+    const { activeCanvasId } = get();
+    if (!activeCanvasId) return;
+    await researchApi.reassignCoding(activeCanvasId, codingId, newQuestionId);
+    set(s => ({
+      activeCanvas: s.activeCanvas
+        ? { ...s.activeCanvas, codings: s.activeCanvas.codings.map((c: CanvasTextCoding) => c.id === codingId ? { ...c, questionId: newQuestionId } : c) }
+        : null,
+    }));
+  },
+
   saveLayout: async (positions) => {
     const { activeCanvasId } = get();
     if (!activeCanvasId) return;
-    await researchApi.saveLayout(activeCanvasId, {
-      positions: positions.map(p => ({
-        nodeId: p.nodeId,
-        nodeType: p.nodeType,
-        x: p.x,
-        y: p.y,
-        width: p.width,
-        height: p.height,
-      })),
-    });
+    set({ savingLayout: true });
+    try {
+      await researchApi.saveLayout(activeCanvasId, {
+        positions: positions.map(p => ({
+          nodeId: p.nodeId,
+          nodeType: p.nodeType,
+          x: p.x,
+          y: p.y,
+          width: p.width,
+          height: p.height,
+          collapsed: p.collapsed,
+        })),
+      });
+    } catch {
+      toast.error('Layout save failed');
+    } finally {
+      set({ savingLayout: false });
+    }
   },
 
   setSelectedQuestionId: (id) => set({ selectedQuestionId: id }),
@@ -372,6 +402,10 @@ export const useCanvasStore = create<CanvasState>()((set, get) => ({
             transcripts: s.activeCanvas.transcripts.map((t: CanvasTranscript) =>
               t.caseId === caseId ? { ...t, caseId: null } : t
             ),
+            relations: s.activeCanvas.relations.filter((r: CanvasRelation) =>
+              !(r.fromType === 'case' && r.fromId === caseId) &&
+              !(r.toType === 'case' && r.toId === caseId)
+            ),
           }
         : null,
     }));
@@ -390,6 +424,17 @@ export const useCanvasStore = create<CanvasState>()((set, get) => ({
         : null,
     }));
     return relation;
+  },
+
+  updateRelation: async (relId, label) => {
+    const { activeCanvasId } = get();
+    if (!activeCanvasId) return;
+    await researchApi.updateRelation(activeCanvasId, relId, { label });
+    set(s => ({
+      activeCanvas: s.activeCanvas
+        ? { ...s.activeCanvas, relations: s.activeCanvas.relations.map((r: CanvasRelation) => r.id === relId ? { ...r, label } : r) }
+        : null,
+    }));
   },
 
   deleteRelation: async (relId) => {
@@ -509,6 +554,22 @@ export const useCanvasStore = create<CanvasState>()((set, get) => ({
     const { activeCanvasId, refreshCanvas } = get();
     if (!activeCanvasId) throw new Error('No canvas open');
     await researchApi.mergeQuestions(activeCanvasId, sourceId, targetId);
+    await refreshCanvas();
+  },
+
+  // ─── Import ───
+
+  importNarratives: async (responseIds) => {
+    const { activeCanvasId, refreshCanvas } = get();
+    if (!activeCanvasId) throw new Error('No canvas open');
+    await researchApi.importNarratives(activeCanvasId, { responseIds });
+    await refreshCanvas();
+  },
+
+  importFromCanvas: async (sourceCanvasId, transcriptIds) => {
+    const { activeCanvasId, refreshCanvas } = get();
+    if (!activeCanvasId) throw new Error('No canvas open');
+    await researchApi.importFromCanvas(activeCanvasId, { sourceCanvasId, transcriptIds });
     await refreshCanvas();
   },
 

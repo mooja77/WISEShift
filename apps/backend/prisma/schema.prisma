@@ -285,22 +285,36 @@ model CodingCanvas {
   cases             CanvasCase[]
   relations         CanvasRelation[]
   computedNodes     CanvasComputedNode[]
+  shares            CanvasShare[]
 
   @@unique([dashboardAccessId, name])
 }
 
+model CanvasShare {
+  id         String       @id @default(cuid())
+  canvasId   String
+  shareCode  String       @unique
+  createdBy  String       // dashboardAccessId
+  expiresAt  DateTime?
+  cloneCount Int          @default(0)
+  createdAt  DateTime     @default(now())
+  canvas     CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+}
+
 model CanvasTranscript {
-  id        String       @id @default(cuid())
-  canvasId  String
-  title     String
-  content   String
-  sortOrder Int          @default(0)
-  caseId    String?
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  canvas    CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-  case      CanvasCase?  @relation(fields: [caseId], references: [id], onDelete: SetNull)
-  codings   CanvasTextCoding[]
+  id         String       @id @default(cuid())
+  canvasId   String
+  title      String
+  content    String
+  sortOrder  Int          @default(0)
+  caseId     String?
+  sourceType String?      // "manual" | "assessment" | "file" | "cross-canvas"
+  sourceId   String?      // assessment responseId, original transcriptId, etc.
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  canvas     CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  case       CanvasCase?  @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  codings    CanvasTextCoding[]
 }
 
 model CanvasQuestion {
@@ -346,15 +360,16 @@ model CanvasTextCoding {
 }
 
 model CanvasNodePosition {
-  id       String       @id @default(cuid())
-  canvasId String
-  nodeId   String
-  nodeType String
-  x        Float
-  y        Float
-  width    Float?
-  height   Float?
-  canvas   CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  id        String       @id @default(cuid())
+  canvasId  String
+  nodeId    String
+  nodeType  String
+  x         Float
+  y         Float
+  width     Float?
+  height    Float?
+  collapsed Boolean      @default(false)
+  canvas    CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
 
   @@unique([canvasId, nodeId])
 }

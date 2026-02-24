@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { createPortal } from 'react-dom';
+import { Handle, Position, NodeResizer } from '@xyflow/react';
 import { useCanvasStore } from '../../../stores/canvasStore';
+import ConfirmDialog from '../ConfirmDialog';
 
 interface ComputedNodeShellProps {
   nodeId: string;
@@ -9,6 +11,9 @@ interface ComputedNodeShellProps {
   icon: ReactNode;
   color: string;
   children: ReactNode;
+  selected?: boolean;
+  collapsed?: boolean;
+  zoomLevel?: number;
   onConfigure?: () => void;
 }
 
@@ -19,26 +24,42 @@ export default function ComputedNodeShell({
   icon,
   color,
   children,
+  selected,
+  collapsed: collapsedProp,
+  zoomLevel: zoomLevelProp,
   onConfigure,
 }: ComputedNodeShellProps) {
   const { runComputedNode, deleteComputedNode } = useCanvasStore();
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [collapsed, setCollapsed] = useState(collapsedProp ?? false);
+
+  const isZoomedOut = (zoomLevelProp ?? 100) < 30;
 
   const handleRun = async () => {
     setRunning(true);
     setError(null);
     try {
       await runComputedNode(computedNodeId);
-    } catch {
-      setError('Computation failed');
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message || 'Computation failed';
+      setError(msg);
     } finally {
       setRunning(false);
     }
   };
 
   return (
-    <div className="w-[360px] rounded-xl border-2 shadow-node transition-all duration-200 hover:shadow-node-hover hover:-translate-y-0.5" style={{ borderColor: color }}>
+    <div className={`min-w-[280px] w-full h-full rounded-xl border-2 shadow-node transition-all duration-200 hover:shadow-node-hover ${selected ? 'ring-2 ring-blue-400' : ''}`} style={{ borderColor: color }}>
+      <NodeResizer
+        minWidth={280}
+        minHeight={collapsed ? 44 : 100}
+        lineClassName="!border-indigo-400/50"
+        handleClassName="!w-2 !h-2 !bg-indigo-400 !border-indigo-500"
+        isVisible={selected}
+      />
+
       <Handle
         type="target"
         position={Position.Left}
@@ -49,14 +70,23 @@ export default function ComputedNodeShell({
 
       {/* Header */}
       <div
-        className="drag-handle flex items-center justify-between rounded-t-lg px-3 py-2.5 cursor-grab"
+        className="drag-handle flex items-center justify-between rounded-t-lg px-3 py-2.5 cursor-grab active:cursor-grabbing"
         style={{ background: `linear-gradient(135deg, ${color}12, ${color}08)` }}
       >
         <div className="flex items-center gap-2 min-w-0">
           <span style={{ color }}>{icon}</span>
           <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate">{label}</span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={() => setCollapsed(c => !c)}
+            className="rounded p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            title={collapsed ? 'Expand' : 'Collapse'}
+          >
+            <svg className={`h-3.5 w-3.5 transition-transform ${collapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+            </svg>
+          </button>
           {onConfigure && (
             <button
               onClick={onConfigure}
@@ -87,7 +117,7 @@ export default function ComputedNodeShell({
             )}
           </button>
           <button
-            onClick={() => deleteComputedNode(computedNodeId)}
+            onClick={() => setShowDeleteConfirm(true)}
             className="rounded p-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
             title="Delete node"
           >
@@ -98,15 +128,28 @@ export default function ComputedNodeShell({
         </div>
       </div>
 
-      {/* Body */}
-      <div className="bg-white dark:bg-gray-800 rounded-b-xl nodrag nowheel">
-        {error && (
-          <div className="px-3 py-1.5 text-xs text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400">
-            {error}
-          </div>
-        )}
-        {children}
-      </div>
+      {/* Body - collapsible */}
+      {!collapsed && !isZoomedOut && (
+        <div className="bg-white dark:bg-gray-800 rounded-b-xl nodrag nowheel">
+          {error && (
+            <div className="px-3 py-1.5 text-xs text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400">
+              {error}
+            </div>
+          )}
+          {children}
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      {showDeleteConfirm && createPortal(
+        <ConfirmDialog
+          title={`Delete ${label}`}
+          message={`Delete the "${label}" analysis node? This cannot be undone.`}
+          onConfirm={() => { setShowDeleteConfirm(false); deleteComputedNode(computedNodeId); }}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />,
+        document.body,
+      )}
     </div>
   );
 }

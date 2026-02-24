@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useCanvasStore } from '../../../stores/canvasStore';
 import type { CanvasQuestion, CanvasTextCoding } from '@wiseshift/shared';
+import toast from 'react-hot-toast';
 
 interface CodebookExportModalProps {
   onClose: () => void;
@@ -44,12 +45,17 @@ export default function CodebookExportModal({ onClose }: CodebookExportModalProp
     });
   }, [activeCanvas]);
 
-  const handleCopyClipboard = () => {
+  const handleCopyClipboard = async () => {
     const header = 'Code Name\tColor\tParent Theme\tFrequency\tCoverage %\tExample Excerpts';
     const rows = entries.map(e =>
       `${e.name}\t${e.color}\t${e.parentTheme}\t${e.frequency}\t${e.coveragePercent}%\t${e.examples.join(' | ')}`
     );
-    navigator.clipboard.writeText([header, ...rows].join('\n'));
+    try {
+      await navigator.clipboard.writeText([header, ...rows].join('\n'));
+      toast.success('Codebook copied to clipboard');
+    } catch {
+      toast.error('Failed to copy — try downloading as CSV instead');
+    }
   };
 
   const handleDownloadCsv = () => {
@@ -66,6 +72,7 @@ export default function CodebookExportModal({ onClose }: CodebookExportModalProp
     a.download = `codebook-${activeCanvas?.name || 'export'}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success('CSV downloaded');
   };
 
   return (

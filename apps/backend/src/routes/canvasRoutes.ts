@@ -17,11 +17,16 @@ import {
   createCaseSchema,
   updateCaseSchema,
   createRelationSchema,
+  updateRelationSchema,
   createComputedNodeSchema,
   updateComputedNodeSchema,
   autoCodeSchema,
   mergeQuestionsSchema,
+  importNarrativesSchema,
+  importFromCanvasSchema,
+  reassignCodingSchema,
 } from '../middleware/validation.js';
+import { nanoid } from 'nanoid';
 import {
   searchTranscripts,
   computeCooccurrence,
@@ -36,6 +41,7 @@ import {
 } from '../utils/textAnalysis.js';
 
 export const canvasRoutes = Router();
+export const canvasPublicRoutes = Router();
 
 // Helper: verify canvas belongs to this dashboard
 async function getOwnedCanvas(canvasId: string, dashboardAccessId: string) {
@@ -291,6 +297,26 @@ canvasRoutes.delete('/canvas/:id/codings/:cid', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// PUT /canvas/:id/codings/:cid/reassign — move coding to a different question
+canvasRoutes.put('/canvas/:id/codings/:cid/reassign', validate(reassignCodingSchema), async (req, res, next) => {
+  try {
+    const dashboardAccessId = (req as any).dashboardAccessId;
+    await getOwnedCanvas(req.params.id, dashboardAccessId);
+    const { newQuestionId } = req.body;
+
+    const question = await prisma.canvasQuestion.findUnique({ where: { id: newQuestionId } });
+    if (!question || question.canvasId !== req.params.id) {
+      return next(new AppError('Target question not found in this canvas', 400));
+    }
+
+    const coding = await prisma.canvasTextCoding.update({
+      where: { id: req.params.cid },
+      data: { questionId: newQuestionId },
+    });
+    res.json({ success: true, data: coding });
+  } catch (err) { next(err); }
+});
+
 // ─── Layout (Node Positions) ───
 
 canvasRoutes.put('/canvas/:id/layout', validate(saveLayoutSchema), async (req, res, next) => {
@@ -305,7 +331,7 @@ canvasRoutes.put('/canvas/:id/layout', validate(saveLayoutSchema), async (req, r
         prisma.canvasNodePosition.upsert({
           where: { canvasId_nodeId: { canvasId: req.params.id, nodeId: pos.nodeId } },
           create: { canvasId: req.params.id, ...pos },
-          update: { x: pos.x, y: pos.y, width: pos.width, height: pos.height },
+          update: { x: pos.x, y: pos.y, width: pos.width, height: pos.height, collapsed: pos.collapsed },
         })
       )
     );
@@ -420,6 +446,18 @@ canvasRoutes.post('/canvas/:id/relations', validate(createRelationSchema), async
       data: { canvasId: req.params.id, ...req.body },
     });
     res.status(201).json({ success: true, data: relation });
+  } catch (err) { next(err); }
+});
+
+canvasRoutes.put('/canvas/:id/relations/:relId', validate(updateRelationSchema), async (req, res, next) => {
+  try {
+    const dashboardAccessId = (req as any).dashboardAccessId;
+    await getOwnedCanvas(req.params.id, dashboardAccessId);
+    const relation = await prisma.canvasRelation.update({
+      where: { id: req.params.relId },
+      data: { label: req.body.label },
+    });
+    res.json({ success: true, data: relation });
   } catch (err) { next(err); }
 });
 
@@ -606,5 +644,385 @@ canvasRoutes.post('/canvas/:id/auto-code', validate(autoCodeSchema), async (req,
     );
 
     res.status(201).json({ success: true, data: { created: created.length, codings: created } });
+  } catch (err) { next(err); }
+});
+
+// ─── Import Narratives (Phase 1) ───
+
+canvasRoutes.post('/canvas/:id/import-narratives', validate(importNarrativesSchema), async (req, res, next) => {
+  try {
+    const dashboardAccessId = (req as any).dashboardAccessId;
+    await getOwnedCanvas(req.params.id, dashboardAccessId);
+    const { responseIds } = req.body;
+
+    // Fetch narrative responses
+    const responses = await prisma.response.findMany({
+      where: {
+        id: { in: responseIds },
+        questionType: 'narrative',
+        textValue: { not: null },
+      },
+      include: {
+        assessment: { include: { organisation: { select: { name: true } } } },
+      },
+    });
+
+    if (responses.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const count = await prisma.canvasTranscript.count({ where: { canvasId: req.params.id } });
+
+    const transcripts = await prisma.$transaction(
+      responses.map((r, i) => {
+        const orgName = r.assessment.organisation.name;
+        const excerpt = (r.textValue || '').slice(0, 60).replace(/\s+\S*$/, '');
+        const title = `${orgName} — ${r.domainKey}: ${excerpt}…`;
+        return prisma.canvasTranscript.create({
+          data: {
+            canvasId: req.params.id,
+            title,
+            content: r.textValue!,
+            sortOrder: count + i,
+            sourceType: 'assessment',
+            sourceId: r.id,
+          },
+        });
+      })
+    );
+
+    res.status(201).json({ success: true, data: transcripts });
+  } catch (err) { next(err); }
+});
+
+// ─── Import from Canvas (Phase 3) ───
+
+canvasRoutes.post('/canvas/:id/import-from-canvas', validate(importFromCanvasSchema), async (req, res, next) => {
+  try {
+    const dashboardAccessId = (req as any).dashboardAccessId;
+    await getOwnedCanvas(req.params.id, dashboardAccessId);
+    const { sourceCanvasId, transcriptIds } = req.body;
+
+    // Validate source canvas belongs to same researcher
+    const sourceCanvas = await prisma.codingCanvas.findUnique({ where: { id: sourceCanvasId } });
+    if (!sourceCanvas) return next(new AppError('Source canvas not found', 404));
+    if (sourceCanvas.dashboardAccessId !== dashboardAccessId) {
+      return next(new AppError('Source canvas does not belong to you', 403));
+    }
+
+    // Fetch source transcripts with codings
+    const sourceTranscripts = await prisma.canvasTranscript.findMany({
+      where: { id: { in: transcriptIds }, canvasId: sourceCanvasId },
+      include: { codings: true },
+    });
+
+    if (sourceTranscripts.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const count = await prisma.canvasTranscript.count({ where: { canvasId: req.params.id } });
+
+    // We need to create transcripts first, then codings with remapped IDs
+    const results: any[] = [];
+    for (let i = 0; i < sourceTranscripts.length; i++) {
+      const src = sourceTranscripts[i];
+      const newTranscript = await prisma.canvasTranscript.create({
+        data: {
+          canvasId: req.params.id,
+          title: src.title,
+          content: src.content,
+          sortOrder: count + i,
+          sourceType: 'cross-canvas',
+          sourceId: src.id,
+        },
+      });
+
+      // Copy codings if present — note: questionIds from source canvas won't exist
+      // in the target canvas, so we skip coding import (questions need to exist).
+      // The user can re-code after import.
+      results.push(newTranscript);
+    }
+
+    res.status(201).json({ success: true, data: results });
+  } catch (err) { next(err); }
+});
+
+// ─── Canvas Sharing (Phase 4) ───
+
+// Generate share code
+canvasRoutes.post('/canvas/:id/share', async (req, res, next) => {
+  try {
+    const dashboardAccessId = (req as any).dashboardAccessId;
+    await getOwnedCanvas(req.params.id, dashboardAccessId);
+
+    const shareCode = `SHARE-${nanoid(8).toUpperCase().replace(/[^A-Z0-9]/g, 'X')}`;
+
+    const share = await prisma.canvasShare.create({
+      data: {
+        canvasId: req.params.id,
+        shareCode,
+        createdBy: dashboardAccessId,
+      },
+    });
+
+    res.status(201).json({ success: true, data: share });
+  } catch (err) { next(err); }
+});
+
+// List shares for a canvas
+canvasRoutes.get('/canvas/:id/shares', async (req, res, next) => {
+  try {
+    const dashboardAccessId = (req as any).dashboardAccessId;
+    await getOwnedCanvas(req.params.id, dashboardAccessId);
+
+    const shares = await prisma.canvasShare.findMany({
+      where: { canvasId: req.params.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({ success: true, data: shares });
+  } catch (err) { next(err); }
+});
+
+// Get shared canvas detail (public — no auth required beyond the share code)
+canvasPublicRoutes.get('/canvas/shared/:code', async (req, res, next) => {
+  try {
+    const share = await prisma.canvasShare.findUnique({ where: { shareCode: req.params.code } });
+    if (!share) return next(new AppError('Share code not found', 404));
+
+    // Check expiry
+    if (share.expiresAt && new Date(share.expiresAt) < new Date()) {
+      return next(new AppError('Share code has expired', 410));
+    }
+
+    const canvas = await prisma.codingCanvas.findUnique({
+      where: { id: share.canvasId },
+      include: {
+        transcripts: { orderBy: { sortOrder: 'asc' } },
+        questions: { orderBy: { sortOrder: 'asc' } },
+        memos: { orderBy: { createdAt: 'asc' } },
+        codings: true,
+        cases: { orderBy: { createdAt: 'asc' } },
+        relations: { orderBy: { createdAt: 'asc' } },
+        computedNodes: { orderBy: { createdAt: 'asc' } },
+      },
+    });
+
+    if (!canvas) return next(new AppError('Canvas not found', 404));
+
+    const data = {
+      ...canvas,
+      cases: canvas.cases.map(c => ({ ...c, attributes: JSON.parse(c.attributes) })),
+      computedNodes: canvas.computedNodes.map(n => ({
+        ...n,
+        config: JSON.parse(n.config),
+        result: JSON.parse(n.result),
+      })),
+    };
+
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+});
+
+// Clone a shared canvas
+canvasRoutes.post('/canvas/clone/:code', async (req, res, next) => {
+  try {
+    const dashboardAccessId = (req as any).dashboardAccessId;
+
+    const share = await prisma.canvasShare.findUnique({ where: { shareCode: req.params.code } });
+    if (!share) return next(new AppError('Share code not found', 404));
+
+    if (share.expiresAt && new Date(share.expiresAt) < new Date()) {
+      return next(new AppError('Share code has expired', 410));
+    }
+
+    // Fetch source canvas with all data
+    const source = await prisma.codingCanvas.findUnique({
+      where: { id: share.canvasId },
+      include: {
+        transcripts: true,
+        questions: true,
+        memos: true,
+        codings: true,
+        cases: true,
+        relations: true,
+        computedNodes: true,
+      },
+    });
+
+    if (!source) return next(new AppError('Source canvas not found', 404));
+
+    // Generate unique name
+    const baseName = `${source.name} (Clone)`;
+    let cloneName = baseName;
+    let attempt = 0;
+    while (true) {
+      const existing = await prisma.codingCanvas.findUnique({
+        where: { dashboardAccessId_name: { dashboardAccessId, name: cloneName } },
+      });
+      if (!existing) break;
+      attempt++;
+      cloneName = `${baseName} ${attempt}`;
+    }
+
+    // Deep clone in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create canvas
+      const newCanvas = await tx.codingCanvas.create({
+        data: {
+          dashboardAccessId,
+          name: cloneName,
+          description: source.description,
+        },
+      });
+
+      // ID maps for remapping FKs
+      const transcriptIdMap = new Map<string, string>();
+      const questionIdMap = new Map<string, string>();
+      const caseIdMap = new Map<string, string>();
+
+      // Clone cases
+      for (const c of source.cases) {
+        const newCase = await tx.canvasCase.create({
+          data: {
+            canvasId: newCanvas.id,
+            name: c.name,
+            attributes: c.attributes,
+          },
+        });
+        caseIdMap.set(c.id, newCase.id);
+      }
+
+      // Clone transcripts
+      for (const t of source.transcripts) {
+        const newT = await tx.canvasTranscript.create({
+          data: {
+            canvasId: newCanvas.id,
+            title: t.title,
+            content: t.content,
+            sortOrder: t.sortOrder,
+            caseId: t.caseId ? caseIdMap.get(t.caseId) || null : null,
+            sourceType: 'cross-canvas',
+            sourceId: t.id,
+          },
+        });
+        transcriptIdMap.set(t.id, newT.id);
+      }
+
+      // Clone questions (handle parent references in a second pass)
+      for (const q of source.questions) {
+        const newQ = await tx.canvasQuestion.create({
+          data: {
+            canvasId: newCanvas.id,
+            text: q.text,
+            color: q.color,
+            sortOrder: q.sortOrder,
+          },
+        });
+        questionIdMap.set(q.id, newQ.id);
+      }
+
+      // Update parent references
+      for (const q of source.questions) {
+        if (q.parentQuestionId && questionIdMap.has(q.parentQuestionId)) {
+          await tx.canvasQuestion.update({
+            where: { id: questionIdMap.get(q.id)! },
+            data: { parentQuestionId: questionIdMap.get(q.parentQuestionId)! },
+          });
+        }
+      }
+
+      // Clone memos
+      for (const m of source.memos) {
+        await tx.canvasMemo.create({
+          data: {
+            canvasId: newCanvas.id,
+            title: m.title,
+            content: m.content,
+            color: m.color,
+          },
+        });
+      }
+
+      // Clone codings
+      for (const c of source.codings) {
+        const newTranscriptId = transcriptIdMap.get(c.transcriptId);
+        const newQuestionId = questionIdMap.get(c.questionId);
+        if (newTranscriptId && newQuestionId) {
+          await tx.canvasTextCoding.create({
+            data: {
+              canvasId: newCanvas.id,
+              transcriptId: newTranscriptId,
+              questionId: newQuestionId,
+              startOffset: c.startOffset,
+              endOffset: c.endOffset,
+              codedText: c.codedText,
+              note: c.note,
+              annotation: c.annotation,
+            },
+          });
+        }
+      }
+
+      // Clone relations
+      for (const r of source.relations) {
+        const fromId = r.fromType === 'case' ? caseIdMap.get(r.fromId) : questionIdMap.get(r.fromId);
+        const toId = r.toType === 'case' ? caseIdMap.get(r.toId) : questionIdMap.get(r.toId);
+        if (fromId && toId) {
+          await tx.canvasRelation.create({
+            data: {
+              canvasId: newCanvas.id,
+              fromType: r.fromType,
+              fromId,
+              toType: r.toType,
+              toId,
+              label: r.label,
+            },
+          });
+        }
+      }
+
+      // Clone computed nodes
+      for (const n of source.computedNodes) {
+        await tx.canvasComputedNode.create({
+          data: {
+            canvasId: newCanvas.id,
+            nodeType: n.nodeType,
+            label: n.label,
+            config: n.config,
+            result: '{}',
+          },
+        });
+      }
+
+      // Increment clone count
+      await tx.canvasShare.update({
+        where: { id: share.id },
+        data: { cloneCount: { increment: 1 } },
+      });
+
+      return newCanvas;
+    });
+
+    res.status(201).json({ success: true, data: result });
+  } catch (err: any) {
+    if (err.code === 'P2002') return next(new AppError('A canvas with this name already exists', 409));
+    next(err);
+  }
+});
+
+// Revoke share code
+canvasRoutes.delete('/canvas/:id/share/:shareId', async (req, res, next) => {
+  try {
+    const dashboardAccessId = (req as any).dashboardAccessId;
+    await getOwnedCanvas(req.params.id, dashboardAccessId);
+
+    const share = await prisma.canvasShare.findUnique({ where: { id: req.params.shareId } });
+    if (!share || share.canvasId !== req.params.id) {
+      return next(new AppError('Share not found', 404));
+    }
+
+    await prisma.canvasShare.delete({ where: { id: req.params.shareId } });
+    res.json({ success: true });
   } catch (err) { next(err); }
 });

@@ -451,6 +451,9 @@ export const researchApi = {
   deleteCoding: (canvasId: string, codingId: string) =>
     researchClient.delete(`/canvas/${canvasId}/codings/${codingId}`),
 
+  reassignCoding: (canvasId: string, codingId: string, newQuestionId: string) =>
+    researchClient.put(`/canvas/${canvasId}/codings/${codingId}/reassign`, { newQuestionId }),
+
   saveLayout: (canvasId: string, data: SaveLayoutInput) =>
     researchClient.put(`/canvas/${canvasId}/layout`, data),
 
@@ -471,6 +474,9 @@ export const researchApi = {
   // Relations
   createRelation: (canvasId: string, data: CreateRelationInput) =>
     researchClient.post(`/canvas/${canvasId}/relations`, data),
+
+  updateRelation: (canvasId: string, relId: string, data: { label: string }) =>
+    researchClient.put(`/canvas/${canvasId}/relations/${relId}`, data),
 
   deleteRelation: (canvasId: string, relId: string) =>
     researchClient.delete(`/canvas/${canvasId}/relations/${relId}`),
@@ -495,6 +501,30 @@ export const researchApi = {
   // Merge Questions
   mergeQuestions: (canvasId: string, sourceId: string, targetId: string) =>
     researchClient.post(`/canvas/${canvasId}/questions/merge`, { sourceId, targetId }),
+
+  // Import Narratives
+  importNarratives: (canvasId: string, data: { responseIds: string[] }) =>
+    researchClient.post(`/canvas/${canvasId}/import-narratives`, data),
+
+  // Import from Canvas
+  importFromCanvas: (canvasId: string, data: { sourceCanvasId: string; transcriptIds: string[] }) =>
+    researchClient.post(`/canvas/${canvasId}/import-from-canvas`, data),
+
+  // Canvas Sharing
+  shareCanvas: (canvasId: string) =>
+    researchClient.post(`/canvas/${canvasId}/share`),
+
+  getShares: (canvasId: string) =>
+    researchClient.get(`/canvas/${canvasId}/shares`),
+
+  revokeShare: (canvasId: string, shareId: string) =>
+    researchClient.delete(`/canvas/${canvasId}/share/${shareId}`),
+
+  cloneCanvas: (shareCode: string) =>
+    researchClient.post(`/canvas/clone/${shareCode}`),
+
+  getSharedCanvas: (shareCode: string) =>
+    researchClient.get(`/canvas/shared/${shareCode}`),
 };
 
 // Researcher Portal API

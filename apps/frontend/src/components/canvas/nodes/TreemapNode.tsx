@@ -45,7 +45,7 @@ function TreemapCell(props: any) {
   );
 }
 
-export default function TreemapNode({ data, id }: NodeProps) {
+export default function TreemapNode({ data, id, selected }: NodeProps) {
   const nodeData = data as unknown as TreemapNodeData;
   const { activeCanvas, updateComputedNode } = useCanvasStore();
   const node = activeCanvas?.computedNodes.find((n: CanvasComputedNode) => n.id === nodeData.computedNodeId);
@@ -102,6 +102,9 @@ export default function TreemapNode({ data, id }: NodeProps) {
         setMetric(config?.metric || 'count');
         setEditing(true);
       }}
+      selected={selected}
+      collapsed={(data as any).collapsed}
+      zoomLevel={(data as any).zoomLevel}
     >
       {editing && (
         <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2 space-y-2">

@@ -11,7 +11,7 @@ export interface ClusterNodeData {
 
 const CLUSTER_COLORS = ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#EF4444'];
 
-export default function ClusterNode({ data, id }: NodeProps) {
+export default function ClusterNode({ data, id, selected }: NodeProps) {
   const nodeData = data as unknown as ClusterNodeData;
   const { activeCanvas, updateComputedNode } = useCanvasStore();
   const node = activeCanvas?.computedNodes.find((n: CanvasComputedNode) => n.id === nodeData.computedNodeId);
@@ -41,6 +41,9 @@ export default function ClusterNode({ data, id }: NodeProps) {
       icon={icon}
       color="#14B8A6"
       onConfigure={() => { setK(config?.k || 3); setEditing(true); }}
+      selected={selected}
+      collapsed={(data as any).collapsed}
+      zoomLevel={(data as any).zoomLevel}
     >
       {editing && (
         <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2 space-y-2">

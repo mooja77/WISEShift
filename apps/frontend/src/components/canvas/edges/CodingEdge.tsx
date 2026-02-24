@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { BaseEdge, getBezierPath, EdgeLabelRenderer } from '@xyflow/react';
 import type { EdgeProps } from '@xyflow/react';
 import { useCanvasStore } from '../../../stores/canvasStore';
+import ConfirmDialog from '../ConfirmDialog';
 
 export default function CodingEdge({
   id,
@@ -15,6 +17,7 @@ export default function CodingEdge({
   style,
 }: EdgeProps) {
   const [hovered, setHovered] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { deleteCoding } = useCanvasStore();
   const edgeData = data as { codingId: string; codedText: string; questionColor: string } | undefined;
 
@@ -66,7 +69,7 @@ export default function CodingEdge({
                 "{edgeData.codedText}"
               </p>
               <button
-                onClick={() => deleteCoding(edgeData.codingId)}
+                onClick={() => setShowDeleteConfirm(true)}
                 className="mt-1.5 flex items-center gap-1 text-[10px] text-red-300 hover:text-red-200"
               >
                 <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -77,6 +80,18 @@ export default function CodingEdge({
             </div>
           </div>
         </EdgeLabelRenderer>
+      )}
+
+      {/* Delete confirmation */}
+      {showDeleteConfirm && edgeData && createPortal(
+        <ConfirmDialog
+          title="Remove Coding"
+          message="Remove this coded segment? The transcript text will not be affected."
+          confirmLabel="Remove"
+          onConfirm={() => { deleteCoding(edgeData.codingId); setShowDeleteConfirm(false); setHovered(false); }}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />,
+        document.body,
       )}
     </>
   );

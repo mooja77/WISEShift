@@ -1,11 +1,15 @@
 import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useCanvasStore } from '../../../stores/canvasStore';
 import AnnotationPopover from './AnnotationPopover';
+import ConfirmDialog from '../ConfirmDialog';
 import type { CanvasQuestion, CanvasTextCoding, CanvasTranscript } from '@wiseshift/shared';
+import toast from 'react-hot-toast';
 
 export default function CodingDetailPanel() {
   const { activeCanvas, selectedQuestionId, setSelectedQuestionId, deleteCoding } = useCanvasStore();
   const [annotatingId, setAnnotatingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const question = useMemo(
     () => activeCanvas?.questions.find((q: CanvasQuestion) => q.id === selectedQuestionId),
@@ -72,9 +76,18 @@ export default function CodingDetailPanel() {
 
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-[10px] text-gray-400">
-                    chars {coding.startOffset}–{coding.endOffset}
+                    {coding.endOffset - coding.startOffset} chars
                   </span>
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(coding.codedText);
+                        toast.success('Copied to clipboard');
+                      }}
+                      className="text-[10px] text-blue-500 hover:text-blue-700 dark:hover:text-blue-300"
+                    >
+                      Copy
+                    </button>
                     <button
                       onClick={() => setAnnotatingId(annotatingId === coding.id ? null : coding.id)}
                       className="text-[10px] text-amber-500 hover:text-amber-700 dark:hover:text-amber-300"
@@ -82,7 +95,7 @@ export default function CodingDetailPanel() {
                       {coding.annotation ? 'Edit note' : 'Annotate'}
                     </button>
                     <button
-                      onClick={() => deleteCoding(coding.id)}
+                      onClick={() => setConfirmDeleteId(coding.id)}
                       className="text-[10px] text-red-400 hover:text-red-600 dark:hover:text-red-300"
                     >
                       Remove
@@ -109,9 +122,21 @@ export default function CodingDetailPanel() {
       {/* Summary footer */}
       <div className="border-t border-gray-200 px-4 py-2 dark:border-gray-700">
         <span className="text-xs text-gray-400">
-          {codings.length} segment{codings.length !== 1 ? 's' : ''} coded
+          {codings.length} segment{codings.length !== 1 ? 's' : ''}{codings.length > 0 ? ` · ${codings.reduce((sum: number, c: CanvasTextCoding) => sum + (c.endOffset - c.startOffset), 0)} total chars` : ''}
         </span>
       </div>
+
+      {/* Delete coding confirmation */}
+      {confirmDeleteId && createPortal(
+        <ConfirmDialog
+          title="Remove Coded Segment"
+          message="Remove this coded segment? The transcript text will not be affected."
+          confirmLabel="Remove"
+          onConfirm={() => { deleteCoding(confirmDeleteId); setConfirmDeleteId(null); }}
+          onCancel={() => setConfirmDeleteId(null)}
+        />,
+        document.body,
+      )}
     </div>
   );
 }

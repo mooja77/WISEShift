@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCanvasStore } from '../../../stores/canvasStore';
+import ConfirmDialog from '../ConfirmDialog';
 import type { CanvasCase, CanvasTranscript } from '@wiseshift/shared';
 import toast from 'react-hot-toast';
 
@@ -14,6 +15,7 @@ export default function CaseManagerPanel({ onClose }: CaseManagerPanelProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editAttrs, setEditAttrs] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const cases = activeCanvas?.cases ?? [];
   const transcripts = activeCanvas?.transcripts ?? [];
@@ -119,7 +121,7 @@ export default function CaseManagerPanel({ onClose }: CaseManagerPanelProps) {
                     <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{c.name}</span>
                     <div className="flex gap-1">
                       <button onClick={() => startEdit(c)} className="text-[10px] text-blue-500 hover:text-blue-700">Edit</button>
-                      <button onClick={() => deleteCase(c.id)} className="text-[10px] text-red-400 hover:text-red-600">Delete</button>
+                      <button onClick={() => setConfirmDeleteId(c.id)} className="text-[10px] text-red-400 hover:text-red-600">Delete</button>
                     </div>
                   </div>
                   {Object.keys(c.attributes || {}).length > 0 && (
@@ -156,6 +158,16 @@ export default function CaseManagerPanel({ onClose }: CaseManagerPanelProps) {
             <p className="text-center text-xs text-gray-400 py-4">No cases yet. Create one above.</p>
           )}
         </div>
+
+        {/* Delete confirmation */}
+        {confirmDeleteId && (
+          <ConfirmDialog
+            title="Delete Case"
+            message="Delete this case? Transcripts will be unlinked and relations removed."
+            onConfirm={() => { deleteCase(confirmDeleteId); setConfirmDeleteId(null); }}
+            onCancel={() => setConfirmDeleteId(null)}
+          />
+        )}
       </div>
     </div>
   );

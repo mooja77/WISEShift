@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -11,7 +11,9 @@ import {
   type OnConnect,
   type NodeChange,
   type ReactFlowInstance,
+  type OnSelectionChangeParams,
   BackgroundVariant,
+  reconnectEdge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -33,7 +35,16 @@ import CodingEdge from './edges/CodingEdge';
 import RelationEdge from './edges/RelationEdge';
 import CanvasToolbar from './panels/CanvasToolbar';
 import CodingDetailPanel from './panels/CodingDetailPanel';
+import KeyboardShortcutsModal from './panels/KeyboardShortcutsModal';
+import CanvasSearchOverlay from './panels/CanvasSearchOverlay';
+import CanvasContextMenu from './panels/CanvasContextMenu';
+import NodeContextMenu from './panels/NodeContextMenu';
+import EdgeContextMenu from './panels/EdgeContextMenu';
+import SelectionToolbar from './panels/SelectionToolbar';
+import QuickAddMenu from './panels/QuickAddMenu';
+import ConfirmDialog from './ConfirmDialog';
 import { useCanvasStore } from '../../stores/canvasStore';
+import { useCanvasHistory } from '../../hooks/useCanvasHistory';
 import type {
   CanvasTranscript,
   CanvasQuestion,
@@ -43,6 +54,7 @@ import type {
   CanvasCase,
   CanvasRelation,
   CanvasComputedNode,
+  ComputedNodeType,
 } from '@wiseshift/shared';
 import toast from 'react-hot-toast';
 
@@ -78,9 +90,23 @@ export default function CanvasWorkspace() {
     setPendingSelection,
     createCoding,
     saveLayout,
+    savingLayout,
     selectedQuestionId,
+    setSelectedQuestionId,
     addRelation,
     mergeQuestions,
+    addMemo,
+    addQuestion,
+    addTranscript,
+    addComputedNode,
+    deleteTranscript,
+    deleteQuestion,
+    deleteMemo,
+    deleteCase,
+    deleteComputedNode,
+    deleteCoding,
+    deleteRelation,
+    reassignCoding,
   } = useCanvasStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -91,60 +117,115 @@ export default function CanvasWorkspace() {
   const [relationLabel, setRelationLabel] = useState<{ show: boolean; source: string; target: string }>({ show: false, source: '', target: '' });
   const [mergeConfirm, setMergeConfirm] = useState<{ show: boolean; sourceId: string; targetId: string; sourceName: string; targetName: string }>({ show: false, sourceId: '', targetId: '', sourceName: '', targetName: '' });
 
+  // UI state
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [highlightedNodeIds, setHighlightedNodeIds] = useState<Set<string>>(new Set());
+  const [contextMenu, setContextMenu] = useState<{ show: boolean; x: number; y: number } | null>(null);
+  const [nodeContextMenu, setNodeContextMenu] = useState<{ show: boolean; x: number; y: number; nodeId: string; nodeType: string; collapsed: boolean } | null>(null);
+  const [edgeContextMenu, setEdgeContextMenu] = useState<{ show: boolean; x: number; y: number; edgeId: string; edgeType: string; label?: string } | null>(null);
+  const [quickAddMenu, setQuickAddMenu] = useState<{ x: number; y: number } | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(100);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ nodeId: string; label: string; type: string } | null>(null);
+  const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
+
+  // Snap to grid
+  const [snapToGrid, setSnapToGrid] = useState(false);
+
+  // Clipboard for copy/paste
+  const clipboardRef = useRef<Node[]>([]);
+
+  // Undo/Redo
+  const { pushAction, undo, redo, canUndo, canRedo } = useCanvasHistory();
+
+  // Build position map with dimensions and collapsed state
+  const posMap = useMemo(() => {
+    if (!activeCanvas) return new Map<string, CanvasNodePosition>();
+    const map = new Map<string, CanvasNodePosition>();
+    activeCanvas.nodePositions.forEach((p: CanvasNodePosition) => map.set(p.nodeId, p));
+    return map;
+  }, [activeCanvas?.nodePositions]);
+
   // Build nodes from canvas data
   const buildNodes = useCallback((): Node[] => {
     if (!activeCanvas) return [];
-    const posMap = new Map<string, { x: number; y: number }>();
-    activeCanvas.nodePositions.forEach((p: CanvasNodePosition) => posMap.set(p.nodeId, { x: p.x, y: p.y }));
 
+    const isSearching = highlightedNodeIds.size > 0;
     const result: Node[] = [];
 
     activeCanvas.transcripts.forEach((t: CanvasTranscript, i: number) => {
       const nodeId = `transcript-${t.id}`;
-      const pos = posMap.get(nodeId) || { x: 50, y: 50 + i * 500 };
+      const posData = posMap.get(nodeId);
+      const pos = posData ? { x: posData.x, y: posData.y } : { x: 50, y: 50 + i * 500 };
+      const dimmed = isSearching && !highlightedNodeIds.has(nodeId);
+      const style: Record<string, unknown> = { transition: 'opacity 0.2s' };
+      if (dimmed) style.opacity = 0.15;
+      if (posData?.width) style.width = posData.width;
+      if (posData?.height) style.height = posData.height;
       result.push({
         id: nodeId,
         type: 'transcript',
         position: pos,
         dragHandle: '.drag-handle',
+        style,
         data: {
           transcriptId: t.id,
           title: t.title,
           content: t.content,
           caseId: t.caseId,
+          collapsed: posData?.collapsed ?? false,
+          zoomLevel,
         },
       });
     });
 
     activeCanvas.questions.forEach((q: CanvasQuestion, i: number) => {
       const nodeId = `question-${q.id}`;
-      const pos = posMap.get(nodeId) || { x: 550, y: 50 + i * 280 };
+      const posData = posMap.get(nodeId);
+      const pos = posData ? { x: posData.x, y: posData.y } : { x: 550, y: 50 + i * 280 };
+      const dimmed = isSearching && !highlightedNodeIds.has(nodeId);
+      const style: Record<string, unknown> = { transition: 'opacity 0.2s' };
+      if (dimmed) style.opacity = 0.15;
+      if (posData?.width) style.width = posData.width;
+      if (posData?.height) style.height = posData.height;
       result.push({
         id: nodeId,
         type: 'question',
         position: pos,
         dragHandle: '.drag-handle',
+        style,
         data: {
           questionId: q.id,
           text: q.text,
           color: q.color,
+          collapsed: posData?.collapsed ?? false,
+          zoomLevel,
         },
       });
     });
 
     activeCanvas.memos.forEach((m: CanvasMemo, i: number) => {
       const nodeId = `memo-${m.id}`;
-      const pos = posMap.get(nodeId) || { x: 900, y: 50 + i * 300 };
+      const posData = posMap.get(nodeId);
+      const pos = posData ? { x: posData.x, y: posData.y } : { x: 900, y: 50 + i * 300 };
+      const dimmed = isSearching && !highlightedNodeIds.has(nodeId);
+      const style: Record<string, unknown> = { transition: 'opacity 0.2s' };
+      if (dimmed) style.opacity = 0.15;
+      if (posData?.width) style.width = posData.width;
+      if (posData?.height) style.height = posData.height;
       result.push({
         id: nodeId,
         type: 'memo',
         position: pos,
         dragHandle: '.drag-handle',
+        style,
         data: {
           memoId: m.id,
           title: m.title,
           content: m.content,
           color: m.color,
+          collapsed: posData?.collapsed ?? false,
+          zoomLevel,
         },
       });
     });
@@ -152,33 +233,53 @@ export default function CanvasWorkspace() {
     // Case nodes
     (activeCanvas.cases ?? []).forEach((c: CanvasCase, i: number) => {
       const nodeId = `case-${c.id}`;
-      const pos = posMap.get(nodeId) || { x: -400, y: 50 + i * 300 };
+      const posData = posMap.get(nodeId);
+      const pos = posData ? { x: posData.x, y: posData.y } : { x: -400, y: 50 + i * 300 };
+      const style: Record<string, unknown> = { transition: 'opacity 0.2s' };
+      if (isSearching) style.opacity = 0.15;
+      if (posData?.width) style.width = posData.width;
+      if (posData?.height) style.height = posData.height;
       result.push({
         id: nodeId,
         type: 'case',
         position: pos,
         dragHandle: '.drag-handle',
-        data: { caseId: c.id },
+        style,
+        data: {
+          caseId: c.id,
+          collapsed: posData?.collapsed ?? false,
+          zoomLevel,
+        },
       });
     });
 
     // Computed nodes — 2-column grid to reduce vertical extent
     (activeCanvas.computedNodes ?? []).forEach((cn: CanvasComputedNode, i: number) => {
       const nodeId = `computed-${cn.id}`;
+      const posData = posMap.get(nodeId);
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const pos = posMap.get(nodeId) || { x: 1250 + col * 400, y: 50 + row * 420 };
+      const pos = posData ? { x: posData.x, y: posData.y } : { x: 1250 + col * 400, y: 50 + row * 420 };
+      const style: Record<string, unknown> = { transition: 'opacity 0.2s' };
+      if (isSearching) style.opacity = 0.15;
+      if (posData?.width) style.width = posData.width;
+      if (posData?.height) style.height = posData.height;
       result.push({
         id: nodeId,
         type: cn.nodeType,
         position: pos,
         dragHandle: '.drag-handle',
-        data: { computedNodeId: cn.id },
+        style,
+        data: {
+          computedNodeId: cn.id,
+          collapsed: posData?.collapsed ?? false,
+          zoomLevel,
+        },
       });
     });
 
     return result;
-  }, [activeCanvas]);
+  }, [activeCanvas, highlightedNodeIds, posMap, zoomLevel]);
 
   // Build edges from codings and relations
   const buildEdges = useCallback((): Edge[] => {
@@ -191,6 +292,7 @@ export default function CanvasWorkspace() {
       source: `transcript-${c.transcriptId}`,
       target: `question-${c.questionId}`,
       type: 'coding',
+      reconnectable: true,
       data: {
         codingId: c.id,
         codedText: c.codedText,
@@ -295,6 +397,27 @@ export default function CanvasWorkspace() {
     [pendingSelection, createCoding, setPendingSelection, activeCanvas?.questions, mergeQuestions],
   );
 
+  // Edge reconnection handler
+  const onReconnect = useCallback(
+    (oldEdge: Edge, newConnection: any) => {
+      // Update edges visually
+      setEdges((els) => reconnectEdge(oldEdge, newConnection, els));
+
+      // If it's a coding edge being reconnected to a different question
+      const edgeData = oldEdge.data as Record<string, unknown> | undefined;
+      if (oldEdge.type === 'coding' && edgeData?.codingId) {
+        const newTarget = newConnection.target;
+        if (newTarget?.startsWith('question-')) {
+          const newQuestionId = newTarget.replace('question-', '');
+          reassignCoding(edgeData.codingId as string, newQuestionId)
+            .then(() => toast.success('Coding reassigned'))
+            .catch(() => toast.error('Failed to reassign coding'));
+        }
+      }
+    },
+    [setEdges, reassignCoding],
+  );
+
   const handleMerge = async () => {
     try {
       await mergeQuestions(mergeConfirm.sourceId, mergeConfirm.targetId);
@@ -321,34 +444,324 @@ export default function CanvasWorkspace() {
     setRelationLabel({ show: false, source: '', target: '' });
   };
 
-  // Debounced layout save on node position change
+  // Delete selected node handler
+  const handleDeleteSelected = useCallback(() => {
+    const selected = nodes.filter(n => n.selected);
+    if (selected.length === 0) return;
+    const node = selected[0];
+
+    let label = 'node';
+    let type = node.type || '';
+    if (type === 'transcript') label = (node.data as any)?.title || 'transcript';
+    else if (type === 'question') label = (node.data as any)?.text || 'question';
+    else if (type === 'memo') label = (node.data as any)?.title || 'memo';
+    else if (type === 'case') label = 'case';
+    else label = type + ' node';
+
+    setDeleteConfirm({ nodeId: node.id, label, type });
+  }, [nodes]);
+
+  const confirmDeleteNode = async () => {
+    if (!deleteConfirm) return;
+    const { nodeId } = deleteConfirm;
+    try {
+      if (nodeId.startsWith('transcript-')) await deleteTranscript(nodeId.replace('transcript-', ''));
+      else if (nodeId.startsWith('question-')) await deleteQuestion(nodeId.replace('question-', ''));
+      else if (nodeId.startsWith('memo-')) await deleteMemo(nodeId.replace('memo-', ''));
+      else if (nodeId.startsWith('case-')) await deleteCase(nodeId.replace('case-', ''));
+      else if (nodeId.startsWith('computed-')) await deleteComputedNode(nodeId.replace('computed-', ''));
+      toast.success('Node deleted');
+    } catch {
+      toast.error('Failed to delete node');
+    }
+    setDeleteConfirm(null);
+  };
+
+  // Delete multiple selected nodes
+  const handleDeleteAllSelected = useCallback(async () => {
+    for (const node of selectedNodes) {
+      try {
+        if (node.id.startsWith('transcript-')) await deleteTranscript(node.id.replace('transcript-', ''));
+        else if (node.id.startsWith('question-')) await deleteQuestion(node.id.replace('question-', ''));
+        else if (node.id.startsWith('memo-')) await deleteMemo(node.id.replace('memo-', ''));
+        else if (node.id.startsWith('case-')) await deleteCase(node.id.replace('case-', ''));
+        else if (node.id.startsWith('computed-')) await deleteComputedNode(node.id.replace('computed-', ''));
+      } catch { /* continue */ }
+    }
+    toast.success(`Deleted ${selectedNodes.length} nodes`);
+  }, [selectedNodes, deleteTranscript, deleteQuestion, deleteMemo, deleteCase, deleteComputedNode]);
+
+  // Copy selected nodes
+  const handleCopy = useCallback(() => {
+    const selected = nodes.filter(n => n.selected);
+    if (selected.length === 0) return;
+    clipboardRef.current = selected;
+    toast.success(`Copied ${selected.length} node(s)`);
+  }, [nodes]);
+
+  // Paste nodes
+  const handlePaste = useCallback(async () => {
+    const toPaste = clipboardRef.current;
+    if (toPaste.length === 0) return;
+    let pasted = 0;
+    for (const node of toPaste) {
+      try {
+        const d = node.data as any;
+        if (node.type === 'transcript') {
+          await addTranscript(d.title + ' (copy)', d.content);
+          pasted++;
+        } else if (node.type === 'question') {
+          await addQuestion(d.text + ' (copy)', d.color);
+          pasted++;
+        } else if (node.type === 'memo') {
+          await addMemo(d.content, d.title ? d.title + ' (copy)' : undefined, d.color);
+          pasted++;
+        } else if (d.computedNodeId) {
+          const cn = activeCanvas?.computedNodes.find((n: CanvasComputedNode) => n.id === d.computedNodeId);
+          if (cn) {
+            await addComputedNode(cn.nodeType as ComputedNodeType, cn.label + ' (copy)', cn.config as Record<string, unknown>);
+            pasted++;
+          }
+        }
+      } catch { /* skip */ }
+    }
+    if (pasted > 0) toast.success(`Pasted ${pasted} node(s)`);
+  }, [activeCanvas, addTranscript, addQuestion, addMemo, addComputedNode]);
+
+  // Duplicate (copy + paste)
+  const handleDuplicate = useCallback(async () => {
+    handleCopy();
+    await handlePaste();
+  }, [handleCopy, handlePaste]);
+
+  // Select all
+  const handleSelectAll = useCallback(() => {
+    setNodes((nds) => nds.map(n => ({ ...n, selected: true })));
+  }, [setNodes]);
+
+  // Selection change tracking
+  const handleSelectionChange = useCallback(({ nodes: selNodes }: OnSelectionChangeParams) => {
+    setSelectedNodes(selNodes);
+  }, []);
+
+  // Selection toolbar position
+  const selectionToolbarPos = useMemo(() => {
+    if (selectedNodes.length < 2 || !rfInstanceRef.current) return { x: 0, y: 0 };
+    let minX = Infinity, minY = Infinity, maxX = -Infinity;
+    for (const n of selectedNodes) {
+      if (n.position.x < minX) minX = n.position.x;
+      if (n.position.y < minY) minY = n.position.y;
+      if (n.position.x > maxX) maxX = n.position.x;
+    }
+    const centerX = (minX + maxX) / 2;
+    // Convert flow coordinates to screen coordinates
+    const viewport = rfInstanceRef.current.getViewport();
+    return {
+      x: centerX * viewport.zoom + viewport.x,
+      y: minY * viewport.zoom + viewport.y,
+    };
+  }, [selectedNodes]);
+
+  // Alignment functions
+  const handleAlignLeft = useCallback(() => {
+    if (selectedNodes.length < 2) return;
+    const minX = Math.min(...selectedNodes.map(n => n.position.x));
+    setNodes(nds => nds.map(n => selectedNodes.some(s => s.id === n.id) ? { ...n, position: { ...n.position, x: minX } } : n));
+    triggerSaveLayout();
+  }, [selectedNodes, setNodes]);
+
+  const handleAlignTop = useCallback(() => {
+    if (selectedNodes.length < 2) return;
+    const minY = Math.min(...selectedNodes.map(n => n.position.y));
+    setNodes(nds => nds.map(n => selectedNodes.some(s => s.id === n.id) ? { ...n, position: { ...n.position, y: minY } } : n));
+    triggerSaveLayout();
+  }, [selectedNodes, setNodes]);
+
+  const handleDistributeH = useCallback(() => {
+    if (selectedNodes.length < 3) return;
+    const sorted = [...selectedNodes].sort((a, b) => a.position.x - b.position.x);
+    const minX = sorted[0].position.x;
+    const maxX = sorted[sorted.length - 1].position.x;
+    const gap = (maxX - minX) / (sorted.length - 1);
+    const idToX = new Map(sorted.map((n, i) => [n.id, minX + i * gap]));
+    setNodes(nds => nds.map(n => idToX.has(n.id) ? { ...n, position: { ...n.position, x: idToX.get(n.id)! } } : n));
+    triggerSaveLayout();
+  }, [selectedNodes, setNodes]);
+
+  const handleDistributeV = useCallback(() => {
+    if (selectedNodes.length < 3) return;
+    const sorted = [...selectedNodes].sort((a, b) => a.position.y - b.position.y);
+    const minY = sorted[0].position.y;
+    const maxY = sorted[sorted.length - 1].position.y;
+    const gap = (maxY - minY) / (sorted.length - 1);
+    const idToY = new Map(sorted.map((n, i) => [n.id, minY + i * gap]));
+    setNodes(nds => nds.map(n => idToY.has(n.id) ? { ...n, position: { ...n.position, y: idToY.get(n.id)! } } : n));
+    triggerSaveLayout();
+  }, [selectedNodes, setNodes]);
+
+  // Trigger layout save helper
+  const triggerSaveLayout = useCallback(() => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      setNodes((currentNodes: Node[]) => {
+        const positions = currentNodes.map((n: Node) => ({
+          id: '',
+          canvasId: '',
+          nodeId: n.id,
+          nodeType: n.type || 'unknown',
+          x: n.position.x,
+          y: n.position.y,
+          width: (n.style?.width as number) || (n.measured?.width) || undefined,
+          height: (n.style?.height as number) || (n.measured?.height) || undefined,
+        }));
+        saveLayout(positions);
+        return currentNodes;
+      });
+    }, 300);
+  }, [saveLayout, setNodes]);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      // Ctrl shortcuts
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'c') {
+          e.preventDefault();
+          handleCopy();
+          return;
+        }
+        if (e.key === 'v') {
+          e.preventDefault();
+          handlePaste();
+          return;
+        }
+        if (e.key === 'd') {
+          e.preventDefault();
+          handleDuplicate();
+          return;
+        }
+        if (e.key === 'z' && !e.shiftKey) {
+          e.preventDefault();
+          undo();
+          return;
+        }
+        if ((e.key === 'z' && e.shiftKey) || e.key === 'y') {
+          e.preventDefault();
+          redo();
+          return;
+        }
+        if (e.key === 'a') {
+          e.preventDefault();
+          handleSelectAll();
+          return;
+        }
+        if (e.key === 'f') {
+          e.preventDefault();
+          setShowSearch(true);
+          return;
+        }
+        return;
+      }
+
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        setShowShortcuts(s => !s);
+        return;
+      }
+
+      if (e.key === 'f') {
+        e.preventDefault();
+        rfInstanceRef.current?.fitView({ padding: 0.4, maxZoom: 0.8 });
+        return;
+      }
+
+      if (e.key === 'g') {
+        e.preventDefault();
+        setSnapToGrid(s => !s);
+        return;
+      }
+
+      if (e.key === 'c' && !e.ctrlKey) {
+        // Toggle collapse on selected node
+        const selected = nodes.filter(n => n.selected);
+        if (selected.length === 1) {
+          e.preventDefault();
+          // We can't directly toggle collapse from here, but we trigger a re-render
+          // by toggling the collapsed data on the node
+          setNodes(nds => nds.map(n => {
+            if (n.selected) {
+              return { ...n, data: { ...n.data, collapsed: !(n.data as any).collapsed } };
+            }
+            return n;
+          }));
+        }
+        return;
+      }
+
+      if (e.key === '1') {
+        e.preventDefault();
+        rfInstanceRef.current?.zoomTo(1);
+        return;
+      }
+
+      if (e.key === '0') {
+        e.preventDefault();
+        rfInstanceRef.current?.fitView({ padding: 0.4, maxZoom: 0.8 });
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        if (quickAddMenu) { setQuickAddMenu(null); return; }
+        if (showSearch) { setShowSearch(false); setHighlightedNodeIds(new Set()); return; }
+        if (showShortcuts) { setShowShortcuts(false); return; }
+        if (contextMenu) { setContextMenu(null); return; }
+        if (nodeContextMenu) { setNodeContextMenu(null); return; }
+        if (edgeContextMenu) { setEdgeContextMenu(null); return; }
+        if (selectedQuestionId) { setSelectedQuestionId(null); return; }
+        return;
+      }
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        handleDeleteSelected();
+        return;
+      }
+
+      // Shift+A = Align left, Shift+D = Distribute horizontally
+      if (e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        handleAlignLeft();
+        return;
+      }
+      if (e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        handleDistributeH();
+        return;
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showSearch, showShortcuts, contextMenu, nodeContextMenu, edgeContextMenu, quickAddMenu, selectedQuestionId, setSelectedQuestionId, handleDeleteSelected, handleCopy, handlePaste, handleDuplicate, handleSelectAll, handleAlignLeft, handleDistributeH, undo, redo, nodes, setNodes]);
+
+  // Debounced layout save on node position/dimension change
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
       onNodesChange(changes);
 
-      // Check if any drag ended
+      // Check if any drag ended or resize happened
       const hasDrag = changes.some(
         (c: NodeChange) => c.type === 'position' && 'dragging' in c && c.dragging === false,
       );
-      if (hasDrag) {
-        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-        saveTimeoutRef.current = setTimeout(() => {
-          setNodes((currentNodes: Node[]) => {
-            const positions = currentNodes.map((n: Node) => ({
-              id: '',
-              canvasId: '',
-              nodeId: n.id,
-              nodeType: n.type || 'unknown',
-              x: n.position.x,
-              y: n.position.y,
-            }));
-            saveLayout(positions).catch(() => {});
-            return currentNodes;
-          });
-        }, 500);
+      const hasResize = changes.some(
+        (c: NodeChange) => c.type === 'dimensions',
+      );
+      if (hasDrag || hasResize) {
+        triggerSaveLayout();
       }
     },
-    [onNodesChange, saveLayout, setNodes],
+    [onNodesChange, triggerSaveLayout],
   );
 
   // Minimap color
@@ -372,6 +785,172 @@ export default function CanvasWorkspace() {
     }
   }, []);
 
+  // Context menu handlers
+  const handlePaneContextMenu = useCallback((event: MouseEvent | React.MouseEvent) => {
+    event.preventDefault();
+    setContextMenu({ show: true, x: event.clientX, y: event.clientY });
+  }, []);
+
+  const handleNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
+    event.preventDefault();
+    setNodeContextMenu({
+      show: true,
+      x: event.clientX,
+      y: event.clientY,
+      nodeId: node.id,
+      nodeType: node.type || '',
+      collapsed: (node.data as any)?.collapsed ?? false,
+    });
+  }, []);
+
+  const handleEdgeContextMenu = useCallback((event: React.MouseEvent, edge: Edge) => {
+    event.preventDefault();
+    setEdgeContextMenu({
+      show: true,
+      x: event.clientX,
+      y: event.clientY,
+      edgeId: edge.id,
+      edgeType: edge.type || 'coding',
+      label: edge.type === 'coding' ? (edge.data as any)?.codedText : (edge.data as any)?.label,
+    });
+  }, []);
+
+  const lastPaneClickRef = useRef<{ time: number; x: number; y: number }>({ time: 0, x: 0, y: 0 });
+  const handlePaneClick = useCallback((event: React.MouseEvent) => {
+    if (contextMenu) setContextMenu(null);
+    if (nodeContextMenu) setNodeContextMenu(null);
+    if (edgeContextMenu) setEdgeContextMenu(null);
+    if (quickAddMenu) setQuickAddMenu(null);
+
+    // Detect double-click via timestamp (React Flow doesn't propagate dblclick)
+    const now = Date.now();
+    const last = lastPaneClickRef.current;
+    const dx = Math.abs(event.clientX - last.x);
+    const dy = Math.abs(event.clientY - last.y);
+    if (now - last.time < 400 && dx < 10 && dy < 10) {
+      setQuickAddMenu({ x: event.clientX, y: event.clientY });
+      lastPaneClickRef.current = { time: 0, x: 0, y: 0 };
+      return;
+    }
+    lastPaneClickRef.current = { time: now, x: event.clientX, y: event.clientY };
+  }, [contextMenu, nodeContextMenu, edgeContextMenu, quickAddMenu]);
+
+  // Node counts for status bar
+  const nodeCounts = useMemo(() => {
+    if (!activeCanvas) return { transcripts: 0, questions: 0, codings: 0, memos: 0 };
+    return {
+      transcripts: activeCanvas.transcripts.length,
+      questions: activeCanvas.questions.length,
+      codings: activeCanvas.codings.length,
+      memos: activeCanvas.memos.length,
+    };
+  }, [activeCanvas]);
+
+  // Context menu add actions
+  const handleContextAddMemo = async () => {
+    try {
+      await addMemo('New memo — click to edit');
+      toast.success('Memo added');
+    } catch {
+      toast.error('Failed to add memo');
+    }
+  };
+
+  // Node context menu handlers
+  const handleNodeDuplicate = useCallback(async () => {
+    if (!nodeContextMenu) return;
+    const node = nodes.find(n => n.id === nodeContextMenu.nodeId);
+    if (!node) return;
+    const d = node.data as any;
+    try {
+      if (node.type === 'transcript') await addTranscript(d.title + ' (copy)', d.content);
+      else if (node.type === 'question') await addQuestion(d.text + ' (copy)', d.color);
+      else if (node.type === 'memo') await addMemo(d.content, d.title ? d.title + ' (copy)' : undefined, d.color);
+      toast.success('Node duplicated');
+    } catch { toast.error('Failed to duplicate'); }
+  }, [nodeContextMenu, nodes, addTranscript, addQuestion, addMemo]);
+
+  const handleNodeDelete = useCallback(() => {
+    if (!nodeContextMenu) return;
+    const node = nodes.find(n => n.id === nodeContextMenu.nodeId);
+    if (!node) return;
+    let label = 'node';
+    const type = node.type || '';
+    if (type === 'transcript') label = (node.data as any)?.title || 'transcript';
+    else if (type === 'question') label = (node.data as any)?.text || 'question';
+    else if (type === 'memo') label = (node.data as any)?.title || 'memo';
+    else if (type === 'case') label = 'case';
+    else label = type + ' node';
+    setDeleteConfirm({ nodeId: node.id, label, type });
+  }, [nodeContextMenu, nodes]);
+
+  const handleNodeToggleCollapse = useCallback(() => {
+    if (!nodeContextMenu) return;
+    setNodes(nds => nds.map(n => n.id === nodeContextMenu.nodeId ? { ...n, data: { ...n.data, collapsed: !nodeContextMenu.collapsed } } : n));
+  }, [nodeContextMenu, setNodes]);
+
+  const handleNodeResetSize = useCallback(() => {
+    if (!nodeContextMenu) return;
+    setNodes(nds => nds.map(n => {
+      if (n.id === nodeContextMenu.nodeId) {
+        const { width, height, ...restStyle } = (n.style || {}) as Record<string, unknown>;
+        return { ...n, style: restStyle };
+      }
+      return n;
+    }));
+    triggerSaveLayout();
+  }, [nodeContextMenu, setNodes, triggerSaveLayout]);
+
+  // Edge context menu delete handler
+  const handleEdgeDelete = useCallback(async () => {
+    if (!edgeContextMenu) return;
+    try {
+      if (edgeContextMenu.edgeType === 'coding') {
+        const codingId = edgeContextMenu.edgeId.replace('coding-', '');
+        await deleteCoding(codingId);
+      } else if (edgeContextMenu.edgeType === 'relation') {
+        const relId = edgeContextMenu.edgeId.replace('relation-', '');
+        await deleteRelation(relId);
+      }
+      toast.success('Deleted');
+    } catch { toast.error('Failed to delete'); }
+  }, [edgeContextMenu, deleteCoding, deleteRelation]);
+
+  // Collapse all / Expand all for selection
+  const handleCollapseAll = useCallback(() => {
+    setNodes(nds => nds.map(n => selectedNodes.some(s => s.id === n.id) ? { ...n, data: { ...n.data, collapsed: true } } : n));
+  }, [selectedNodes, setNodes]);
+
+  const handleExpandAll = useCallback(() => {
+    setNodes(nds => nds.map(n => selectedNodes.some(s => s.id === n.id) ? { ...n, data: { ...n.data, collapsed: false } } : n));
+  }, [selectedNodes, setNodes]);
+
+  // Quick-add menu handlers
+  const handleQuickAddTranscript = useCallback(async () => {
+    toast('Use the Transcript button in the toolbar to add transcripts', { icon: '\u2139\uFE0F' });
+  }, []);
+
+  const handleQuickAddQuestion = useCallback(async () => {
+    try {
+      await addQuestion('New question — double-click to edit');
+      toast.success('Question added');
+    } catch { toast.error('Failed to add question'); }
+  }, [addQuestion]);
+
+  const handleQuickAddMemo = useCallback(async () => {
+    try {
+      await addMemo('New memo — click to edit');
+      toast.success('Memo added');
+    } catch { toast.error('Failed to add memo'); }
+  }, [addMemo]);
+
+  const handleQuickAddComputed = useCallback(async (type: ComputedNodeType, label: string) => {
+    try {
+      await addComputedNode(type, label);
+      toast.success(`${label} node added`);
+    } catch { toast.error('Failed to add node'); }
+  }, [addComputedNode]);
+
   return (
     <div className="flex h-full">
       <div className="flex flex-1 flex-col">
@@ -383,16 +962,32 @@ export default function CanvasWorkspace() {
             onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onReconnect={onReconnect}
             onInit={(instance) => { rfInstanceRef.current = instance; }}
+            onMoveEnd={(_event, viewport) => setZoomLevel(Math.round(viewport.zoom * 100))}
+            onPaneContextMenu={handlePaneContextMenu}
+            onNodeContextMenu={handleNodeContextMenu}
+            onEdgeContextMenu={handleEdgeContextMenu}
+            onPaneClick={handlePaneClick}
+            onSelectionChange={handleSelectionChange}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
+            snapToGrid={snapToGrid}
+            snapGrid={[20, 20]}
+            edgesReconnectable
+            panActivationKeyCode="Space"
             fitView
             fitViewOptions={{ padding: 0.4, maxZoom: 0.8 }}
             minZoom={0.15}
             className="bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900"
             proOptions={{ hideAttribution: true }}
           >
-            <Background variant={BackgroundVariant.Dots} gap={24} size={0.8} color="#d1d5db40" />
+            <Background
+              variant={snapToGrid ? BackgroundVariant.Lines : BackgroundVariant.Dots}
+              gap={snapToGrid ? 20 : 24}
+              size={snapToGrid ? 0.5 : 0.8}
+              color={snapToGrid ? '#d1d5db60' : '#d1d5db40'}
+            />
             <Controls fitViewOptions={{ padding: 0.4, maxZoom: 0.8 }} className="!bg-white/90 !backdrop-blur-sm !shadow-node !rounded-xl dark:!bg-gray-800/90 !border-gray-200 dark:!border-gray-700" />
             <MiniMap
               nodeColor={minimapColor}
@@ -400,6 +995,96 @@ export default function CanvasWorkspace() {
               className="!bg-white/90 !backdrop-blur-sm !rounded-xl !shadow-node dark:!bg-gray-800/90 !border-gray-200 dark:!border-gray-700"
             />
           </ReactFlow>
+
+          {/* Selection toolbar */}
+          {selectedNodes.length >= 2 && (
+            <SelectionToolbar
+              selectedNodes={selectedNodes}
+              position={selectionToolbarPos}
+              onDeleteAll={handleDeleteAllSelected}
+              onCollapseAll={handleCollapseAll}
+              onExpandAll={handleExpandAll}
+              onAlignLeft={handleAlignLeft}
+              onAlignTop={handleAlignTop}
+              onDistributeH={handleDistributeH}
+              onDistributeV={handleDistributeV}
+            />
+          )}
+
+          {/* Canvas-wide search overlay */}
+          {showSearch && (
+            <CanvasSearchOverlay
+              onClose={() => setShowSearch(false)}
+              onResults={setHighlightedNodeIds}
+            />
+          )}
+
+          {/* Pane context menu */}
+          {contextMenu?.show && (
+            <CanvasContextMenu
+              x={contextMenu.x}
+              y={contextMenu.y}
+              onAddTranscript={() => {
+                toast('Use the Transcript button in the toolbar to add transcripts', { icon: '\u2139\uFE0F' });
+              }}
+              onAddQuestion={() => {
+                toast('Use the Question button in the toolbar to add questions', { icon: '\u2139\uFE0F' });
+              }}
+              onAddMemo={handleContextAddMemo}
+              onFitView={() => rfInstanceRef.current?.fitView({ padding: 0.4, maxZoom: 0.8 })}
+              onShowShortcuts={() => setShowShortcuts(true)}
+              onSelectAll={handleSelectAll}
+              onToggleSnapGrid={() => setSnapToGrid(s => !s)}
+              snapToGrid={snapToGrid}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onUndo={undo}
+              onRedo={redo}
+              onClose={() => setContextMenu(null)}
+            />
+          )}
+
+          {/* Node context menu */}
+          {nodeContextMenu?.show && (
+            <NodeContextMenu
+              x={nodeContextMenu.x}
+              y={nodeContextMenu.y}
+              nodeId={nodeContextMenu.nodeId}
+              nodeType={nodeContextMenu.nodeType}
+              collapsed={nodeContextMenu.collapsed}
+              onDuplicate={handleNodeDuplicate}
+              onDelete={handleNodeDelete}
+              onToggleCollapse={handleNodeToggleCollapse}
+              onResetSize={handleNodeResetSize}
+              onClose={() => setNodeContextMenu(null)}
+            />
+          )}
+
+          {/* Edge context menu */}
+          {edgeContextMenu?.show && (
+            <EdgeContextMenu
+              x={edgeContextMenu.x}
+              y={edgeContextMenu.y}
+              edgeId={edgeContextMenu.edgeId}
+              edgeType={edgeContextMenu.edgeType}
+              label={edgeContextMenu.label}
+              onDelete={handleEdgeDelete}
+              onClose={() => setEdgeContextMenu(null)}
+            />
+          )}
+
+          {/* Quick-add menu (double-click) */}
+          {quickAddMenu && (
+            <QuickAddMenu
+              x={quickAddMenu.x}
+              y={quickAddMenu.y}
+              onAddTranscript={handleQuickAddTranscript}
+              onAddQuestion={handleQuickAddQuestion}
+              onAddMemo={handleQuickAddMemo}
+              onAddComputedNode={handleQuickAddComputed}
+              onClose={() => setQuickAddMenu(null)}
+            />
+          )}
 
           {/* Empty state overlay */}
           {activeCanvas && activeCanvas.transcripts.length === 0 && activeCanvas.questions.length === 0 && (
@@ -413,6 +1098,9 @@ export default function CanvasWorkspace() {
                 <p className="text-lg font-medium text-gray-400 dark:text-gray-500">Empty canvas</p>
                 <p className="mt-1.5 text-sm text-gray-300 dark:text-gray-600">
                   Add a transcript and research questions using the toolbar above
+                </p>
+                <p className="mt-1 text-xs text-gray-300 dark:text-gray-600">
+                  or double-click anywhere to quick-add a node
                 </p>
               </div>
             </div>
@@ -441,7 +1129,6 @@ export default function CanvasWorkspace() {
                   <button onClick={handleMerge} className="btn-primary h-8 px-3 text-xs">Merge</button>
                   <button
                     onClick={() => {
-                      // Fall back to creating a relation instead
                       setMergeConfirm({ show: false, sourceId: '', targetId: '', sourceName: '', targetName: '' });
                       setRelationLabel({ show: true, source: `question-${mergeConfirm.sourceId}`, target: `question-${mergeConfirm.targetId}` });
                     }}
@@ -460,10 +1147,66 @@ export default function CanvasWorkspace() {
             </div>
           )}
         </div>
+
+        {/* Status bar */}
+        <div className="flex items-center justify-between border-t border-gray-200/80 bg-white/90 px-4 py-1.5 text-[10px] text-gray-400 backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-800/90 dark:text-gray-500">
+          <div className="flex items-center gap-3">
+            <span>{nodeCounts.transcripts} transcript{nodeCounts.transcripts !== 1 ? 's' : ''}</span>
+            <span>{nodeCounts.questions} question{nodeCounts.questions !== 1 ? 's' : ''}</span>
+            <span>{nodeCounts.codings} coding{nodeCounts.codings !== 1 ? 's' : ''}</span>
+            <span>{nodeCounts.memos} memo{nodeCounts.memos !== 1 ? 's' : ''}</span>
+            {selectedNodes.length > 0 && (
+              <span className="text-blue-500 font-medium">{selectedNodes.length} selected</span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Undo/Redo buttons */}
+            <button
+              onClick={undo}
+              disabled={!canUndo}
+              className="text-gray-400 hover:text-gray-600 disabled:opacity-30 dark:hover:text-gray-300"
+              title="Undo (Ctrl+Z)"
+            >
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+              </svg>
+            </button>
+            <button
+              onClick={redo}
+              disabled={!canRedo}
+              className="text-gray-400 hover:text-gray-600 disabled:opacity-30 dark:hover:text-gray-300"
+              title="Redo (Ctrl+Shift+Z)"
+            >
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m15 15 6-6m0 0-6-6m6 6H9a6 6 0 0 0 0 12h3" />
+              </svg>
+            </button>
+            {snapToGrid && (
+              <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[9px] font-medium text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                GRID
+              </span>
+            )}
+            <span>{savingLayout ? 'Saving...' : 'All changes saved'}</span>
+            <span>{zoomLevel}%</span>
+          </div>
+        </div>
       </div>
 
       {/* Detail panel */}
       {selectedQuestionId && <CodingDetailPanel />}
+
+      {/* Keyboard shortcuts modal */}
+      {showShortcuts && <KeyboardShortcutsModal onClose={() => setShowShortcuts(false)} />}
+
+      {/* Delete node confirmation */}
+      {deleteConfirm && (
+        <ConfirmDialog
+          title={`Delete ${deleteConfirm.type}`}
+          message={`Delete "${deleteConfirm.label}"? This cannot be undone.`}
+          onConfirm={confirmDeleteNode}
+          onCancel={() => setDeleteConfirm(null)}
+        />
+      )}
     </div>
   );
 }

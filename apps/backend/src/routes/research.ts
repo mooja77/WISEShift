@@ -131,7 +131,7 @@ function escapeCsv(value: string | number | null | undefined): string {
 researchRoutes.post('/narratives/search', validate(narrativeSearchSchema), async (req, res, next) => {
   try {
     const dashboardAccessId = (req as any).dashboardAccessId;
-    const { search, domainKeys, countries, sectors, sizes, scoreMin, scoreMax, page, pageSize } = req.body;
+    const { search, assessmentId, domainKeys, countries, sectors, sizes, scoreMin, scoreMax, page, pageSize } = req.body;
 
     // Build where clause for responses
     const where: any = {
@@ -139,6 +139,10 @@ researchRoutes.post('/narratives/search', validate(narrativeSearchSchema), async
       textValue: { not: null },
       assessment: { status: 'completed' },
     };
+
+    if (assessmentId) {
+      where.assessmentId = assessmentId;
+    }
 
     if (search) {
       where.textValue = { contains: search };

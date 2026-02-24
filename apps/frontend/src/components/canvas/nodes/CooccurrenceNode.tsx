@@ -9,7 +9,7 @@ export interface CooccurrenceNodeData {
   [key: string]: unknown;
 }
 
-export default function CooccurrenceNode({ data, id }: NodeProps) {
+export default function CooccurrenceNode({ data, id, selected }: NodeProps) {
   const nodeData = data as unknown as CooccurrenceNodeData;
   const { activeCanvas, updateComputedNode } = useCanvasStore();
   const node = activeCanvas?.computedNodes.find((n: CanvasComputedNode) => n.id === nodeData.computedNodeId);
@@ -46,6 +46,9 @@ export default function CooccurrenceNode({ data, id }: NodeProps) {
       icon={icon}
       color="#7C3AED"
       onConfigure={() => { setSelectedQIds(config?.questionIds || []); setEditing(true); }}
+      selected={selected}
+      collapsed={(data as any).collapsed}
+      zoomLevel={(data as any).zoomLevel}
     >
       {editing && (
         <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2 space-y-2">

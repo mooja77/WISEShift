@@ -10,7 +10,7 @@ export interface SentimentNodeData {
   [key: string]: unknown;
 }
 
-export default function SentimentNode({ data, id }: NodeProps) {
+export default function SentimentNode({ data, id, selected }: NodeProps) {
   const nodeData = data as unknown as SentimentNodeData;
   const { activeCanvas, updateComputedNode } = useCanvasStore();
   const node = activeCanvas?.computedNodes.find((n: CanvasComputedNode) => n.id === nodeData.computedNodeId);
@@ -55,6 +55,9 @@ export default function SentimentNode({ data, id }: NodeProps) {
         setScopeId(config?.scopeId || '');
         setEditing(true);
       }}
+      selected={selected}
+      collapsed={(data as any).collapsed}
+      zoomLevel={(data as any).zoomLevel}
     >
       {editing && (
         <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2 space-y-2">
