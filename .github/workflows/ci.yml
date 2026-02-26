@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w shared
+      - name: Typecheck backend
+        run: npx tsc --noEmit -p apps/backend/tsconfig.json
+      - name: Typecheck frontend
+        run: npx tsc --noEmit -p apps/frontend/tsconfig.json
+
+  test-backend:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:./test.db
+      NODE_ENV: test
+      JWT_SECRET: ci-test-secret
+      ADMIN_SECRET: ci-admin-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w shared
+      - run: npx prisma migrate deploy --schema apps/backend/prisma/schema.prisma
+      - run: npm test -w apps/backend
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w shared
+      - run: npm test -w apps/frontend
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high

@@ -1,6 +1,21 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// ─── Environment Validation ───
+const IS_PROD = process.env.NODE_ENV === 'production';
+if (!process.env.DATABASE_URL && process.env.NODE_ENV !== 'test') {
+  console.error('FATAL: DATABASE_URL environment variable is required');
+  process.exit(1);
+}
+if (IS_PROD) {
+  const required = ['JWT_SECRET', 'ADMIN_SECRET'];
+  const missing = required.filter(k => !process.env[k]);
+  if (missing.length > 0) {
+    console.error(`FATAL: Missing required production env vars: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+}
+
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import path from 'path';
@@ -23,11 +38,16 @@ import { registryRoutes } from './routes/registry.js';
 import { researcherRoutes } from './routes/researchers.js';
 import { workingGroupRoutes } from './routes/workingGroups.js';
 import { adminRoutes } from './routes/admin.js';
-import { canvasRoutes, canvasPublicRoutes } from './routes/canvasRoutes.js';
+// Canvas routes removed — now in standalone Canvas App
+import { consentRoutes } from './routes/consent.js';
 import { researchAuth } from './middleware/researchAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { auditLog } from './middleware/auditLog.js';
+import { requireAdmin } from './middleware/adminAuth.js';
+import { csrfProtection } from './middleware/csrf.js';
 import { cleanupExpiredData, getRetentionPolicy } from './middleware/dataRetention.js';
+import { logger } from './lib/logger.js';
+import { requestId } from './middleware/requestId.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,6 +56,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const FRONTEND_DIST = path.join(__dirname, '../../frontend/dist');
+
+// ----- Request ID for tracing -----
+app.use(requestId);
 
 // ----- Trust proxy (Railway, Render, etc. run behind reverse proxies) -----
 if (IS_PRODUCTION) {
@@ -90,28 +113,38 @@ if (IS_PRODUCTION) {
 app.use(morgan(IS_PRODUCTION ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
 
-// ----- Rate limiting: general API -----
-const limiter = rateLimit({
+// ----- CSRF protection (Origin header validation) -----
+app.use(csrfProtection);
+
+// ----- Rate limiting -----
+// Each route category gets its own limiter so they don't share a counter.
+// Assessment routes need a higher limit: auto-save fires every 30s, and the
+// results page alone loads ~15 endpoints (scores, exemplars×9, timeline, etc.).
+
+const assessmentLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300,                  // assessment filling + results page loads
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const dashboardLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use('/api/', limiter);
 
-// ----- Rate limiting: research workspace (higher limit for exploratory analysis) -----
 const researchLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 500,
+  max: 500,                  // exploratory analysis requires many requests
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use('/api/research', researchLimiter);
 
-// ----- Rate limiting: resume endpoint (brute-force protection) -----
-// Stricter limit: 5 attempts per 15 minutes per IP
+// Stricter limit for brute-force protection on code-based resume
 const resumeRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
@@ -120,15 +153,15 @@ const resumeRateLimiter = rateLimit({
     error: 'Too many resume attempts. Please try again later.',
   },
 });
-app.use('/api/assessments/resume', resumeRateLimiter);
 
-// ----- Audit logging middleware for data access routes -----
-app.use('/api/assessments', auditLog);
-app.use('/api/dashboard', auditLog);
-app.use('/api/benchmarks', auditLog);
-app.use('/api/research', auditLog);
+const registryLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-// Health check
+// ----- Health check (no rate limit, no audit) -----
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -138,8 +171,8 @@ app.get('/api/data-retention/policy', (_req, res) => {
   res.json({ success: true, data: getRetentionPolicy() });
 });
 
-// ----- Data retention cleanup endpoint (should be called by a cron/scheduler) -----
-app.post('/api/data-retention/cleanup', async (_req, res, next) => {
+// ----- Data retention cleanup endpoint (requires admin auth) -----
+app.post('/api/data-retention/cleanup', requireAdmin, async (_req, res, next) => {
   try {
     const result = await cleanupExpiredData();
     res.json({ success: true, data: result });
@@ -148,19 +181,28 @@ app.post('/api/data-retention/cleanup', async (_req, res, next) => {
   }
 });
 
-// Routes
-app.use('/api/assessments', assessmentRoutes);
-app.use('/api/assessments', resultsRoutes);
-app.use('/api/benchmarks', benchmarkRoutes);
-app.use('/api/assessments', actionPlanRoutes);
-app.use('/api/assessments', reportRoutes);
-app.use('/api/assessments', exportsRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/research', researchAuth, researchRoutes);
-app.use('/api/research', researchAuth, canvasRoutes);
-app.use('/api/research', canvasPublicRoutes);
+// ----- Consent recording -----
+app.use('/api/consent', assessmentLimiter, auditLog, consentRoutes);
 
-// ----- Versioned Research API (Phase 6D) -----
+// ----- Assessment routes (filling, results, exports, reports, action plans) -----
+// Resume has a stricter brute-force limiter applied before the general one
+app.use('/api/assessments/resume', resumeRateLimiter);
+app.use('/api/assessments', assessmentLimiter, auditLog, assessmentRoutes);
+app.use('/api/assessments', assessmentLimiter, resultsRoutes);
+app.use('/api/assessments', assessmentLimiter, actionPlanRoutes);
+app.use('/api/assessments', assessmentLimiter, reportRoutes);
+app.use('/api/assessments', assessmentLimiter, exportsRoutes);
+
+// ----- Dashboard -----
+app.use('/api/dashboard', dashboardLimiter, auditLog, dashboardRoutes);
+
+// ----- Benchmarks -----
+app.use('/api/benchmarks', dashboardLimiter, auditLog, benchmarkRoutes);
+
+// ----- Research workspace (high limit for exploratory analysis) -----
+app.use('/api/research', researchLimiter, auditLog, researchAuth, researchRoutes);
+
+// ----- Versioned Research API -----
 const researchApiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 100,
@@ -171,7 +213,7 @@ app.use('/api/v1/research', researchApiLimiter, researchApiRoutes);
 
 // ----- Open Data Public API (no auth required) -----
 const publicApiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
@@ -179,8 +221,8 @@ const publicApiLimiter = rateLimit({
 });
 app.use('/api/v1/public', cors(), publicApiLimiter, auditLog, publicApiRoutes);
 
-// ----- WISE Registry (public read, access-code-authenticated write) -----
-app.use('/api/registry', auditLog, registryRoutes);
+// ----- WISE Registry -----
+app.use('/api/registry', registryLimiter, auditLog, registryRoutes);
 
 // ----- Researcher Portal (self-registration, verified auth) -----
 const researcherLimiter = rateLimit({
@@ -192,16 +234,16 @@ const researcherLimiter = rateLimit({
 app.use('/api/researchers', researcherLimiter, auditLog, researcherRoutes);
 
 // ----- Working Group Collaboration -----
-app.use('/api/working-groups', auditLog, workingGroupRoutes);
+app.use('/api/working-groups', assessmentLimiter, auditLog, workingGroupRoutes);
 
-// ----- Admin Bulk Import -----
+// ----- Admin (Bulk Import + Ethics Oversight) -----
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use('/api/admin', adminLimiter, adminRoutes);
+app.use('/api/admin', adminLimiter, auditLog, adminRoutes);
 
 // ----- Production: serve frontend static build -----
 if (IS_PRODUCTION) {
@@ -219,11 +261,11 @@ if (IS_PRODUCTION) {
 // Error handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`WISEShift API running on http://localhost:${PORT}`);
-  if (IS_PRODUCTION) {
-    console.log('Production mode: HTTPS enforcement and HSTS enabled');
-  }
-});
+// Only start listening when run directly (not imported by tests)
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    logger.info({ port: PORT, env: process.env.NODE_ENV || 'development' }, 'WISEShift API started');
+  });
+}
 
 export default app;

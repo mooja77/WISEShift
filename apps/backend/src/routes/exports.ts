@@ -2,24 +2,17 @@ import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { DOMAINS, CASE_STUDY_SECTIONS, SECTOR_MODULES, POLICY_FRAMEWORKS, calculateFrameworkAlignment } from '@wiseshift/shared';
 import { AppError } from '../middleware/errorHandler.js';
-import * as XLSX from 'xlsx';
+import { validateAccessCode } from '../middleware/accessCode.js';
+import { validateQuery, exportFormatQuerySchema, caseStudyFormatQuerySchema } from '../middleware/validation.js';
+import ExcelJS from 'exceljs';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
+import { escapeCsv } from '../utils/csvSanitize.js';
 
 export const exportsRoutes = Router();
 
-// Helper to escape CSV values
-function escapeCsv(value: string | number | null | undefined): string {
-  if (value === null || value === undefined) return '';
-  const str = String(value);
-  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
-
 // GET /api/assessments/:id/export/qualitative?format=csv|xlsx
 // Exports narrative responses only, formatted for NVivo or similar qualitative analysis tools
-exportsRoutes.get('/:id/export/qualitative', async (req, res, next) => {
+exportsRoutes.get('/:id/export/qualitative', validateAccessCode, validateQuery(exportFormatQuerySchema), async (req, res, next) => {
   try {
     const { id } = req.params;
     const format = (req.query.format as string) || 'csv';
@@ -35,6 +28,11 @@ exportsRoutes.get('/:id/export/qualitative', async (req, res, next) => {
 
     if (!assessment) {
       throw new AppError('Assessment not found', 404);
+    }
+
+    // Verify ownership
+    if (assessment.organisationId !== (req as any).organisation.id) {
+      throw new AppError('Access denied', 403);
     }
 
     // Filter to narrative responses only
@@ -67,20 +65,17 @@ exportsRoutes.get('/:id/export/qualitative', async (req, res, next) => {
     });
 
     if (format === 'xlsx') {
-      const worksheet = XLSX.utils.json_to_sheet(rows);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Qualitative Data');
-
-      // Auto-width columns
-      const colWidths = Object.keys(rows[0] || {}).map((key) => ({
-        wch: Math.max(
-          key.length,
-          ...rows.map((r) => String((r as any)[key] || '').length)
-        ),
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Qualitative Data');
+      const headers = Object.keys(rows[0] || {});
+      worksheet.columns = headers.map(h => ({
+        header: h,
+        key: h,
+        width: Math.max(h.length + 2, 15),
       }));
-      worksheet['!cols'] = colWidths;
+      rows.forEach(row => worksheet.addRow(row));
 
-      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      const buffer = await workbook.xlsx.writeBuffer();
       const filename = `wiseshift-qualitative-${id}.xlsx`;
 
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -113,7 +108,7 @@ exportsRoutes.get('/:id/export/qualitative', async (req, res, next) => {
 
 // GET /api/assessments/:id/export/docx
 // Exports assessment as a structured Word document
-exportsRoutes.get('/:id/export/docx', async (req, res, next) => {
+exportsRoutes.get('/:id/export/docx', validateAccessCode, async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -129,6 +124,11 @@ exportsRoutes.get('/:id/export/docx', async (req, res, next) => {
 
     if (!assessment) {
       throw new AppError('Assessment not found', 404);
+    }
+
+    // Verify ownership
+    if (assessment.organisationId !== (req as any).organisation.id) {
+      throw new AppError('Access denied', 403);
     }
 
     const sections: Paragraph[] = [];
@@ -278,7 +278,7 @@ exportsRoutes.get('/:id/export/docx', async (req, res, next) => {
 
 // GET /api/assessments/:id/export/case-study?format=docx|json
 // Pre-populates a structured case study template from assessment data
-exportsRoutes.get('/:id/export/case-study', async (req, res, next) => {
+exportsRoutes.get('/:id/export/case-study', validateAccessCode, validateQuery(caseStudyFormatQuerySchema), async (req, res, next) => {
   try {
     const { id } = req.params;
     const format = (req.query.format as string) || 'docx';
@@ -296,6 +296,11 @@ exportsRoutes.get('/:id/export/case-study', async (req, res, next) => {
 
     if (!assessment) {
       throw new AppError('Assessment not found', 404);
+    }
+
+    // Verify ownership
+    if (assessment.organisationId !== (req as any).organisation.id) {
+      throw new AppError('Access denied', 403);
     }
 
     // Try to get the WISE profile for additional context

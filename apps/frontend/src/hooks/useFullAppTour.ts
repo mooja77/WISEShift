@@ -11,7 +11,7 @@ export function useFullAppTour() {
   const [currentChapter, setCurrentChapter] = useState(-1);
   const [isRunning, setIsRunning] = useState(false);
   const driverRef = useRef<Driver | null>(null);
-  const { setAuth, setActiveTab, authenticated } = useResearchStore();
+  const { setAuth, authenticated } = useResearchStore();
 
   const destroyDriver = useCallback(() => {
     if (driverRef.current) {
@@ -36,16 +36,8 @@ export function useFullAppTour() {
       // Navigate to the correct page
       navigate(chapter.route);
 
-      // Handle special setup (like switching to canvas tab)
-      if (chapter.setup === 'canvas') {
-        if (!authenticated) {
-          setAuth(DEMO_CODE);
-        }
-        setActiveTab('canvas');
-      }
-
       // For research pages that need auth
-      if (chapter.route === '/research' && !chapter.setup) {
+      if (chapter.route === '/research') {
         if (!authenticated) {
           setAuth(DEMO_CODE);
         }
@@ -117,7 +109,7 @@ export function useFullAppTour() {
         driverInstance.drive();
       }, 600);
     },
-    [navigate, destroyDriver, authenticated, setAuth, setActiveTab],
+    [navigate, destroyDriver, authenticated, setAuth],
   );
 
   const startFullTour = useCallback(() => {

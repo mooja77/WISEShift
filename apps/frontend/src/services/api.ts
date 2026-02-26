@@ -5,22 +5,6 @@ import type {
   CreateHighlightInput,
   UpsertNoteInput,
   CreateQuotePinInput,
-  CreateCanvasInput,
-  CreateTranscriptInput,
-  UpdateTranscriptInput,
-  CreateQuestionInput,
-  UpdateQuestionInput,
-  CreateMemoInput,
-  UpdateMemoInput,
-  CreateCodingInput,
-  UpdateCodingInput,
-  SaveLayoutInput,
-  CreateCaseInput,
-  UpdateCaseInput,
-  CreateRelationInput,
-  CreateComputedNodeInput,
-  UpdateComputedNodeInput,
-  AutoCodeInput,
 } from '@wiseshift/shared';
 
 const api = axios.create({
@@ -68,7 +52,7 @@ export const assessmentApi = {
   complete: (id: string) =>
     api.post(`/assessments/${id}/complete`),
 
-  saveResponses: (id: string, responses: any[]) =>
+  saveResponses: (id: string, responses: { domainKey: string; questionId: string; questionType: string; numericValue?: number; textValue?: string; tags?: string[]; claimedBy?: string }[]) =>
     api.put(`/assessments/${id}/responses`, { responses }),
 
   getResponses: (id: string) =>
@@ -135,28 +119,61 @@ export const dashboardApi = {
     api.get('/dashboard/insights'),
 };
 
-// Export API
+// Export API — requires x-access-code header
+function getAccessCodeHeader(): Record<string, string> {
+  try {
+    const stored = localStorage.getItem('wiseshift-assessment');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const code = parsed?.state?.accessCode;
+      if (code) return { 'x-access-code': code };
+    }
+  } catch { /* ignore */ }
+  return {};
+}
+
 export const exportApi = {
-  qualitativeCsv: (id: string) =>
-    api.get(`/assessments/${id}/export/qualitative?format=csv`, { responseType: 'blob' }),
+  qualitativeCsv: (id: string, accessCode?: string) =>
+    api.get(`/assessments/${id}/export/qualitative?format=csv`, {
+      responseType: 'blob',
+      headers: accessCode ? { 'x-access-code': accessCode } : getAccessCodeHeader(),
+    }),
 
-  qualitativeXlsx: (id: string) =>
-    api.get(`/assessments/${id}/export/qualitative?format=xlsx`, { responseType: 'blob' }),
+  qualitativeXlsx: (id: string, accessCode?: string) =>
+    api.get(`/assessments/${id}/export/qualitative?format=xlsx`, {
+      responseType: 'blob',
+      headers: accessCode ? { 'x-access-code': accessCode } : getAccessCodeHeader(),
+    }),
 
-  docx: (id: string) =>
-    api.get(`/assessments/${id}/export/docx`, { responseType: 'blob' }),
+  docx: (id: string, accessCode?: string) =>
+    api.get(`/assessments/${id}/export/docx`, {
+      responseType: 'blob',
+      headers: accessCode ? { 'x-access-code': accessCode } : getAccessCodeHeader(),
+    }),
 
-  json: (id: string) =>
-    api.get(`/assessments/${id}/export/json`, { responseType: 'blob' }),
+  json: (id: string, accessCode?: string) =>
+    api.get(`/assessments/${id}/export/json`, {
+      responseType: 'blob',
+      headers: accessCode ? { 'x-access-code': accessCode } : getAccessCodeHeader(),
+    }),
 
-  csv: (id: string) =>
-    api.get(`/assessments/${id}/export/csv`, { responseType: 'blob' }),
+  csv: (id: string, accessCode?: string) =>
+    api.get(`/assessments/${id}/export/csv`, {
+      responseType: 'blob',
+      headers: accessCode ? { 'x-access-code': accessCode } : getAccessCodeHeader(),
+    }),
 
-  caseStudyDocx: (id: string) =>
-    api.get(`/assessments/${id}/export/case-study?format=docx`, { responseType: 'blob' }),
+  caseStudyDocx: (id: string, accessCode?: string) =>
+    api.get(`/assessments/${id}/export/case-study?format=docx`, {
+      responseType: 'blob',
+      headers: accessCode ? { 'x-access-code': accessCode } : getAccessCodeHeader(),
+    }),
 
-  caseStudyJson: (id: string) =>
-    api.get(`/assessments/${id}/export/case-study?format=json`, { responseType: 'blob' }),
+  caseStudyJson: (id: string, accessCode?: string) =>
+    api.get(`/assessments/${id}/export/case-study?format=json`, {
+      responseType: 'blob',
+      headers: accessCode ? { 'x-access-code': accessCode } : getAccessCodeHeader(),
+    }),
 };
 
 // Word Cloud API
@@ -214,7 +231,7 @@ export const registryApi = {
   optIn: (data: { bio?: string; website?: string; foundingYear?: number; targetPopulations?: string[] }, accessCode: string) =>
     api.post('/registry/opt-in', data, { headers: { 'x-access-code': accessCode } }),
 
-  updateProfile: (slug: string, data: any, accessCode: string) =>
+  updateProfile: (slug: string, data: { bio?: string; website?: string; foundingYear?: number; targetPopulations?: string[] }, accessCode: string) =>
     api.put(`/registry/${slug}`, data, { headers: { 'x-access-code': accessCode } }),
 };
 
@@ -402,129 +419,152 @@ export const researchApi = {
   compareLayers: (layerId1: string, layerId2: string) =>
     researchClient.post('/layers/compare', { layerId1, layerId2 }),
 
-  // ─── Coding Canvas ───
-  getCanvases: () =>
-    researchClient.get('/canvas'),
+  // Memos (Reflexivity Journal)
+  getMemos: (params?: { type?: string; search?: string }) =>
+    researchClient.get('/memos', { params }),
 
-  createCanvas: (data: CreateCanvasInput) =>
-    researchClient.post('/canvas', data),
+  createMemo: (data: { title: string; content: string; type?: string; linkedResponseId?: string; linkedTagId?: string; linkedLayerId?: string }) =>
+    researchClient.post('/memos', data),
 
-  getCanvas: (canvasId: string) =>
-    researchClient.get(`/canvas/${canvasId}`),
+  updateMemo: (id: string, data: { title?: string; content?: string; type?: string }) =>
+    researchClient.put(`/memos/${id}`, data),
 
-  updateCanvas: (canvasId: string, data: Partial<CreateCanvasInput>) =>
-    researchClient.put(`/canvas/${canvasId}`, data),
+  deleteMemo: (id: string) =>
+    researchClient.delete(`/memos/${id}`),
 
-  deleteCanvas: (canvasId: string) =>
-    researchClient.delete(`/canvas/${canvasId}`),
+  exportMemos: () =>
+    researchClient.get('/memos/export', { responseType: 'blob' }),
 
-  addTranscript: (canvasId: string, data: CreateTranscriptInput) =>
-    researchClient.post(`/canvas/${canvasId}/transcripts`, data),
+  // Codebook Snapshots (Versioning)
+  getCodebookSnapshots: () =>
+    researchClient.get('/codebook-snapshots'),
 
-  updateTranscript: (canvasId: string, tid: string, data: UpdateTranscriptInput) =>
-    researchClient.put(`/canvas/${canvasId}/transcripts/${tid}`, data),
+  createCodebookSnapshot: (label: string) =>
+    researchClient.post('/codebook-snapshots', { label }),
 
-  deleteTranscript: (canvasId: string, tid: string) =>
-    researchClient.delete(`/canvas/${canvasId}/transcripts/${tid}`),
+  compareCodebookSnapshots: (v1: number, v2: number) =>
+    researchClient.get(`/codebook-snapshots/compare?v1=${v1}&v2=${v2}`),
 
-  addQuestion: (canvasId: string, data: CreateQuestionInput) =>
-    researchClient.post(`/canvas/${canvasId}/questions`, data),
+  // Saturation Tracker
+  getSaturation: () =>
+    researchClient.get('/saturation'),
 
-  updateQuestion: (canvasId: string, qid: string, data: UpdateQuestionInput) =>
-    researchClient.put(`/canvas/${canvasId}/questions/${qid}`, data),
+  exportSaturationReport: () =>
+    researchClient.get('/saturation/report', { responseType: 'blob' }),
 
-  deleteQuestion: (canvasId: string, qid: string) =>
-    researchClient.delete(`/canvas/${canvasId}/questions/${qid}`),
+  // IRR Report Export
+  exportIRRReport: (otherDashboardCode: string) =>
+    researchClient.post('/irr/report', { otherDashboardCode }, { responseType: 'blob' }),
 
-  addMemo: (canvasId: string, data: CreateMemoInput) =>
-    researchClient.post(`/canvas/${canvasId}/memos`, data),
+  // Cross-Case Matrix
+  getMatrix: () =>
+    researchClient.get('/matrix'),
 
-  updateMemo: (canvasId: string, mid: string, data: UpdateMemoInput) =>
-    researchClient.put(`/canvas/${canvasId}/memos/${mid}`, data),
+  getMatrixCell: (assessmentId: string, tagId: string) =>
+    researchClient.get(`/matrix/cell?assessmentId=${assessmentId}&tagId=${tagId}`),
 
-  deleteMemo: (canvasId: string, mid: string) =>
-    researchClient.delete(`/canvas/${canvasId}/memos/${mid}`),
+  upsertMatrixCellSummary: (assessmentId: string, tagId: string, summary: string) =>
+    researchClient.put('/matrix/cell-summary', { assessmentId, tagId, summary }),
 
-  createCoding: (canvasId: string, data: CreateCodingInput) =>
-    researchClient.post(`/canvas/${canvasId}/codings`, data),
+  // Longitudinal Tracking
+  getLongitudinal: () =>
+    researchClient.get('/longitudinal'),
 
-  deleteCoding: (canvasId: string, codingId: string) =>
-    researchClient.delete(`/canvas/${canvasId}/codings/${codingId}`),
+  getLongitudinalCase: (assessmentId: string) =>
+    researchClient.get(`/longitudinal/${assessmentId}`),
 
-  reassignCoding: (canvasId: string, codingId: string, newQuestionId: string) =>
-    researchClient.put(`/canvas/${canvasId}/codings/${codingId}/reassign`, { newQuestionId }),
+  // Hierarchical Tags
+  getTagTree: () =>
+    researchClient.get('/tags/tree'),
 
-  saveLayout: (canvasId: string, data: SaveLayoutInput) =>
-    researchClient.put(`/canvas/${canvasId}/layout`, data),
+  reorderTags: (items: { tagId: string; parentId: string | null; sortOrder: number }[]) =>
+    researchClient.put('/tags/reorder', { items }),
 
-  // Coding updates (annotations)
-  updateCoding: (canvasId: string, codingId: string, data: UpdateCodingInput) =>
-    researchClient.put(`/canvas/${canvasId}/codings/${codingId}`, data),
+  // In-Vivo Coding
+  createInVivoCode: (data: { responseId: string; startOffset: number; endOffset: number; highlightedText: string; color?: string; parentId?: string }) =>
+    researchClient.post('/tags/in-vivo', data),
 
-  // Cases
-  createCase: (canvasId: string, data: CreateCaseInput) =>
-    researchClient.post(`/canvas/${canvasId}/cases`, data),
+  // Code Merge & Split
+  mergeTags: (data: { sourceTagIds: string[]; targetName: string; targetColor: string; targetDescription?: string }) =>
+    researchClient.post('/tags/merge', data),
 
-  updateCase: (canvasId: string, caseId: string, data: UpdateCaseInput) =>
-    researchClient.put(`/canvas/${canvasId}/cases/${caseId}`, data),
+  splitTag: (data: { sourceTagId: string; newTags: { name: string; color: string; highlightIds: string[] }[] }) =>
+    researchClient.post('/tags/split', data),
 
-  deleteCase: (canvasId: string, caseId: string) =>
-    researchClient.delete(`/canvas/${canvasId}/cases/${caseId}`),
+  getTagOperations: () =>
+    researchClient.get('/tags/operations'),
 
-  // Relations
-  createRelation: (canvasId: string, data: CreateRelationInput) =>
-    researchClient.post(`/canvas/${canvasId}/relations`, data),
+  undoTagOperation: (id: string) =>
+    researchClient.post(`/tags/operations/${id}/undo`),
 
-  updateRelation: (canvasId: string, relId: string, data: { label: string }) =>
-    researchClient.put(`/canvas/${canvasId}/relations/${relId}`, data),
+  // Co-occurrence Matrix
+  getCooccurrence: (level: 'response' | 'passage' = 'response') =>
+    researchClient.get(`/cooccurrence?level=${level}`),
 
-  deleteRelation: (canvasId: string, relId: string) =>
-    researchClient.delete(`/canvas/${canvasId}/relations/${relId}`),
+  getCooccurrenceDrilldown: (tag1: string, tag2: string) =>
+    researchClient.get(`/cooccurrence/drilldown?tag1=${encodeURIComponent(tag1)}&tag2=${encodeURIComponent(tag2)}`),
 
-  // Computed Nodes
-  createComputedNode: (canvasId: string, data: CreateComputedNodeInput) =>
-    researchClient.post(`/canvas/${canvasId}/computed`, data),
+  // Word Frequency
+  getWordFrequency: (params?: { minLength?: number; minCount?: number; domainKey?: string; limit?: number }) =>
+    researchClient.get('/word-frequency', { params }),
 
-  updateComputedNode: (canvasId: string, nodeId: string, data: UpdateComputedNodeInput) =>
-    researchClient.put(`/canvas/${canvasId}/computed/${nodeId}`, data),
+  getWordFrequencyByTag: (tagId: string) =>
+    researchClient.get(`/word-frequency/by-tag?tagId=${encodeURIComponent(tagId)}`),
 
-  deleteComputedNode: (canvasId: string, nodeId: string) =>
-    researchClient.delete(`/canvas/${canvasId}/computed/${nodeId}`),
+  // Boolean / Compound Queries
+  executeQuery: (query: object, page?: number, pageSize?: number) =>
+    researchClient.post('/queries/execute', { query, page: page || 1, pageSize: pageSize || 20 }),
 
-  runComputedNode: (canvasId: string, nodeId: string) =>
-    researchClient.post(`/canvas/${canvasId}/computed/${nodeId}/run`),
+  saveQuery: (name: string, query: object) =>
+    researchClient.post('/queries/save', { name, query }),
 
-  // Auto-Code
-  autoCode: (canvasId: string, data: AutoCodeInput) =>
-    researchClient.post(`/canvas/${canvasId}/auto-code`, data),
+  getSavedQueries: () =>
+    researchClient.get('/queries'),
 
-  // Merge Questions
-  mergeQuestions: (canvasId: string, sourceId: string, targetId: string) =>
-    researchClient.post(`/canvas/${canvasId}/questions/merge`, { sourceId, targetId }),
+  deleteQuery: (id: string) =>
+    researchClient.delete(`/queries/${id}`),
 
-  // Import Narratives
-  importNarratives: (canvasId: string, data: { responseIds: string[] }) =>
-    researchClient.post(`/canvas/${canvasId}/import-narratives`, data),
+  // REFI-QDA Export
+  exportRefiQda: () =>
+    researchClient.get('/export/refi-qda', { responseType: 'blob' }),
 
-  // Import from Canvas
-  importFromCanvas: (canvasId: string, data: { sourceCanvasId: string; transcriptIds: string[] }) =>
-    researchClient.post(`/canvas/${canvasId}/import-from-canvas`, data),
+  // Concept Maps
+  getConceptMaps: () =>
+    researchClient.get('/concept-maps'),
 
-  // Canvas Sharing
-  shareCanvas: (canvasId: string) =>
-    researchClient.post(`/canvas/${canvasId}/share`),
+  createConceptMap: (name: string) =>
+    researchClient.post('/concept-maps', { name }),
 
-  getShares: (canvasId: string) =>
-    researchClient.get(`/canvas/${canvasId}/shares`),
+  updateConceptMap: (id: string, data: { nodes?: object[]; edges?: object[]; viewport?: object }) =>
+    researchClient.put(`/concept-maps/${id}`, data),
 
-  revokeShare: (canvasId: string, shareId: string) =>
-    researchClient.delete(`/canvas/${canvasId}/share/${shareId}`),
+  deleteConceptMap: (id: string) =>
+    researchClient.delete(`/concept-maps/${id}`),
 
-  cloneCanvas: (shareCode: string) =>
-    researchClient.post(`/canvas/clone/${shareCode}`),
+  autoGenerateConceptMap: () =>
+    researchClient.post('/concept-maps/auto-generate'),
 
-  getSharedCanvas: (shareCode: string) =>
-    researchClient.get(`/canvas/shared/${shareCode}`),
+  // AI-Assisted Coding
+  getAIStatus: () =>
+    researchClient.get('/ai/status'),
+
+  requestAISuggestions: (responseIds: string[]) =>
+    researchClient.post('/ai/suggest', { responseIds }),
+
+  getAISuggestions: (params?: { status?: string; responseId?: string }) =>
+    researchClient.get('/ai/suggestions', { params }),
+
+  acceptSuggestion: (id: string) =>
+    researchClient.put(`/ai/suggestions/${id}`, { status: 'accepted' }),
+
+  rejectSuggestion: (id: string) =>
+    researchClient.put(`/ai/suggestions/${id}`, { status: 'rejected' }),
+
+  bulkAcceptSuggestions: (ids: string[]) =>
+    researchClient.post('/ai/suggestions/bulk-accept', { suggestionIds: ids }),
+
+  clearAISuggestions: () =>
+    researchClient.delete('/ai/suggestions/clear'),
 };
 
 // Researcher Portal API

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { DOMAINS } from '@wiseshift/shared';
 import { mean, standardDeviation, median, correlationMatrix } from '../utils/statistics.js';
+import { validateQuery, narrativesQuerySchema } from '../middleware/validation.js';
 
 export const researchApiRoutes = Router();
 
@@ -96,6 +97,47 @@ researchApiRoutes.get('/statistics', async (_req, res, next) => {
       descriptive,
       correlationMatrix: corrMatrix,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/v1/research/narratives — export narrative responses for Canvas App bridge
+researchApiRoutes.get('/narratives', validateQuery(narrativesQuerySchema), async (req, res, next) => {
+  try {
+    const { ids, assessmentId } = req.query;
+
+    const where: any = {
+      questionType: 'narrative',
+      textValue: { not: null },
+    };
+
+    if (ids && typeof ids === 'string') {
+      where.id = { in: ids.split(',').map(id => id.trim()) };
+    } else if (assessmentId && typeof assessmentId === 'string') {
+      where.assessmentId = assessmentId;
+    }
+
+    const responses = await prisma.response.findMany({
+      where,
+      include: {
+        assessment: {
+          include: { organisation: { select: { name: true } } },
+        },
+      },
+      take: 100,
+    });
+
+    const data = responses.map(r => ({
+      id: r.id,
+      textValue: r.textValue,
+      questionId: r.questionId,
+      domainKey: r.domainKey,
+      organisationName: r.assessment.organisation.name,
+      assessmentId: r.assessmentId,
+    }));
+
+    res.json({ count: data.length, data });
   } catch (err) {
     next(err);
   }

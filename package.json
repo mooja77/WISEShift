@@ -16,7 +16,10 @@
     "start": "cd apps/backend && npm start",
     "db:migrate": "npm run db:migrate -w apps/backend",
     "db:seed": "npm run db:seed -w apps/backend",
-    "db:reset": "npm run db:reset -w apps/backend"
+    "db:reset": "npm run db:reset -w apps/backend",
+    "test": "npm test -w apps/backend && npm test -w apps/frontend",
+    "test:backend": "npm test -w apps/backend",
+    "test:frontend": "npm test -w apps/frontend"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

@@ -1,7 +1,9 @@
+import DOMPurify from 'dompurify';
+
 /**
  * Minimal markdown renderer for narrative text.
  * Supports: **bold**, lines starting with `- ` as list items, newlines as <br/>.
- * No external dependency required.
+ * Output is sanitised with DOMPurify for defence-in-depth.
  */
 export function renderMarkdown(text: string): string {
   if (!text) return '';
@@ -44,5 +46,8 @@ export function renderMarkdown(text: string): string {
     result.push('</ul>');
   }
 
-  return result.join('');
+  return DOMPurify.sanitize(result.join(''), {
+    ALLOWED_TAGS: ['strong', 'ul', 'li', 'br'],
+    ALLOWED_ATTR: ['class'],
+  });
 }

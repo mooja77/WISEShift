@@ -7,8 +7,46 @@ export interface ResearchTag {
   color: string;
   description?: string;
   isDefault: boolean;
+  parentId?: string | null;
+  sortOrder?: number;
+  isInVivo?: boolean;
   createdAt: string;
   updatedAt: string;
+  children?: ResearchTag[];
+}
+
+export interface TagTreeNode extends ResearchTag {
+  children: TagTreeNode[];
+  highlightCount: number;
+}
+
+export interface MergeTagsInput {
+  sourceTagIds: string[];
+  targetName: string;
+  targetColor: string;
+  targetDescription?: string;
+}
+
+export interface SplitTagInput {
+  sourceTagId: string;
+  newTags: { name: string; color: string; highlightIds: string[] }[];
+}
+
+export interface TagOperation {
+  id: string;
+  operationType: 'merge' | 'split';
+  sourceTagIds: string[];
+  targetTagId: string;
+  createdAt: string;
+}
+
+export interface InVivoCodingInput {
+  responseId: string;
+  startOffset: number;
+  endOffset: number;
+  highlightedText: string;
+  color?: string;
+  parentId?: string;
 }
 
 export interface TextHighlight {
@@ -332,4 +370,172 @@ export type CitationFormat = 'apa' | 'harvard' | 'chicago';
 export interface CitationResult {
   format: CitationFormat;
   citation: string;
+}
+
+// ─── Cross-Case Matrix ───
+
+export interface MatrixRow {
+  assessmentId: string;
+  label: string;
+  country?: string;
+  sector?: string;
+  overallScore?: number;
+}
+
+export interface MatrixColumn {
+  tagId: string;
+  tagName: string;
+  color: string;
+}
+
+export interface MatrixCell {
+  assessmentId: string;
+  tagId: string;
+  highlightCount: number;
+  summary?: string;
+}
+
+export interface MatrixData {
+  rows: MatrixRow[];
+  columns: MatrixColumn[];
+  cells: MatrixCell[];
+}
+
+export interface MatrixCellDrilldown {
+  assessmentId: string;
+  tagId: string;
+  highlights: {
+    id: string;
+    highlightedText: string;
+    domainKey: string;
+    questionId: string;
+  }[];
+  summary?: string;
+}
+
+// ─── Longitudinal Tracking ───
+
+export interface AssessmentRound {
+  assessmentId: string;
+  roundNumber: number;
+  overallScore: number | null;
+  domainScores: Record<string, number>;
+  completedAt: string | null;
+}
+
+export interface LongitudinalCase {
+  organisationId: string;
+  label: string;
+  country?: string;
+  sector?: string;
+  rounds: AssessmentRound[];
+}
+
+export interface LongitudinalData {
+  cases: LongitudinalCase[];
+  totalOrganisationsWithMultipleRounds: number;
+}
+
+// ─── Co-occurrence Matrix ───
+
+export interface CooccurrenceData {
+  tags: { id: string; name: string; color: string }[];
+  matrix: number[][];
+  maxCount: number;
+  level: 'response' | 'passage';
+}
+
+export interface CooccurrenceDrilldownResult {
+  responseId: string;
+  questionText: string;
+  anonymisedContext: string;
+  textValue: string;
+  tag1Highlights: { id: string; highlightedText: string; startOffset: number; endOffset: number }[];
+  tag2Highlights: { id: string; highlightedText: string; startOffset: number; endOffset: number }[];
+}
+
+// ─── Word Frequency ───
+
+export interface WordFrequencyEntry {
+  text: string;
+  count: number;
+  percentage: number;
+}
+
+export interface WordFrequencyData {
+  words: WordFrequencyEntry[];
+  totalWords: number;
+  uniqueWords: number;
+}
+
+// ─── Boolean / Compound Queries ───
+
+export type QueryNode =
+  | { tagId: string }
+  | { operator: 'AND' | 'OR' | 'NOT'; operands: QueryNode[] };
+
+export interface SavedQuery {
+  id: string;
+  name: string;
+  query: QueryNode;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QueryResultItem {
+  responseId: string;
+  questionText: string;
+  textValue: string;
+  anonymisedContext: string;
+  domainKey: string;
+  domainName: string;
+  domainScore: number | null;
+  matchingTagIds: string[];
+}
+
+// ─── Concept Map ───
+
+export interface ConceptMapData {
+  id: string;
+  name: string;
+  nodes: ConceptMapNode[];
+  edges: ConceptMapEdge[];
+  viewport?: { x: number; y: number; zoom: number };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConceptMapNode {
+  id: string;
+  type: 'theme' | 'memo';
+  position: { x: number; y: number };
+  data: { label: string; tagId?: string; color?: string; content?: string; highlightCount?: number };
+}
+
+export interface ConceptMapEdge {
+  id: string;
+  source: string;
+  target: string;
+  label?: string;
+  style?: 'solid' | 'dashed' | 'thick';
+}
+
+// ─── AI-Assisted Coding ───
+
+export interface AISuggestion {
+  id: string;
+  responseId: string;
+  suggestedTagId: string;
+  startOffset: number;
+  endOffset: number;
+  suggestedText: string;
+  confidence: number;
+  status: 'pending' | 'accepted' | 'rejected' | 'ignored';
+  createdAt: string;
+  tag?: ResearchTag;
+}
+
+export interface AIStatusResponse {
+  enabled: boolean;
+  provider?: string;
 }

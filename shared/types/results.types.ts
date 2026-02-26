@@ -99,11 +99,13 @@ export interface DashboardOverview {
 }
 
 export interface DashboardInsight {
-  type: 'strength' | 'weakness' | 'trend' | 'recommendation';
+  type: 'strength' | 'weakness' | 'trend' | 'recommendation' | 'outlier' | 'pattern';
   title: string;
   description: string;
   domainKey?: string;
   value?: number;
+  severity?: 'info' | 'warning' | 'positive';
+  evidence?: string;
 }
 
 export interface InterviewQuestion {

@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma.js';
 import { DOMAINS, getMaturityLevel } from '@wiseshift/shared';
 import { AppError } from '../middleware/errorHandler.js';
 import { validateAccessCode } from '../middleware/accessCode.js';
+import { validateQuery, registryListQuerySchema, publicFormatQuerySchema } from '../middleware/validation.js';
 import { sendFormatted } from '../utils/formatResponse.js';
 import { identifyStrengths } from '../utils/scoring.js';
 
@@ -17,7 +18,7 @@ function generateSlug(name: string): string {
 }
 
 // GET /api/registry — Public list of WISEs (filterable)
-registryRoutes.get('/', async (req, res, next) => {
+registryRoutes.get('/', validateQuery(registryListQuerySchema), async (req, res, next) => {
   try {
     const { country, sector, maturityLevel, page = '1', limit = '20' } = req.query;
 
@@ -92,7 +93,7 @@ registryRoutes.get('/', async (req, res, next) => {
 });
 
 // GET /api/registry/export — Download registry as CSV/JSON
-registryRoutes.get('/export', async (req, res, next) => {
+registryRoutes.get('/export', validateQuery(publicFormatQuerySchema), async (req, res, next) => {
   try {
     const format = req.query.format as string | undefined;
 

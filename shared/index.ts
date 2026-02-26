@@ -11,4 +11,5 @@ export * from './constants/resources.js';
 export * from './constants/sector-questions.js';
 export * from './constants/policy-alignment.js';
 export * from './constants/case-study-template.js';
-export * from './types/canvas.types.js';
+export * from './constants/privacy.js';
+// Canvas types removed — now in standalone Canvas App

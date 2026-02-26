@@ -1,5 +1,7 @@
+import { useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DOMAINS } from '@wiseshift/shared';
+import ChartExportToolbar from './ChartExportToolbar';
 
 const DOMAIN_COLORS: Record<string, string> = {
   governance: '#6366f1',
@@ -24,6 +26,8 @@ interface TrendLineChartProps {
 }
 
 export default function TrendLineChart({ periods, visibleDomains }: TrendLineChartProps) {
+  const chartRef = useRef<HTMLDivElement>(null);
+
   if (periods.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center text-gray-500 dark:text-gray-400">
@@ -39,29 +43,41 @@ export default function TrendLineChart({ periods, visibleDomains }: TrendLineCha
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-        <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-        <YAxis domain={[0, 5]} tick={{ fontSize: 12 }} />
-        <Tooltip
-          contentStyle={{ backgroundColor: 'var(--tooltip-bg, #fff)', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-          formatter={(value: number) => value.toFixed(2)}
+    <div>
+      <div className="flex justify-end mb-2">
+        <ChartExportToolbar
+          containerRef={chartRef}
+          filenameBase="trend-analysis"
+          figureNumber={3}
+          figureTitle="Domain score trends over time across assessed WISEs"
         />
-        <Legend />
-        {DOMAINS.filter(d => visibleDomains.has(d.key)).map(d => (
-          <Line
-            key={d.key}
-            type="monotone"
-            dataKey={d.key}
-            name={d.name}
-            stroke={DOMAIN_COLORS[d.key] || '#888'}
-            strokeWidth={2}
-            dot={{ r: 4 }}
-            activeDot={{ r: 6 }}
-          />
-        ))}
-      </LineChart>
-    </ResponsiveContainer>
+      </div>
+      <div ref={chartRef}>
+        <ResponsiveContainer width="100%" height={400}>
+          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+            <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+            <YAxis domain={[0, 5]} tick={{ fontSize: 12 }} />
+            <Tooltip
+              contentStyle={{ backgroundColor: 'var(--tooltip-bg, #fff)', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+              formatter={(value: number) => value.toFixed(2)}
+            />
+            <Legend />
+            {DOMAINS.filter(d => visibleDomains.has(d.key)).map(d => (
+              <Line
+                key={d.key}
+                type="monotone"
+                dataKey={d.key}
+                name={d.name}
+                stroke={DOMAIN_COLORS[d.key] || '#888'}
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

@@ -402,127 +402,12 @@ export const fullAppTourChapters: TourChapter[] = [
           description: 'Download data in CSV, Excel, or JSON format. Qualitative exports are formatted for direct import into NVivo or ATLAS.ti.',
         },
       },
-      {
-        element: '[data-tour="research-tab-canvas"]',
-        popover: {
-          title: 'Coding Canvas Tab',
-          description: 'This is the visual coding workspace we will explore in detail in the next chapter. Click it anytime to start coding interviews.',
-        },
-      },
     ],
   },
 
-  // ─── Chapter 8: Coding Canvas ───
+  // ─── Chapter 8: Extras ───
   {
-    title: 'Chapter 8: The Coding Canvas',
-    route: '/research',
-    setup: 'canvas',
-    steps: [
-      {
-        popover: {
-          title: 'The Coding Canvas',
-          description: 'This is your visual workspace for qualitative analysis — like a digital whiteboard where you code, organise, and explore interview data.',
-        },
-      },
-      {
-        element: '[data-tour="canvas-btn-transcript"]',
-        popover: {
-          title: 'Add Interview Text',
-          description: 'Click here to paste in an interview transcript or any text you want to analyse. You can add as many transcripts as you need.',
-        },
-      },
-      {
-        element: '[data-tour="canvas-btn-question"]',
-        popover: {
-          title: 'Create Research Questions',
-          description: 'Add questions you want to explore. They become colour-coded labels you can attach to parts of your transcripts.',
-        },
-      },
-      {
-        element: '[data-tour="canvas-btn-memo"]',
-        popover: {
-          title: 'Quick Notes',
-          description: 'Create a memo to jot down your thoughts as you analyse — like sticky notes on your whiteboard.',
-        },
-      },
-      {
-        element: '[data-tour="canvas-flow-area"]',
-        popover: {
-          title: 'The Workspace',
-          description: 'Drag items around, zoom in and out, and draw connections. This is where all your analysis comes together visually.',
-        },
-      },
-      {
-        element: '[data-tour="canvas-btn-autocode"]',
-        popover: {
-          title: 'Auto-Code',
-          description: 'Scans your transcripts for keywords and patterns automatically. Review the matches and keep the ones that are relevant.',
-        },
-      },
-      {
-        element: '[data-tour="canvas-btn-cases"]',
-        popover: {
-          title: 'Cases',
-          description: 'Group transcripts by participant, site, or category. This lets you compare patterns across different people or places.',
-        },
-      },
-      {
-        element: '[data-tour="canvas-btn-hierarchy"]',
-        popover: {
-          title: 'Hierarchy',
-          description: 'Organise research questions under broader themes to build a structured picture of your data.',
-        },
-      },
-      {
-        element: '[data-tour="canvas-btn-stripes"]',
-        popover: {
-          title: 'Coding Stripes',
-          description: 'Toggle colour-coded stripes alongside your transcripts to see at a glance which parts are coded and to which questions.',
-        },
-      },
-      {
-        element: '[data-tour="canvas-btn-query"]',
-        popover: {
-          title: 'Query & Analysis Tools',
-          description: 'Add analysis cards like word clouds, statistics, framework matrices, co-occurrence charts, and clustering — all visual and interactive.',
-        },
-      },
-      {
-        popover: {
-          title: 'How to Code Text',
-          description: 'Select a passage in a transcript, then drag a line to a question node. The coded segment saves automatically with its position.',
-        },
-      },
-      {
-        popover: {
-          title: 'Detail Panel',
-          description: 'Click any question node to open a panel showing all coded segments for that question. You can annotate or remove them here.',
-        },
-      },
-      {
-        popover: {
-          title: 'Create Relationships',
-          description: 'Drag between cases or questions to label relationships — "supports", "contradicts", "influences" — building a conceptual map.',
-        },
-      },
-      {
-        popover: {
-          title: 'Dark Mode Compatible',
-          description: 'The canvas works beautifully in both light and dark mode. Use the toggle in the top navigation to switch anytime.',
-        },
-      },
-      {
-        popover: {
-          title: 'Canvas Complete!',
-          description: 'You now know all 14 features of the Coding Canvas. Start by adding a transcript and a question, then let the analysis unfold.',
-        },
-      },
-    ],
-  },
-
-  // ─── Chapter 9: Extras ───
-  {
-    title: 'Chapter 9: Extras & Wrap-Up',
+    title: 'Chapter 8: Extras & Wrap-Up',
     route: '/',
     steps: [
       {

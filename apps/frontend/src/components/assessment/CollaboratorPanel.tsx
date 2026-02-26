@@ -104,14 +104,15 @@ export default function CollaboratorPanel({ open, onClose, assessmentId }: Colla
               leaveFrom="translate-x-0"
               leaveTo="translate-x-full"
             >
-              <DialogPanel className="h-screen w-full max-w-md overflow-y-auto bg-white shadow-xl">
-                <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-                  <DialogTitle className="text-lg font-semibold text-gray-900">
+              <DialogPanel className="h-screen w-full max-w-md overflow-y-auto bg-white shadow-xl dark:bg-gray-800">
+                <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                  <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Collaborators
                   </DialogTitle>
                   <button
                     onClick={onClose}
-                    className="rounded-md p-1 text-gray-400 hover:text-gray-600"
+                    className="rounded-md p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400"
+                    aria-label="Close collaborators panel"
                   >
                     <XMarkIcon className="h-5 w-5" />
                   </button>
@@ -119,9 +120,9 @@ export default function CollaboratorPanel({ open, onClose, assessmentId }: Colla
 
                 <div className="px-6 py-4">
                   {/* Share instructions */}
-                  <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900 dark:bg-blue-900/20 dark:text-blue-200">
                     Share this access code with collaborators so they can contribute:{' '}
-                    <code className="rounded bg-blue-100 px-1.5 py-0.5 font-mono font-bold">
+                    <code className="rounded bg-blue-100 px-1.5 py-0.5 font-mono font-bold dark:bg-blue-900/50">
                       {accessCode}
                     </code>
                     <button
@@ -130,7 +131,7 @@ export default function CollaboratorPanel({ open, onClose, assessmentId }: Colla
                         if (accessCode) navigator.clipboard.writeText(accessCode);
                         toast.success('Access code copied!');
                       }}
-                      className="ml-2 text-xs font-medium text-blue-600 hover:text-blue-800"
+                      className="ml-2 text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       Copy
                     </button>
@@ -138,7 +139,7 @@ export default function CollaboratorPanel({ open, onClose, assessmentId }: Colla
 
                   {/* Add collaborator form */}
                   <div className="mt-6">
-                    <h3 className="text-sm font-semibold text-gray-900">Add Collaborator</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Add Collaborator</h3>
                     <div className="mt-3 space-y-3">
                       <div>
                         <label htmlFor="collab-name" className="label">
@@ -172,7 +173,7 @@ export default function CollaboratorPanel({ open, onClose, assessmentId }: Colla
                           {DOMAINS.map((d) => (
                             <label
                               key={d.key}
-                              className="flex items-center gap-2 text-sm text-gray-700"
+                              className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
                             >
                               <input
                                 type="checkbox"
@@ -199,18 +200,18 @@ export default function CollaboratorPanel({ open, onClose, assessmentId }: Colla
                   {/* Current collaborators */}
                   {collaborators.length > 0 && (
                     <div className="mt-6">
-                      <h3 className="text-sm font-semibold text-gray-900">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                         Current Collaborators
                       </h3>
                       <div className="mt-3 space-y-2">
                         {collaborators.map((c, idx) => (
                           <div
                             key={idx}
-                            className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"
+                            className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50"
                           >
-                            <p className="text-sm font-medium text-gray-900">{c.name}</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{c.name}</p>
                             {c.email && (
-                              <p className="text-xs text-gray-500">{c.email}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{c.email}</p>
                             )}
                             <div className="mt-1 flex flex-wrap gap-1">
                               {c.domains.map((dk) => {
@@ -218,7 +219,7 @@ export default function CollaboratorPanel({ open, onClose, assessmentId }: Colla
                                 return (
                                   <span
                                     key={dk}
-                                    className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700"
+                                    className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 dark:bg-brand-900/40 dark:text-brand-300"
                                   >
                                     {domain?.shortName || dk}
                                   </span>

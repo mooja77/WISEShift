@@ -2,7 +2,10 @@ import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { DOMAINS } from '@wiseshift/shared';
 import { AppError } from '../middleware/errorHandler.js';
+import { validateQuery, researcherQuerySchema } from '../middleware/validation.js';
+import { escapeCsv } from '../utils/csvSanitize.js';
 import { nanoid } from 'nanoid';
+import { signResearcherToken, verifyResearcherToken } from '../utils/jwt.js';
 
 export const researcherRoutes = Router();
 
@@ -11,16 +14,26 @@ function generateVerificationCode(): string {
   return nanoid(6).toUpperCase();
 }
 
-// ─── Middleware: authenticate researcher via x-researcher-token header ───
+// ─── Middleware: authenticate researcher via x-researcher-token header (JWT or legacy ID) ───
 async function researcherAuth(req: any, _res: any, next: any) {
   const token = req.headers['x-researcher-token'] as string;
   if (!token) {
     return next(new AppError('Researcher authentication required', 401));
   }
 
-  const researcher = await prisma.researcherAccount.findUnique({
-    where: { id: token },
-  });
+  // Try JWT verification first
+  const jwtPayload = verifyResearcherToken(token);
+  let researcher;
+  if (jwtPayload) {
+    researcher = await prisma.researcherAccount.findUnique({
+      where: { id: jwtPayload.accountId },
+    });
+  } else {
+    // Fallback: legacy ID-based lookup
+    researcher = await prisma.researcherAccount.findUnique({
+      where: { id: token },
+    });
+  }
 
   if (!researcher) {
     return next(new AppError('Invalid researcher token', 401));
@@ -137,7 +150,7 @@ researcherRoutes.post('/verify', async (req, res, next) => {
       success: true,
       data: {
         id: updated.id,
-        token: updated.id, // Use ID as token for simplicity
+        token: signResearcherToken(updated.id, updated.accessLevel),
         message: 'Email verified. Use your token for authenticated requests.',
       },
     });
@@ -187,14 +200,12 @@ researcherRoutes.post('/request-access', researcherAuth, async (req: any, res, n
       });
     }
 
-    // Store ethics approval reference if provided
+    // Store ethics approval reference — access level change requires admin review
     const updated = await prisma.researcherAccount.update({
       where: { id: researcher.id },
       data: {
         ethicsApproval: ethicsApproval || researcher.ethicsApproval,
-        // In production, this would go through an approval workflow
-        // For now, auto-approve if ethics approval is provided
-        accessLevel: ethicsApproval ? 'approved' : 'registered',
+        // Access level is NOT auto-promoted — admin must approve via PUT /api/admin/researchers/:id/access-level
       },
     });
 
@@ -211,8 +222,9 @@ researcherRoutes.post('/request-access', researcherAuth, async (req: any, res, n
       success: true,
       data: {
         accessLevel: updated.accessLevel,
+        ethicsApproval: updated.ethicsApproval,
         message: ethicsApproval
-          ? 'Access upgraded to approved. You can now access individual case-level data.'
+          ? 'Ethics approval reference recorded. An administrator will review and approve your access request.'
           : 'Access request noted. Provide ethics approval reference for elevated access.',
       },
     });
@@ -222,7 +234,7 @@ researcherRoutes.post('/request-access', researcherAuth, async (req: any, res, n
 });
 
 // GET /api/researchers/query — Query assessment data with filters
-researcherRoutes.get('/query', researcherAuth, async (req: any, res, next) => {
+researcherRoutes.get('/query', researcherAuth, validateQuery(researcherQuerySchema), async (req: any, res, next) => {
   try {
     const researcher = req.researcher;
     const {
@@ -407,15 +419,6 @@ researcherRoutes.post('/batch-download', researcherAuth, async (req: any, res, n
 
     // CSV format
     const headers = ['CaseID', 'Country', 'Sector', 'Size', 'OverallScore', ...domainKeys.map(k => `Score_${k}`), 'CompletedAt'];
-
-    function escapeCsv(value: string | number | null | undefined): string {
-      if (value === null || value === undefined) return '';
-      const str = String(value);
-      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-        return `"${str.replace(/"/g, '""')}"`;
-      }
-      return str;
-    }
 
     const rows = [headers.map(escapeCsv).join(',')];
     for (const a of selected) {

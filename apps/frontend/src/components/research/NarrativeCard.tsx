@@ -4,6 +4,7 @@ import HighlightedText from './HighlightedText';
 import HighlightPopover from './HighlightPopover';
 import NotePopover from './NotePopover';
 import { researchApi } from '../../services/api';
+import toast from 'react-hot-toast';
 
 interface Props {
   result: NarrativeResult;
@@ -78,6 +79,28 @@ export default function NarrativeCard({ result, searchTerm, tags, highlights, on
     }
   };
 
+  const handleInVivoCode = async (text: string) => {
+    if (!selection) return;
+    try {
+      const res = await researchApi.createInVivoCode({
+        responseId: result.responseId,
+        startOffset: selection.start,
+        endOffset: selection.end,
+        highlightedText: selection.text,
+      });
+      const tagName = res.data.data.tag.name;
+      const truncated = tagName.length > 40 ? tagName.slice(0, 40) + '...' : tagName;
+      setShowHighlightPopover(false);
+      window.getSelection()?.removeAllRanges();
+      setSelection(null);
+      onHighlightChange();
+      toast.success(`New theme created: "${truncated}"`);
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || 'Failed to create theme';
+      toast.error(msg);
+    }
+  };
+
   const scoreColor = result.domainScore !== null
     ? result.domainScore >= 4 ? 'bg-green-100 text-green-800'
     : result.domainScore >= 3 ? 'bg-yellow-100 text-yellow-800'
@@ -116,6 +139,8 @@ export default function NarrativeCard({ result, searchTerm, tags, highlights, on
             position={popoverPos}
             onSelect={handleTagSelect}
             onClose={() => setShowHighlightPopover(false)}
+            onInVivoCode={handleInVivoCode}
+            selectedText={selection.text}
           />
         )}
       </div>

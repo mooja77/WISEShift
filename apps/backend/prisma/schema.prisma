@@ -3,24 +3,30 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Organisation {
-  id             String        @id @default(cuid())
-  name           String
-  accessCode     String        @unique
-  country        String?
-  region         String?
-  sector         String?
-  size           String?
-  legalStructure String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  assessments    Assessment[]
-  domainGoals    DomainGoal[]
-  wiseProfile    WISEProfile?
+  id              String        @id @default(cuid())
+  name            String
+  accessCode      String        @unique
+  accessCodeHash  String?
+  consentedAt     DateTime?
+  consentVersion  String?
+  country         String?
+  region          String?
+  sector          String?
+  size            String?
+  legalStructure  String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  assessments     Assessment[]
+  domainGoals     DomainGoal[]
+  wiseProfile     WISEProfile?
+
+  @@index([country])
+  @@index([sector])
 }
 
 model DomainGoal {
@@ -74,6 +80,10 @@ model Assessment {
   sectorScores         SectorScore[]
   actionPlans          ActionPlan[]
   groupAssignments     WorkingGroupAssignment[]
+
+  @@index([organisationId])
+  @@index([status])
+  @@index([completedAt])
 }
 
 model Response {
@@ -94,8 +104,11 @@ model Response {
   researchNotes   ResearchNote[]
   quotePins       QuotePin[]
   layerHighlights LayerHighlight[]
+  aiSuggestions   AISuggestion[]
 
   @@unique([assessmentId, questionId])
+  @@index([assessmentId])
+  @@index([domainKey])
 }
 
 model DomainScore {
@@ -128,6 +141,8 @@ model ActionPlan {
   completedAt    DateTime?
   createdAt      DateTime   @default(now())
   assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId])
 }
 
 model SectorScore {
@@ -155,20 +170,40 @@ model Benchmark {
 }
 
 model DashboardAccess {
-  id         String   @id @default(cuid())
-  accessCode String   @unique
-  name       String
-  role       String   // policymaker | funder | researcher
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
+  id             String   @id @default(cuid())
+  accessCode     String   @unique
+  accessCodeHash String?
+  name           String
+  role           String   // policymaker | funder | researcher
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
 
   researchTags   ResearchTag[]
   highlights     TextHighlight[]
   researchNotes  ResearchNote[]
   quotePins      QuotePin[]
-  codingLayers   CodingLayer[]
-  sharedLayers   LayerShare[]    @relation("sharedLayers")
-  codingCanvases CodingCanvas[]
+  codingLayers       CodingLayer[]
+  sharedLayers       LayerShare[]        @relation("sharedLayers")
+  researchMemos      ResearchMemo[]
+  codebookSnapshots  CodebookSnapshot[]
+  matrixCellSummaries MatrixCellSummary[]
+  tagOperations      TagOperation[]
+  savedQueries       SavedQuery[]
+  conceptMaps        ConceptMap[]
+  aiSuggestions      AISuggestion[]
+}
+
+model MatrixCellSummary {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  assessmentId      String
+  tagId             String
+  summary           String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id])
+
+  @@unique([dashboardAccessId, assessmentId, tagId])
 }
 
 model ResearchTag {
@@ -178,13 +213,80 @@ model ResearchTag {
   color             String
   description       String?
   isDefault         Boolean         @default(false)
+  parentId          String?
+  sortOrder         Int             @default(0)
+  isInVivo          Boolean         @default(false)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
+  parent            ResearchTag?    @relation("TagHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children          ResearchTag[]   @relation("TagHierarchy")
   highlights        TextHighlight[]
   layerHighlights   LayerHighlight[]
+  aiSuggestions     AISuggestion[]
 
   @@unique([dashboardAccessId, name])
+  @@index([dashboardAccessId])
+  @@index([parentId])
+}
+
+model TagOperation {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  operationType     String
+  sourceTagIds      String
+  targetTagId       String
+  snapshot          String
+  createdAt         DateTime        @default(now())
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardAccessId])
+}
+
+model SavedQuery {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  name              String
+  query             String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
+
+  @@unique([dashboardAccessId, name])
+}
+
+model ConceptMap {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  name              String
+  nodes             String          @default("[]")
+  edges             String          @default("[]")
+  viewport          String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
+
+  @@unique([dashboardAccessId, name])
+}
+
+model AISuggestion {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  responseId        String
+  suggestedTagId    String
+  startOffset       Int
+  endOffset         Int
+  suggestedText     String
+  confidence        Float
+  status            String          @default("pending")
+  createdAt         DateTime        @default(now())
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
+  response          Response        @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  tag               ResearchTag     @relation(fields: [suggestedTagId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardAccessId])
+  @@index([responseId])
+  @@index([suggestedTagId])
 }
 
 model TextHighlight {
@@ -199,6 +301,10 @@ model TextHighlight {
   dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
   response          Response        @relation(fields: [responseId], references: [id], onDelete: Cascade)
   tag               ResearchTag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardAccessId])
+  @@index([responseId])
+  @@index([tagId])
 }
 
 model ResearchNote {
@@ -224,6 +330,9 @@ model QuotePin {
   createdAt         DateTime        @default(now())
   dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
   response          Response        @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardAccessId])
+  @@index([responseId])
 }
 
 model CodingLayer {
@@ -239,6 +348,7 @@ model CodingLayer {
   shares            LayerShare[]
 
   @@unique([dashboardAccessId, name])
+  @@index([dashboardAccessId])
 }
 
 model LayerHighlight {
@@ -253,6 +363,10 @@ model LayerHighlight {
   codingLayer     CodingLayer @relation(fields: [codingLayerId], references: [id], onDelete: Cascade)
   response        Response    @relation(fields: [responseId], references: [id], onDelete: Cascade)
   tag             ResearchTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@index([codingLayerId])
+  @@index([responseId])
+  @@index([tagId])
 }
 
 model LayerShare {
@@ -267,148 +381,35 @@ model LayerShare {
   @@unique([codingLayerId, sharedWithId])
 }
 
-// ─── Coding Canvas ───
+// ─── Researcher Reflexivity Journal (Memos) ───
 
-model CodingCanvas {
-  id                String              @id @default(cuid())
+model ResearchMemo {
+  id                String          @id @default(cuid())
   dashboardAccessId String
-  name              String
-  description       String?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  dashboardAccess   DashboardAccess     @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
-  transcripts       CanvasTranscript[]
-  questions         CanvasQuestion[]
-  memos             CanvasMemo[]
-  codings           CanvasTextCoding[]
-  nodePositions     CanvasNodePosition[]
-  cases             CanvasCase[]
-  relations         CanvasRelation[]
-  computedNodes     CanvasComputedNode[]
-  shares            CanvasShare[]
+  title             String
+  content           String
+  type              String          @default("analytical") // analytical | reflexive | methodological | procedural
+  linkedResponseId  String?
+  linkedTagId       String?
+  linkedLayerId     String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
 
-  @@unique([dashboardAccessId, name])
+  @@index([dashboardAccessId])
+  @@index([type])
 }
 
-model CanvasShare {
-  id         String       @id @default(cuid())
-  canvasId   String
-  shareCode  String       @unique
-  createdBy  String       // dashboardAccessId
-  expiresAt  DateTime?
-  cloneCount Int          @default(0)
-  createdAt  DateTime     @default(now())
-  canvas     CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-}
+// ─── Codebook Versioning ───
 
-model CanvasTranscript {
-  id         String       @id @default(cuid())
-  canvasId   String
-  title      String
-  content    String
-  sortOrder  Int          @default(0)
-  caseId     String?
-  sourceType String?      // "manual" | "assessment" | "file" | "cross-canvas"
-  sourceId   String?      // assessment responseId, original transcriptId, etc.
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  canvas     CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-  case       CanvasCase?  @relation(fields: [caseId], references: [id], onDelete: SetNull)
-  codings    CanvasTextCoding[]
-}
-
-model CanvasQuestion {
-  id               String           @id @default(cuid())
-  canvasId         String
-  text             String
-  color            String           @default("#3B82F6")
-  sortOrder        Int              @default(0)
-  parentQuestionId String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  canvas           CodingCanvas     @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-  parentQuestion   CanvasQuestion?  @relation("QuestionHierarchy", fields: [parentQuestionId], references: [id], onDelete: SetNull)
-  childQuestions   CanvasQuestion[] @relation("QuestionHierarchy")
-  codings          CanvasTextCoding[]
-}
-
-model CanvasMemo {
-  id        String   @id @default(cuid())
-  canvasId  String
-  title     String?
-  content   String
-  color     String   @default("#FEF08A")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  canvas    CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-}
-
-model CanvasTextCoding {
-  id           String           @id @default(cuid())
-  canvasId     String
-  transcriptId String
-  questionId   String
-  startOffset  Int
-  endOffset    Int
-  codedText    String
-  note         String?
-  annotation   String?
-  createdAt    DateTime         @default(now())
-  canvas       CodingCanvas     @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-  transcript   CanvasTranscript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
-  question     CanvasQuestion   @relation(fields: [questionId], references: [id], onDelete: Cascade)
-}
-
-model CanvasNodePosition {
-  id        String       @id @default(cuid())
-  canvasId  String
-  nodeId    String
-  nodeType  String
-  x         Float
-  y         Float
-  width     Float?
-  height    Float?
-  collapsed Boolean      @default(false)
-  canvas    CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-
-  @@unique([canvasId, nodeId])
-}
-
-model CanvasCase {
-  id          String             @id @default(cuid())
-  canvasId    String
-  name        String
-  attributes  String             @default("{}")
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  canvas      CodingCanvas       @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-  transcripts CanvasTranscript[]
-
-  @@unique([canvasId, name])
-}
-
-model CanvasRelation {
-  id        String       @id @default(cuid())
-  canvasId  String
-  fromType  String
-  fromId    String
-  toType    String
-  toId      String
-  label     String
-  createdAt DateTime     @default(now())
-  canvas    CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
-}
-
-model CanvasComputedNode {
-  id        String       @id @default(cuid())
-  canvasId  String
-  nodeType  String
-  label     String
-  config    String       @default("{}")
-  result    String       @default("{}")
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  canvas    CodingCanvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+model CodebookSnapshot {
+  id                String          @id @default(cuid())
+  dashboardAccessId String
+  version           Int
+  label             String
+  snapshot          String          // JSON: array of { tagName, color, description, highlightCount, exampleQuotes }
+  createdAt         DateTime        @default(now())
+  dashboardAccess   DashboardAccess @relation(fields: [dashboardAccessId], references: [id], onDelete: Cascade)
 }
 
 // ─── Phase 4A: Researcher Portal ───
@@ -422,6 +423,7 @@ model ResearcherAccount {
   verificationCode String?
   verified         Boolean   @default(false)
   ethicsApproval   String?
+  passwordHash     String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   dataAccessLogs   DataAccessLog[]
@@ -509,4 +511,38 @@ model ActivityEntry {
   detail         String?
   createdAt      DateTime     @default(now())
   workingGroup   WorkingGroup @relation(fields: [workingGroupId], references: [id], onDelete: Cascade)
+}
+
+// ─── Ethics & Audit ───
+
+model ConsentRecord {
+  id             String   @id @default(cuid())
+  subjectType    String   // 'organisation' | 'researcher'
+  subjectId      String
+  consentVersion String   // e.g. "1.0"
+  action         String   // 'granted' | 'withdrawn'
+  ipHash         String   // SHA-256 of IP (not raw IP)
+  createdAt      DateTime @default(now())
+
+  @@index([subjectType, subjectId])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  timestamp  DateTime @default(now())
+  action     String   // e.g. 'export.qualitative', 'coding.create'
+  resource   String   // e.g. 'assessment', 'coding'
+  resourceId String?
+  actorType  String   // 'organisation' | 'researcher' | 'admin' | 'system'
+  actorId    String?
+  ip         String?  // hashed
+  method     String?
+  path       String?
+  statusCode Int?
+  meta       String?  // JSON string for extra context
+
+  @@index([timestamp])
+  @@index([action])
+  @@index([actorType])
 }

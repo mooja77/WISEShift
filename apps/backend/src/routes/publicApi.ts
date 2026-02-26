@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
-import { DOMAINS } from '@wiseshift/shared';
+import { DOMAINS, K_ANONYMITY_THRESHOLD } from '@wiseshift/shared';
 import { sendFormatted } from '../utils/formatResponse.js';
+import { validateQuery, publicFormatQuerySchema } from '../middleware/validation.js';
 
 export const publicApiRoutes = Router();
-
-const K_ANONYMITY_THRESHOLD = 5;
 
 // GET /api/v1/public/overview — High-level dataset summary
 publicApiRoutes.get('/overview', async (req, res, next) => {
@@ -47,7 +46,7 @@ publicApiRoutes.get('/overview', async (req, res, next) => {
 });
 
 // GET /api/v1/public/statistics — Descriptive statistics per domain
-publicApiRoutes.get('/statistics', async (req, res, next) => {
+publicApiRoutes.get('/statistics', validateQuery(publicFormatQuerySchema), async (req, res, next) => {
   try {
     const format = req.query.format as string | undefined;
 
@@ -108,7 +107,7 @@ publicApiRoutes.get('/statistics', async (req, res, next) => {
 });
 
 // GET /api/v1/public/benchmarks — Sector benchmark data
-publicApiRoutes.get('/benchmarks', async (req, res, next) => {
+publicApiRoutes.get('/benchmarks', validateQuery(publicFormatQuerySchema), async (req, res, next) => {
   try {
     const format = req.query.format as string | undefined;
 
@@ -146,7 +145,7 @@ publicApiRoutes.get('/benchmarks', async (req, res, next) => {
 });
 
 // GET /api/v1/public/assessments — Anonymised case-level scores (k-anonymised)
-publicApiRoutes.get('/assessments', async (req, res, next) => {
+publicApiRoutes.get('/assessments', validateQuery(publicFormatQuerySchema), async (req, res, next) => {
   try {
     const format = req.query.format as string | undefined;
 

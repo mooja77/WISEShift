@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { researchApi } from '../../services/api';
 import { useResearchStore } from '../../stores/researchStore';
+import ConfirmDialog from '../common/ConfirmDialog';
 import toast from 'react-hot-toast';
 
 interface OwnLayer {
@@ -33,6 +34,7 @@ export default function LayerManager() {
   const [sharingLayerId, setSharingLayerId] = useState<string | null>(null);
   const [comparingIds, setComparingIds] = useState<[string, string] | null>(null);
   const [compareResult, setCompareResult] = useState<any>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   useEffect(() => { loadLayers(); }, []);
 
@@ -65,7 +67,6 @@ export default function LayerManager() {
   };
 
   const deleteLayer = async (id: string) => {
-    if (!confirm('Delete this coding layer and all its highlights?')) return;
     try {
       await researchApi.deleteLayer(id);
       if (activeCodingLayerId === id) setActiveCodingLayerId(null);
@@ -73,6 +74,8 @@ export default function LayerManager() {
       toast.success('Layer deleted');
     } catch {
       toast.error('Failed to delete layer');
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -133,9 +136,11 @@ export default function LayerManager() {
           The active layer's highlights will be shown in the Narrative Explorer.
         </p>
 
-        <div className="mt-4 flex gap-3">
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <div className="flex-1">
+            <label htmlFor="layer-name" className="sr-only">Layer name</label>
             <input
+              id="layer-name"
               type="text"
               value={newName}
               onChange={e => setNewName(e.target.value)}
@@ -144,7 +149,9 @@ export default function LayerManager() {
             />
           </div>
           <div className="flex-1">
+            <label htmlFor="layer-desc" className="sr-only">Layer description</label>
             <input
+              id="layer-desc"
               type="text"
               value={newDesc}
               onChange={e => setNewDesc(e.target.value)}
@@ -175,7 +182,25 @@ export default function LayerManager() {
         </div>
       </div>
 
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Coding Layer"
+        message="This will permanently delete this layer and all its highlights. This cannot be undone."
+        confirmLabel="Delete Layer"
+        variant="danger"
+        onConfirm={() => deleteTarget && deleteLayer(deleteTarget)}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
       {/* Own Layers */}
+      {ownLayers.length === 0 && sharedLayers.length === 0 && (
+        <div className="card text-center py-12">
+          <p className="text-gray-500 dark:text-gray-400">
+            No coding layers yet. Create a layer to start organising your annotations by analysis round or team member.
+          </p>
+        </div>
+      )}
       {ownLayers.length > 0 && (
         <div className="card">
           <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Your Layers</h3>
@@ -219,7 +244,7 @@ export default function LayerManager() {
                     >
                       Share
                     </button>
-                    <button onClick={() => deleteLayer(layer.id)} className="text-xs text-red-500 hover:text-red-700">
+                    <button onClick={() => setDeleteTarget(layer.id)} className="text-xs text-red-500 hover:text-red-700">
                       Delete
                     </button>
                   </div>

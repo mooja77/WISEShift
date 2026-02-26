@@ -89,8 +89,8 @@ export default function QuoteBoard() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Quote Board</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Quote Board</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {quotes.length} pinned quote{quotes.length !== 1 ? 's' : ''}. Drag to reorder. Pin quotes from the Narrative Explorer.
           </p>
         </div>
@@ -102,8 +102,8 @@ export default function QuoteBoard() {
       </div>
 
       {quotes.length === 0 ? (
-        <div className="rounded-lg border-2 border-dashed border-gray-300 py-12 text-center">
-          <p className="text-sm text-gray-500">
+        <div className="rounded-lg border-2 border-dashed border-gray-300 py-12 text-center dark:border-gray-600">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             No pinned quotes yet. Go to the Narrative Explorer, find a quote, and click "Pin Quote".
           </p>
         </div>

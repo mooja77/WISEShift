@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useResearchStore } from '../stores/researchStore';
 import { dashboardApi } from '../services/api';
 import { useTour } from '../hooks/useTour';
-import { researchTourSteps, canvasTourSteps } from '../config/tourSteps';
+import { researchTourSteps } from '../config/tourSteps';
 import ResearchTabs from '../components/research/ResearchTabs';
 import NarrativeExplorer from '../components/research/NarrativeExplorer';
 import ThemeHeatmap from '../components/research/ThemeHeatmap';
@@ -15,7 +15,13 @@ import IRRPanel from '../components/research/IRRPanel';
 import TrendsPanel from '../components/research/TrendsPanel';
 import ExportPanel from '../components/research/ExportPanel';
 import LayerManager from '../components/research/LayerManager';
-import CodingCanvas from '../components/canvas/CodingCanvas';
+import MemoJournal from '../components/research/MemoJournal';
+import CrossCaseMatrix from '../components/research/CrossCaseMatrix';
+import LongitudinalTracker from '../components/research/LongitudinalTracker';
+import CooccurrenceMatrix from '../components/research/CooccurrenceMatrix';
+import WordFrequencyPanel from '../components/research/WordFrequencyPanel';
+import QueryBuilder from '../components/research/QueryBuilder';
+import ConceptMapView from '../components/research/ConceptMapView';
 import toast from 'react-hot-toast';
 
 export default function ResearchPage() {
@@ -25,7 +31,6 @@ export default function ResearchPage() {
   const [loading, setLoading] = useState(false);
 
   const { hasSeenTour, startTour } = useTour('research', researchTourSteps);
-  const { hasSeenTour: hasSeenCanvasTour, startTour: startCanvasTour } = useTour('canvas', canvasTourSteps);
 
   useEffect(() => {
     if (authenticated && !hasSeenTour) {
@@ -34,22 +39,19 @@ export default function ResearchPage() {
     }
   }, [authenticated, hasSeenTour, startTour]);
 
-  // Auto-trigger canvas tour on first visit to canvas tab
-  useEffect(() => {
-    if (authenticated && activeTab === 'canvas' && !hasSeenCanvasTour) {
-      const timeout = setTimeout(startCanvasTour, 600);
-      return () => clearTimeout(timeout);
-    }
-  }, [authenticated, activeTab, hasSeenCanvasTour, startCanvasTour]);
-
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       await dashboardApi.auth(code.trim());
       setAuth(code.trim());
-    } catch {
-      toast.error('Invalid or expired dashboard access code');
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        toast.error('Invalid or expired dashboard access code');
+      } else {
+        toast.error('Unable to connect to the server. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -95,11 +97,9 @@ export default function ResearchPage() {
     );
   }
 
-  const isCanvasTab = activeTab === 'canvas';
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className={isCanvasTab ? 'px-4 py-4' : 'mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'}>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
@@ -107,7 +107,7 @@ export default function ResearchPage() {
             <p className="mt-1 text-gray-600 dark:text-gray-400">Qualitative & quantitative analysis tools</p>
           </div>
           <button
-            onClick={() => { clearAuth(); navigate('/dashboard'); }}
+            onClick={() => { clearAuth(); navigate('/'); }}
             className="btn-secondary text-sm"
           >
             Exit Research
@@ -118,18 +118,24 @@ export default function ResearchPage() {
         <ResearchTabs />
 
         {/* Tab content */}
-        <div className={isCanvasTab ? 'mt-2' : 'mt-6'}>
+        <div className="mt-6" role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
           {activeTab === 'explorer' && <NarrativeExplorer />}
+          {activeTab === 'wordcloud' && <WordFrequencyPanel />}
+          {activeTab === 'queries' && <QueryBuilder />}
           {activeTab === 'heatmap' && <ThemeHeatmap />}
-          {activeTab === 'quotes' && <QuoteBoard />}
+          {activeTab === 'cooccurrence' && <CooccurrenceMatrix />}
+          {activeTab === 'matrix' && <CrossCaseMatrix />}
           {activeTab === 'comparison' && <ResearchComparison />}
+          {activeTab === 'quotes' && <QuoteBoard />}
           {activeTab === 'statistics' && <StatisticalDashboard />}
           {activeTab === 'sampling' && <SamplingAssistant />}
           {activeTab === 'irr' && <IRRPanel />}
           {activeTab === 'trends' && <TrendsPanel />}
+          {activeTab === 'longitudinal' && <LongitudinalTracker />}
           {activeTab === 'layers' && <LayerManager />}
+          {activeTab === 'memos' && <MemoJournal />}
+          {activeTab === 'conceptmap' && <ConceptMapView />}
           {activeTab === 'exports' && <ExportPanel />}
-          {activeTab === 'canvas' && <CodingCanvas />}
         </div>
       </div>
     </div>

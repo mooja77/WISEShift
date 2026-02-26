@@ -64,6 +64,8 @@ export default function HomePage() {
     legalStructure: '',
   });
 
+  const [newAccessCode, setNewAccessCode] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) {
@@ -83,8 +85,7 @@ export default function HomePage() {
       });
       const { assessment, accessCode } = res.data.data;
       startAssessment(assessment.id, accessCode, assessment.organisationId, form);
-      toast.success(`Assessment created! Your access code: ${accessCode}`);
-      navigate('/assessment');
+      setNewAccessCode(accessCode);
     } catch (err) {
       toast.error(t('errors.createFailed'));
     } finally {
@@ -161,6 +162,38 @@ export default function HomePage() {
                   {t('home.continueAssessment')}
                 </button>
                 {accessCode && <EmailAccessCode accessCode={accessCode} />}
+              </div>
+            </div>
+          )}
+
+          {/* Newly Created Access Code Banner */}
+          {newAccessCode && (
+            <div className="card border-2 border-green-300 bg-green-50 lg:col-span-2 dark:border-green-700 dark:bg-green-900/20">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-green-900 dark:text-green-100">Assessment Created</h2>
+                  <p className="mt-2 text-sm text-green-700 dark:text-green-300">
+                    Save this access code to resume your assessment later:
+                  </p>
+                  <code className="mt-2 inline-block rounded bg-green-100 px-3 py-1.5 font-mono text-lg font-bold text-green-800 dark:bg-green-900/50 dark:text-green-200">
+                    {newAccessCode}
+                  </code>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center gap-3">
+                <button onClick={() => navigate('/assessment')} className="btn-primary">
+                  Continue to Assessment
+                </button>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(newAccessCode);
+                    toast.success('Access code copied!');
+                  }}
+                  className="btn-secondary"
+                >
+                  Copy Code
+                </button>
+                {newAccessCode && <EmailAccessCode accessCode={newAccessCode} />}
               </div>
             </div>
           )}

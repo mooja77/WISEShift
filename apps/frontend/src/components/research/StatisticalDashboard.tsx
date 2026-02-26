@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
 import { researchApi } from '../../services/api';
 import { DOMAINS } from '@wiseshift/shared';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import ChartExportToolbar from './ChartExportToolbar';
 import toast from 'react-hot-toast';
 
 interface DomainStats {
@@ -38,6 +39,8 @@ export default function StatisticalDashboard() {
   const [groupBy, setGroupBy] = useState('sector');
   const [groupDomain, setGroupDomain] = useState('');
   const [selectedDist, setSelectedDist] = useState(DOMAINS[0]?.key ?? '');
+  const distributionChartRef = useRef<HTMLDivElement>(null);
+  const groupChartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     researchApi.getStatistics()
@@ -154,15 +157,23 @@ export default function StatisticalDashboard() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Score Distribution</h4>
-          <select
-            value={selectedDist}
-            onChange={e => setSelectedDist(e.target.value)}
-            className="input text-sm"
-          >
-            {DOMAINS.map(d => <option key={d.key} value={d.key}>{d.shortName}</option>)}
-          </select>
+          <div className="flex items-center gap-2">
+            <ChartExportToolbar
+              containerRef={distributionChartRef}
+              filenameBase={`distribution-${selectedDist}`}
+              figureNumber={1}
+              figureTitle={`Score distribution for ${domain?.shortName ?? selectedDist} domain across assessed WISEs`}
+            />
+            <select
+              value={selectedDist}
+              onChange={e => setSelectedDist(e.target.value)}
+              className="input text-sm"
+            >
+              {DOMAINS.map(d => <option key={d.key} value={d.key}>{d.shortName}</option>)}
+            </select>
+          </div>
         </div>
-        <div className="h-48">
+        <div className="h-48" ref={distributionChartRef}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={distribution}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
@@ -189,8 +200,14 @@ export default function StatisticalDashboard() {
 
       {/* ─── Group Comparison ─── */}
       <div>
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-3 flex-wrap">
           <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Group Comparison</h4>
+          <ChartExportToolbar
+            containerRef={groupChartRef}
+            filenameBase={`group-comparison-${groupBy}`}
+            figureNumber={2}
+            figureTitle={`Mean scores by ${groupBy} across assessed WISEs`}
+          />
           <select value={groupBy} onChange={e => setGroupBy(e.target.value)} className="input text-sm">
             <option value="sector">By Sector</option>
             <option value="country">By Country</option>
@@ -202,7 +219,7 @@ export default function StatisticalDashboard() {
           </select>
         </div>
         {groups.length > 0 ? (
-          <div className="h-56">
+          <div className="h-56" ref={groupChartRef}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={groups} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" opacity={0.3} />

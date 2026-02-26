@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { researchApi } from '../../services/api';
 import toast from 'react-hot-toast';
+import CodebookHistory from './CodebookHistory';
 
 type CitationFormat = 'apa' | 'harvard' | 'chicago';
 
@@ -80,8 +81,54 @@ export default function ExportPanel() {
     toast.success('Citation copied');
   };
 
+  const handleExportRefiQda = async () => {
+    try {
+      const res = await researchApi.exportRefiQda();
+      const blob = new Blob([res.data], { type: 'application/zip' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'wiseshift-project.qdpx';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('REFI-QDA project exported');
+    } catch {
+      toast.error('Failed to export project');
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* REFI-QDA Export */}
+      <div className="card">
+        <div className="flex items-start gap-4">
+          <div className="rounded-lg bg-brand-50 p-3 dark:bg-brand-900/30">
+            <svg className="h-6 w-6 text-brand-600 dark:text-brand-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Open in Other Tools
+            </h3>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Transfer your work to NVivo, ATLAS.ti, MAXQDA, or any qualitative analysis tool
+              that supports the REFI-QDA standard. All your themes, coded passages, notes,
+              and memos are included.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <span>Compatible with: NVivo, ATLAS.ti, MAXQDA, Dedoose, Quirkos</span>
+            </div>
+            <button
+              onClick={handleExportRefiQda}
+              className="btn-primary mt-4"
+            >
+              Download Project File (.qdpx)
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Dataset Export */}
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Dataset Export</h3>
@@ -119,6 +166,9 @@ export default function ExportPanel() {
           Download Codebook (DOCX)
         </button>
       </div>
+
+      {/* Codebook Versioning */}
+      <CodebookHistory />
 
       {/* Citations */}
       <div className="card">

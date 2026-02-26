@@ -4,13 +4,31 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="WISEShift - Professional Self-Assessment Tool for Work Integration Social Enterprises" />
+    <meta name="description" content="WISEShift - Professional Self-Assessment Tool for Work Integration Social Enterprises. Evaluate your WISE across 9 domains grounded in EMES indicators." />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="WISEShift - WISE Self-Assessment Tool" />
+    <meta property="og:description" content="A comprehensive self-assessment framework for Work Integration Social Enterprises across Europe. 9 domains, 40 questions, PDF reports." />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_GB" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="WISEShift - WISE Self-Assessment Tool" />
+    <meta name="twitter:description" content="Self-assessment framework for Work Integration Social Enterprises across Europe." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <title>WISEShift - WISE Self-Assessment</title>
   </head>
   <body class="bg-gray-50 text-gray-900 antialiased">
+    <!-- Prevent dark mode flash: apply dark class before React renders -->
+    <script>
+      try {
+        var ui = JSON.parse(localStorage.getItem('wiseshift-ui') || '{}');
+        if (ui.state && ui.state.darkMode) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

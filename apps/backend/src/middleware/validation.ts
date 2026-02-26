@@ -16,6 +16,21 @@ export function validate(schema: z.ZodSchema) {
   };
 }
 
+export function validateQuery(schema: z.ZodSchema) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.query);
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid query parameters',
+        details: result.error.flatten().fieldErrors,
+      });
+    }
+    req.query = result.data;
+    next();
+  };
+}
+
 // Validation schemas
 export const createAssessmentSchema = z.object({
   organisation: z.object({
@@ -69,12 +84,48 @@ export const createTagSchema = z.object({
   name: z.string().min(1, 'Tag name is required').max(100),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex colour'),
   description: z.string().max(500).optional(),
+  parentId: z.string().optional(),
 });
 
 export const updateTagSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   description: z.string().max(500).optional(),
+  parentId: z.string().nullable().optional(),
+  sortOrder: z.number().int().min(0).optional(),
+});
+
+export const reorderTagsSchema = z.object({
+  items: z.array(z.object({
+    tagId: z.string().min(1),
+    parentId: z.string().nullable(),
+    sortOrder: z.number().int().min(0),
+  })),
+});
+
+export const mergeTagsSchema = z.object({
+  sourceTagIds: z.array(z.string().min(1)).min(2, 'Select at least 2 themes to combine'),
+  targetName: z.string().min(1).max(100),
+  targetColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  targetDescription: z.string().max(500).optional(),
+});
+
+export const splitTagSchema = z.object({
+  sourceTagId: z.string().min(1),
+  newTags: z.array(z.object({
+    name: z.string().min(1).max(100),
+    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+    highlightIds: z.array(z.string().min(1)).min(1),
+  })).min(2, 'Split into at least 2 themes'),
+});
+
+export const inVivoCodingSchema = z.object({
+  responseId: z.string().min(1),
+  startOffset: z.number().int().min(0),
+  endOffset: z.number().int().min(1),
+  highlightedText: z.string().min(1).max(500),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  parentId: z.string().optional(),
 });
 
 export const createHighlightSchema = z.object({
@@ -100,136 +151,29 @@ export const reorderQuotesSchema = z.object({
   pinIds: z.array(z.string().min(1)).min(1),
 });
 
-// ─── Coding Canvas Schemas ───
+// Boolean / Compound Query schemas
+const queryNodeSchema: z.ZodSchema = z.lazy(() =>
+  z.union([
+    z.object({ tagId: z.string().min(1) }),
+    z.object({
+      operator: z.enum(['AND', 'OR', 'NOT']),
+      operands: z.array(queryNodeSchema).min(1).max(10),
+    }),
+  ])
+);
 
-export const createCanvasSchema = z.object({
-  name: z.string().min(1, 'Canvas name is required').max(200),
-  description: z.string().max(1000).optional(),
+export const executeQuerySchema = z.object({
+  query: queryNodeSchema,
+  page: z.number().int().min(1).default(1),
+  pageSize: z.number().int().min(1).max(100).default(20),
 });
 
-export const updateCanvasSchema = z.object({
-  name: z.string().min(1).max(200).optional(),
-  description: z.string().max(1000).optional(),
+export const saveQuerySchema = z.object({
+  name: z.string().min(1).max(200),
+  query: queryNodeSchema,
 });
 
-export const createTranscriptSchema = z.object({
-  title: z.string().min(1, 'Transcript title is required').max(200),
-  content: z.string().min(1, 'Transcript content is required'),
-  sourceType: z.string().max(50).optional(),
-  sourceId: z.string().max(200).optional(),
-});
-
-export const importNarrativesSchema = z.object({
-  responseIds: z.array(z.string().min(1)).min(1, 'At least one response ID is required').max(100),
-});
-
-export const importFromCanvasSchema = z.object({
-  sourceCanvasId: z.string().min(1),
-  transcriptIds: z.array(z.string().min(1)).min(1, 'At least one transcript ID is required').max(100),
-});
-
-export const updateTranscriptSchema = z.object({
-  title: z.string().min(1).max(200).optional(),
-  content: z.string().min(1).optional(),
-  caseId: z.string().nullable().optional(),
-});
-
-export const createCanvasQuestionSchema = z.object({
-  text: z.string().min(1, 'Question text is required').max(1000),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-});
-
-export const updateCanvasQuestionSchema = z.object({
-  text: z.string().min(1).max(1000).optional(),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-  parentQuestionId: z.string().nullable().optional(),
-});
-
-export const createCanvasMemoSchema = z.object({
-  title: z.string().max(200).optional(),
-  content: z.string().min(1, 'Memo content is required').max(5000),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-});
-
-export const updateCanvasMemoSchema = z.object({
-  title: z.string().max(200).optional(),
-  content: z.string().min(1).max(5000).optional(),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-});
-
-export const createCodingSchema = z.object({
-  transcriptId: z.string().min(1),
-  questionId: z.string().min(1),
-  startOffset: z.number().int().min(0),
-  endOffset: z.number().int().min(1),
-  codedText: z.string().min(1),
-  note: z.string().max(2000).optional(),
-});
-
-export const saveLayoutSchema = z.object({
-  positions: z.array(z.object({
-    nodeId: z.string().min(1),
-    nodeType: z.string().min(1),
-    x: z.number(),
-    y: z.number(),
-    width: z.number().optional(),
-    height: z.number().optional(),
-    collapsed: z.boolean().optional(),
-  })),
-});
-
-export const reassignCodingSchema = z.object({
-  newQuestionId: z.string().min(1),
-});
-
-export const updateCodingSchema = z.object({
-  annotation: z.string().max(5000).nullable().optional(),
-});
-
-export const createCaseSchema = z.object({
-  name: z.string().min(1, 'Case name is required').max(200),
-  attributes: z.record(z.string(), z.string()).optional(),
-});
-
-export const updateCaseSchema = z.object({
-  name: z.string().min(1).max(200).optional(),
-  attributes: z.record(z.string(), z.string()).optional(),
-});
-
-export const createRelationSchema = z.object({
-  fromType: z.enum(['case', 'question']),
-  fromId: z.string().min(1),
-  toType: z.enum(['case', 'question']),
-  toId: z.string().min(1),
-  label: z.string().min(1).max(200),
-});
-
-export const updateRelationSchema = z.object({
-  label: z.string().min(1).max(200),
-});
-
-export const createComputedNodeSchema = z.object({
-  nodeType: z.enum(['search', 'cooccurrence', 'matrix', 'stats', 'comparison', 'wordcloud', 'cluster', 'codingquery', 'sentiment', 'treemap']),
-  label: z.string().min(1).max(200),
-  config: z.record(z.string(), z.unknown()).optional(),
-});
-
-export const mergeQuestionsSchema = z.object({
-  sourceId: z.string().min(1),
-  targetId: z.string().min(1),
-});
-
-export const updateComputedNodeSchema = z.object({
-  label: z.string().min(1).max(200).optional(),
-  config: z.record(z.string(), z.unknown()).optional(),
-});
-
-export const autoCodeSchema = z.object({
-  questionId: z.string().min(1),
-  pattern: z.string().min(1).max(500),
-  mode: z.enum(['keyword', 'regex']),
-  transcriptIds: z.array(z.string().min(1)).optional(),
-});
+// Canvas schemas removed — now in standalone Canvas App
 
 // ─── Admin Bulk Import Schemas ───
 
@@ -280,3 +224,79 @@ export const bulkImportSchema = z.discriminatedUnion('format', [
   bulkImportFullSchema,
   bulkImportSimplifiedSchema,
 ]);
+
+// ─── Query Parameter Schemas ───
+
+const isoDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}/, 'Must be an ISO date string').optional();
+const paginationPage = z.coerce.number().int().min(1).default(1);
+const paginationLimit = z.coerce.number().int().min(1).max(500).default(100);
+const exportFormat = z.enum(['json', 'csv']).default('json');
+
+export const exportFormatQuerySchema = z.object({
+  format: z.enum(['csv', 'xlsx']).default('csv'),
+}).passthrough();
+
+export const caseStudyFormatQuerySchema = z.object({
+  format: z.enum(['docx', 'json']).default('docx'),
+}).passthrough();
+
+export const auditLogQuerySchema = z.object({
+  startDate: isoDateString,
+  endDate: isoDateString,
+  action: z.string().max(100).optional(),
+  resource: z.string().max(100).optional(),
+  actorType: z.string().max(50).optional(),
+  actorId: z.string().max(100).optional(),
+  page: paginationPage,
+  limit: paginationLimit,
+  format: exportFormat,
+});
+
+export const consentRecordsQuerySchema = z.object({
+  subjectType: z.string().max(50).optional(),
+  since: isoDateString,
+  format: exportFormat,
+});
+
+export const researcherAccessQuerySchema = z.object({
+  researcherId: z.string().max(100).optional(),
+  startDate: isoDateString,
+  endDate: isoDateString,
+  page: paginationPage,
+  limit: paginationLimit,
+});
+
+export const researcherListQuerySchema = z.object({
+  accessLevel: z.enum(['public', 'registered', 'approved']).optional(),
+  verified: z.enum(['true', 'false']).optional(),
+});
+
+export const publicFormatQuerySchema = z.object({
+  format: z.enum(['json', 'csv']).optional(),
+});
+
+export const registryListQuerySchema = z.object({
+  country: z.string().max(100).optional(),
+  sector: z.string().max(100).optional(),
+  maturityLevel: z.string().max(50).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export const narrativesQuerySchema = z.object({
+  ids: z.string().max(2000).optional(),
+  assessmentId: z.string().max(100).optional(),
+});
+
+export const researcherQuerySchema = z.object({
+  country: z.string().max(100).optional(),
+  sector: z.string().max(100).optional(),
+  size: z.string().max(50).optional(),
+  minScore: z.coerce.number().min(0).max(5).optional(),
+  maxScore: z.coerce.number().min(0).max(5).optional(),
+  dateFrom: isoDateString,
+  dateTo: isoDateString,
+  domainKey: z.string().max(50).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});

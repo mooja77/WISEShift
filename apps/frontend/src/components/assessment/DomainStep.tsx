@@ -42,7 +42,7 @@ export default function DomainStep({
   return (
     <div className="flex flex-col gap-6">
       {/* Domain header */}
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700">
         {/* Color bar */}
         <div className="h-2" style={{ backgroundColor: domain.color }} />
 
@@ -56,18 +56,18 @@ export default function DomainStep({
               {domain.shortName.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
+              <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100">
                 {t(`${i18nPrefix}.name`, domain.name)}
                 <HelpTooltip tooltipKey={`help.domain.${domain.key}`} />
               </h2>
-              <p className="mt-0.5 text-sm text-gray-500">{t(`${i18nPrefix}.description`, domain.description)}</p>
+              <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{t(`${i18nPrefix}.description`, domain.description)}</p>
             </div>
             {/* Progress indicator */}
             <div className="shrink-0 text-right">
-              <span className="text-sm font-medium text-gray-600">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {answeredCount} / {domain.questions.length}
               </span>
-              <p className="text-xs text-gray-400">answered</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">answered</p>
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function DomainStep({
         {domain.questions.map((question, index) => (
           <div key={question.id}>
             {/* Question number label */}
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
               Question {index + 1} of {domain.questions.length}
             </p>
 

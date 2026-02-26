@@ -13,12 +13,13 @@ export const assessmentRoutes = Router();
 assessmentRoutes.post('/', validate(createAssessmentSchema), async (req, res, next) => {
   try {
     const { organisation: orgData } = req.body;
-    const accessCode = generateAccessCode();
+    const { plaintext, sha256Index, bcryptHash } = await generateAccessCode();
 
     const organisation = await prisma.organisation.create({
       data: {
         name: orgData.name,
-        accessCode,
+        accessCode: sha256Index,
+        accessCodeHash: bcryptHash,
         country: orgData.country,
         region: orgData.region,
         sector: orgData.sector,
@@ -37,7 +38,7 @@ assessmentRoutes.post('/', validate(createAssessmentSchema), async (req, res, ne
 
     res.status(201).json({
       success: true,
-      data: { assessment, accessCode, accessCodeShown: true },
+      data: { assessment, accessCode: plaintext, accessCodeShown: true },
     });
   } catch (err) {
     next(err);

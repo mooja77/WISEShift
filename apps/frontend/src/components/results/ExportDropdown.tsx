@@ -29,8 +29,13 @@ export default function ExportDropdown({ assessmentId }: ExportDropdownProps) {
       const res = await exportFn();
       downloadBlob(new Blob([res.data]), filename);
       toast.success(`${label} downloaded`);
-    } catch (err) {
-      toast.error(`Failed to export ${label}`);
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 429) {
+        toast.error('Too many requests. Please wait a moment and try again.');
+      } else {
+        toast.error(`Failed to export ${label}`);
+      }
     }
   };
 

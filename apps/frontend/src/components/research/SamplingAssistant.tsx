@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { researchApi } from '../../services/api';
 import toast from 'react-hot-toast';
+import SaturationTracker from './SaturationTracker';
 
 type SamplingMethod = 'maximum_variation' | 'extreme_deviant' | 'typical' | 'purposive';
 
@@ -97,6 +98,9 @@ export default function SamplingAssistant() {
 
   return (
     <div className="space-y-6">
+      {/* Data Saturation Tracker */}
+      <SaturationTracker />
+
       {/* Method Selection */}
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Sampling Method</h3>

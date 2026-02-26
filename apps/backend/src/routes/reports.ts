@@ -4,11 +4,12 @@ import { DOMAINS, getMaturityLevel } from '@wiseshift/shared';
 import { calculateDomainScore, calculateOverallScore, identifyStrengths, identifyWeaknesses } from '../utils/scoring.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { getRetentionExpiresAt } from '../middleware/dataRetention.js';
+import { validateAccessCode } from '../middleware/accessCode.js';
 
 export const reportRoutes = Router();
 
 // GET /api/assessments/:id/export/json — Export assessment data as downloadable JSON
-reportRoutes.get('/:id/export/json', async (req, res, next) => {
+reportRoutes.get('/:id/export/json', validateAccessCode, async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -24,6 +25,11 @@ reportRoutes.get('/:id/export/json', async (req, res, next) => {
 
     if (!assessment) {
       throw new AppError('Assessment not found', 404);
+    }
+
+    // Verify ownership
+    if (assessment.organisationId !== (req as any).organisation.id) {
+      throw new AppError('Access denied', 403);
     }
 
     const retentionExpiresAt = getRetentionExpiresAt(
@@ -88,7 +94,7 @@ reportRoutes.get('/:id/export/json', async (req, res, next) => {
 
 // GET /api/assessments/:id/export/csv — Export assessment data as CSV
 // Flat format: one row per response with domain, question, numeric value, text value
-reportRoutes.get('/:id/export/csv', async (req, res, next) => {
+reportRoutes.get('/:id/export/csv', validateAccessCode, async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -103,6 +109,11 @@ reportRoutes.get('/:id/export/csv', async (req, res, next) => {
 
     if (!assessment) {
       throw new AppError('Assessment not found', 404);
+    }
+
+    // Verify ownership
+    if (assessment.organisationId !== (req as any).organisation.id) {
+      throw new AppError('Access denied', 403);
     }
 
     // Build CSV header
@@ -173,7 +184,7 @@ reportRoutes.get('/:id/export/csv', async (req, res, next) => {
 
 // GET /api/assessments/:id/report/pdf — Generate PDF report data
 // (Returns JSON data that frontend renders as PDF)
-reportRoutes.get('/:id/report/pdf', async (req, res, next) => {
+reportRoutes.get('/:id/report/pdf', validateAccessCode, async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -189,6 +200,11 @@ reportRoutes.get('/:id/report/pdf', async (req, res, next) => {
 
     if (!assessment) {
       throw new AppError('Assessment not found', 404);
+    }
+
+    // Verify ownership
+    if (assessment.organisationId !== (req as any).organisation.id) {
+      throw new AppError('Access denied', 403);
     }
 
     // Build domain results

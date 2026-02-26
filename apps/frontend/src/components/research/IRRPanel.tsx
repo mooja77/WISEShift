@@ -52,6 +52,26 @@ export default function IRRPanel() {
     }
   };
 
+  const exportDocx = async () => {
+    if (!otherCode.trim()) {
+      toast.error('Enter the other researcher\'s dashboard code first');
+      return;
+    }
+    try {
+      const res = await researchApi.exportIRRReport(otherCode.trim());
+      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `irr-report-${new Date().toISOString().slice(0, 10)}.docx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('IRR report downloaded');
+    } catch {
+      toast.error('Failed to generate IRR report');
+    }
+  };
+
   const exportCsv = () => {
     if (!result) return;
     const headers = ['Tag', 'Kappa', 'Interpretation', 'Observed Agreement', 'Expected Agreement', 'Rater 1 Count', 'Rater 2 Count', 'Both Count', 'Total Responses'];
@@ -121,9 +141,14 @@ export default function IRRPanel() {
           <div className="card">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Overall Agreement</h3>
-              <button onClick={exportCsv} className="btn-secondary text-sm">
-                Export CSV
-              </button>
+              <div className="flex gap-2">
+                <button onClick={exportCsv} className="btn-secondary text-sm">
+                  Export CSV
+                </button>
+                <button onClick={exportDocx} className="btn-primary text-sm">
+                  Export DOCX Report
+                </button>
+              </div>
             </div>
 
             <div className="mt-4 grid gap-4 sm:grid-cols-3">

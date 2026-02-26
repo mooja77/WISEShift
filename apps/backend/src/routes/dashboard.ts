@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
-import { DOMAINS, getMaturityLevel } from '@wiseshift/shared';
+import { DOMAINS, getMaturityLevel, K_ANONYMITY_THRESHOLD } from '@wiseshift/shared';
+import type { DashboardInsight } from '@wiseshift/shared';
 import { validate, dashboardAuthSchema } from '../middleware/validation.js';
-import { generateDashboardCode } from '../utils/accessCode.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { extractWordFrequencies } from '../utils/wordFrequency.js';
+import { sha256, verifyAccessCode } from '../utils/hashing.js';
+import { mean, standardDeviation, pearsonCorrelation } from '../utils/statistics.js';
 
 export const dashboardRoutes = Router();
 
@@ -13,12 +15,25 @@ dashboardRoutes.post('/auth', validate(dashboardAuthSchema), async (req, res, ne
   try {
     const { accessCode } = req.body;
 
-    const access = await prisma.dashboardAccess.findUnique({
-      where: { accessCode },
+    // Try SHA-256 hashed lookup first
+    const sha256Index = sha256(accessCode);
+    let access = await prisma.dashboardAccess.findUnique({
+      where: { accessCode: sha256Index },
     });
 
-    if (!access) {
-      throw new AppError('Invalid dashboard access code', 401);
+    if (access && access.accessCodeHash) {
+      const valid = await verifyAccessCode(accessCode, access.accessCodeHash);
+      if (!valid) {
+        throw new AppError('Invalid dashboard access code', 401);
+      }
+    } else if (!access) {
+      // Fallback: plaintext lookup for un-migrated codes
+      access = await prisma.dashboardAccess.findUnique({
+        where: { accessCode },
+      });
+      if (!access) {
+        throw new AppError('Invalid dashboard access code', 401);
+      }
     }
 
     if (new Date() > access.expiresAt) {
@@ -28,7 +43,7 @@ dashboardRoutes.post('/auth', validate(dashboardAuthSchema), async (req, res, ne
     res.json({
       success: true,
       data: {
-        token: accessCode, // Simple token (just reuse the code)
+        token: accessCode, // Return the original code as token
         expiresAt: access.expiresAt.toISOString(),
         name: access.name,
         role: access.role,
@@ -88,9 +103,8 @@ dashboardRoutes.get('/overview', async (req, res, next) => {
       }
     }
 
-    // Sector breakdown with k-anonymity (k=5)
-    // Suppress categories with fewer than 5 entries to prevent re-identification
-    const K_ANONYMITY_THRESHOLD = 5;
+    // Sector breakdown with k-anonymity
+    // Suppress categories with fewer than K entries to prevent re-identification
     const rawSectorBreakdown: Record<string, number> = {};
     for (const assessment of assessments) {
       const sector = assessment.organisation.sector || 'Unknown';
@@ -139,71 +153,284 @@ dashboardRoutes.get('/overview', async (req, res, next) => {
   }
 });
 
-// GET /api/dashboard/insights — Generate insights
+// GET /api/dashboard/insights — Dynamic data-driven insights engine
 dashboardRoutes.get('/insights', async (_req, res, next) => {
   try {
     const assessments = await prisma.assessment.findMany({
       where: { status: 'completed' },
-      include: { domainScores: true },
+      include: {
+        domainScores: true,
+        organisation: true,
+      },
+      orderBy: { completedAt: 'desc' },
     });
 
     if (assessments.length === 0) {
       return res.json({ success: true, data: [] });
     }
 
-    // Calculate domain averages
-    const domainTotals: Record<string, { sum: number; count: number }> = {};
+    const insights: DashboardInsight[] = [];
+    const domainKeys = DOMAINS.map(d => d.key);
+    const domainName = (key: string) => DOMAINS.find(d => d.key === key)?.name || key;
+    const round2 = (v: number) => Math.round(v * 100) / 100;
+
+    // ── Collect per-domain score arrays ──
+    const domainScoreArrays: Record<string, number[]> = {};
+    for (const dk of domainKeys) {
+      domainScoreArrays[dk] = [];
+    }
     for (const a of assessments) {
       for (const ds of a.domainScores) {
-        if (ds.score > 0) {
-          if (!domainTotals[ds.domainKey]) domainTotals[ds.domainKey] = { sum: 0, count: 0 };
-          domainTotals[ds.domainKey].sum += ds.score;
-          domainTotals[ds.domainKey].count += 1;
+        if (ds.score > 0 && domainScoreArrays[ds.domainKey]) {
+          domainScoreArrays[ds.domainKey].push(ds.score);
         }
       }
     }
 
-    const domainAverages = Object.entries(domainTotals).map(([key, { sum, count }]) => ({
-      domainKey: key,
-      domainName: DOMAINS.find(d => d.key === key)?.name || key,
-      average: Math.round((sum / count) * 100) / 100,
-    }));
+    // ── Domain averages ──
+    const domainAvgs: { key: string; avg: number }[] = [];
+    for (const dk of domainKeys) {
+      const scores = domainScoreArrays[dk];
+      if (scores.length > 0) {
+        domainAvgs.push({ key: dk, avg: round2(mean(scores)) });
+      }
+    }
+    const sortedAsc = [...domainAvgs].sort((a, b) => a.avg - b.avg);
+    const sortedDesc = [...domainAvgs].sort((a, b) => b.avg - a.avg);
 
-    const sorted = [...domainAverages].sort((a, b) => a.average - b.average);
-    const insights: any[] = [];
-
-    // Top strengths
-    const topDomains = [...domainAverages].sort((a, b) => b.average - a.average);
-    if (topDomains.length > 0) {
+    // ── (a) Strongest domain ──
+    if (sortedDesc.length > 0) {
+      const top = sortedDesc[0];
       insights.push({
         type: 'strength',
-        title: `Strongest domain: ${topDomains[0].domainName}`,
-        description: `Across all assessed WISEs, ${topDomains[0].domainName} has the highest average score of ${topDomains[0].average}/5.`,
-        domainKey: topDomains[0].domainKey,
-        value: topDomains[0].average,
+        title: `Strongest domain: ${domainName(top.key)}`,
+        description: `Across all assessed WISEs, ${domainName(top.key)} has the highest average score of ${top.avg}/5.`,
+        domainKey: top.key,
+        value: top.avg,
+        severity: 'positive',
       });
     }
 
-    // Top weaknesses
-    if (sorted.length > 0) {
+    // ── (b) Weakest domain ──
+    if (sortedAsc.length > 0 && sortedAsc[0].key !== sortedDesc[0]?.key) {
+      const bottom = sortedAsc[0];
       insights.push({
         type: 'weakness',
-        title: `Area for development: ${sorted[0].domainName}`,
-        description: `${sorted[0].domainName} has the lowest average score of ${sorted[0].average}/5, indicating a sector-wide area for improvement.`,
-        domainKey: sorted[0].domainKey,
-        value: sorted[0].average,
+        title: `Area for development: ${domainName(bottom.key)}`,
+        description: `${domainName(bottom.key)} has the lowest average score of ${bottom.avg}/5, indicating a sector-wide area for improvement.`,
+        domainKey: bottom.key,
+        value: bottom.avg,
+        severity: 'warning',
       });
     }
 
-    // Recommendation
-    insights.push({
-      type: 'recommendation',
-      title: 'Focus on impact measurement',
-      description: 'Across the sector, impact measurement and data collection remain areas where most WISEs can improve, particularly in systematic data use for continuous improvement.',
-      domainKey: 'impact-measurement',
+    // ── (c) Sector-level strengths / weaknesses ──
+    const sectorAssessments: Record<string, typeof assessments> = {};
+    for (const a of assessments) {
+      const sector = a.organisation.sector || 'Unknown';
+      if (!sectorAssessments[sector]) sectorAssessments[sector] = [];
+      sectorAssessments[sector].push(a);
+    }
+
+    for (const [sector, sectorGroup] of Object.entries(sectorAssessments)) {
+      if (sector === 'Unknown' || sectorGroup.length < K_ANONYMITY_THRESHOLD) continue;
+
+      const sectorDomainAvgs: { key: string; avg: number }[] = [];
+      for (const dk of domainKeys) {
+        const scores: number[] = [];
+        for (const a of sectorGroup) {
+          const ds = a.domainScores.find(d => d.domainKey === dk);
+          if (ds && ds.score > 0) scores.push(ds.score);
+        }
+        if (scores.length > 0) {
+          sectorDomainAvgs.push({ key: dk, avg: round2(mean(scores)) });
+        }
+      }
+
+      if (sectorDomainAvgs.length < 2) continue;
+
+      const sectorSorted = [...sectorDomainAvgs].sort((a, b) => b.avg - a.avg);
+      const strongest = sectorSorted[0];
+      const weakest = sectorSorted[sectorSorted.length - 1];
+
+      insights.push({
+        type: 'strength',
+        title: `${sector}: ${domainName(strongest.key)} is strong`,
+        description: `In ${sector}, ${domainName(strongest.key)} scores highest (${strongest.avg}/5) across ${sectorGroup.length} organisations.`,
+        domainKey: strongest.key,
+        value: strongest.avg,
+        severity: 'positive',
+        evidence: `Based on ${sectorGroup.length} completed assessments in this sector.`,
+      });
+
+      if (weakest.key !== strongest.key) {
+        insights.push({
+          type: 'weakness',
+          title: `${sector}: ${domainName(weakest.key)} scores lowest`,
+          description: `${sector} organisations score lowest on ${domainName(weakest.key)} (${weakest.avg}/5).`,
+          domainKey: weakest.key,
+          value: weakest.avg,
+          severity: 'warning',
+          evidence: `Based on ${sectorGroup.length} completed assessments in this sector.`,
+        });
+      }
+    }
+
+    // ── (d) Outlier detection — high variability domains ──
+    for (const dk of domainKeys) {
+      const scores = domainScoreArrays[dk];
+      if (scores.length < K_ANONYMITY_THRESHOLD) continue;
+
+      const sd = round2(standardDeviation(scores));
+      if (sd > 1.0) {
+        const avg = round2(mean(scores));
+        insights.push({
+          type: 'outlier',
+          title: `High variability in ${domainName(dk)}`,
+          description: `${domainName(dk)} shows high variability (SD=${sd}) — organisations range widely from emerging to leading levels.`,
+          domainKey: dk,
+          value: avg,
+          severity: 'warning',
+          evidence: `Standard deviation of ${sd} across ${scores.length} assessments (mean ${avg}/5).`,
+        });
+      }
+    }
+
+    // ── (e) Correlation patterns — strongest positive correlation ──
+    if (assessments.length >= K_ANONYMITY_THRESHOLD && domainAvgs.length >= 2) {
+      // Build aligned score arrays per assessment
+      const assessmentDomainMaps = assessments.map(a => {
+        const map: Record<string, number> = {};
+        for (const ds of a.domainScores) {
+          if (ds.score > 0) map[ds.domainKey] = ds.score;
+        }
+        return map;
+      });
+
+      let bestR = 0;
+      let bestPair: [string, string] = ['', ''];
+
+      const activeDomains = domainAvgs.map(d => d.key);
+      for (let i = 0; i < activeDomains.length; i++) {
+        for (let j = i + 1; j < activeDomains.length; j++) {
+          const dk1 = activeDomains[i];
+          const dk2 = activeDomains[j];
+          const x: number[] = [];
+          const y: number[] = [];
+          for (const m of assessmentDomainMaps) {
+            if (m[dk1] !== undefined && m[dk2] !== undefined) {
+              x.push(m[dk1]);
+              y.push(m[dk2]);
+            }
+          }
+          if (x.length >= K_ANONYMITY_THRESHOLD) {
+            const r = pearsonCorrelation(x, y);
+            if (r > bestR) {
+              bestR = r;
+              bestPair = [dk1, dk2];
+            }
+          }
+        }
+      }
+
+      if (bestR > 0.6 && bestPair[0]) {
+        const rRounded = round2(bestR);
+        insights.push({
+          type: 'pattern',
+          title: `Strong link: ${domainName(bestPair[0])} & ${domainName(bestPair[1])}`,
+          description: `Strong positive relationship between ${domainName(bestPair[0])} and ${domainName(bestPair[1])} (r=${rRounded}) — organisations strong in one tend to excel in the other.`,
+          severity: 'info',
+          evidence: `Pearson correlation of ${rRounded} across ${assessments.length} assessments.`,
+        });
+      }
+    }
+
+    // ── (f) Trend detection — recent quarter vs overall ──
+    const now = new Date();
+    const threeMonthsAgo = new Date(now);
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    const recentAssessments = assessments.filter(
+      a => a.completedAt && a.completedAt >= threeMonthsAgo,
+    );
+
+    if (recentAssessments.length >= K_ANONYMITY_THRESHOLD) {
+      for (const dk of domainKeys) {
+        const overallScores = domainScoreArrays[dk];
+        if (overallScores.length < K_ANONYMITY_THRESHOLD) continue;
+
+        const recentScores: number[] = [];
+        for (const a of recentAssessments) {
+          const ds = a.domainScores.find(d => d.domainKey === dk);
+          if (ds && ds.score > 0) recentScores.push(ds.score);
+        }
+
+        if (recentScores.length < K_ANONYMITY_THRESHOLD) continue;
+
+        const overallAvg = mean(overallScores);
+        const recentAvg = mean(recentScores);
+        const delta = round2(recentAvg - overallAvg);
+
+        if (Math.abs(delta) > 0.5) {
+          const direction = delta > 0 ? 'improving' : 'declining';
+          const sign = delta > 0 ? '+' : '';
+          insights.push({
+            type: 'trend',
+            title: `${domainName(dk)}: ${direction} trend`,
+            description: `Recent assessments show ${direction} scores in ${domainName(dk)} (${sign}${delta} vs overall average).`,
+            domainKey: dk,
+            value: round2(recentAvg),
+            severity: delta > 0 ? 'positive' : 'warning',
+            evidence: `Recent quarter average: ${round2(recentAvg)}/5 vs overall: ${round2(overallAvg)}/5 (${recentScores.length} recent assessments).`,
+          });
+        }
+      }
+    }
+
+    // ── (g) Dynamic recommendations — based on actual data ──
+    if (sortedAsc.length > 0) {
+      const weakest = sortedAsc[0];
+      insights.push({
+        type: 'recommendation',
+        title: `Focus on ${domainName(weakest.key)}`,
+        description: `With the lowest average score of ${weakest.avg}/5, ${domainName(weakest.key)} represents the greatest opportunity for sector-wide improvement. Consider targeted capacity building and knowledge sharing in this area.`,
+        domainKey: weakest.key,
+        value: weakest.avg,
+        severity: 'info',
+      });
+    }
+
+    // Recommend investigating high-variability domains for best practices
+    const highVariabilityDomains = domainKeys.filter(dk => {
+      const scores = domainScoreArrays[dk];
+      return scores.length >= K_ANONYMITY_THRESHOLD && standardDeviation(scores) > 1.0;
     });
 
-    res.json({ success: true, data: insights });
+    if (highVariabilityDomains.length > 0) {
+      const names = highVariabilityDomains.map(dk => domainName(dk));
+      insights.push({
+        type: 'recommendation',
+        title: 'Investigate best practices in variable domains',
+        description: `${names.join(', ')} ${names.length === 1 ? 'shows' : 'show'} high variability — some organisations are excelling while others lag behind. Identifying and sharing best practices from top performers could lift the sector.`,
+        severity: 'info',
+        evidence: `${highVariabilityDomains.length} domain${highVariabilityDomains.length > 1 ? 's' : ''} with standard deviation > 1.0.`,
+      });
+    }
+
+    // ── Sort by importance and limit to 8 insights ──
+    const typePriority: Record<DashboardInsight['type'], number> = {
+      outlier: 0,
+      trend: 1,
+      strength: 2,
+      weakness: 3,
+      pattern: 4,
+      recommendation: 5,
+    };
+
+    insights.sort((a, b) => typePriority[a.type] - typePriority[b.type]);
+    const limitedInsights = insights.slice(0, 8);
+
+    res.json({ success: true, data: limitedInsights });
   } catch (err) {
     next(err);
   }

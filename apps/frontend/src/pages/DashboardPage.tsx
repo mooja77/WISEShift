@@ -20,6 +20,8 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState<DashboardInsight[]>([]);
   const [dashboardWordCloud, setDashboardWordCloud] = useState<{ text: string; value: number }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(false);
+  const [dataError, setDataError] = useState(false);
 
   const { hasSeenTour, startTour } = useTour('dashboard', dashboardTourSteps);
 
@@ -37,14 +39,23 @@ export default function DashboardPage() {
       await dashboardApi.auth(accessCode.trim());
       setAuthenticated(true);
       fetchDashboardData();
-    } catch (err) {
-      toast.error('Invalid or expired dashboard access code');
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 429) {
+        toast.error('Too many requests. Please wait a moment and try again.');
+      } else if (status === 401 || status === 403) {
+        toast.error('Invalid or expired dashboard access code');
+      } else {
+        toast.error('Unable to connect to the server. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const fetchDashboardData = async () => {
+    setLoadingData(true);
+    setDataError(false);
     try {
       const [overviewRes, insightsRes, wcRes] = await Promise.all([
         dashboardApi.getOverview(),
@@ -55,7 +66,10 @@ export default function DashboardPage() {
       setInsights(insightsRes.data.data);
       setDashboardWordCloud(wcRes.data.data || []);
     } catch (err) {
+      setDataError(true);
       toast.error('Failed to load dashboard data');
+    } finally {
+      setLoadingData(false);
     }
   };
 
@@ -102,7 +116,16 @@ export default function DashboardPage() {
   if (!overview) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <LoadingSpinner size="lg" />
+        {dataError ? (
+          <div className="text-center">
+            <p className="text-gray-600 dark:text-gray-400">Failed to load dashboard data.</p>
+            <button onClick={fetchDashboardData} disabled={loadingData} className="btn-primary mt-4">
+              {loadingData ? 'Retrying...' : 'Retry'}
+            </button>
+          </div>
+        ) : (
+          <LoadingSpinner size="lg" />
+        )}
       </div>
     );
   }

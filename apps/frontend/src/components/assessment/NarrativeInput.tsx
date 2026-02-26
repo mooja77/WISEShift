@@ -38,10 +38,10 @@ function generatePromptChips(description?: string, tags?: string[]): string[] {
 
 /** Returns a depth milestone message and colour based on character count */
 function getDepthMilestone(count: number): { message: string; color: string } | null {
-  if (count >= 1800) return { message: 'Approaching limit', color: 'text-amber-500' };
-  if (count >= 500) return { message: 'Excellent depth', color: 'text-green-600' };
-  if (count >= 300) return { message: 'Great detail \u2014 this helps researchers understand your context', color: 'text-green-500' };
-  if (count >= 100) return { message: 'Good start!', color: 'text-green-500' };
+  if (count >= 1800) return { message: 'Approaching limit', color: 'text-amber-500 dark:text-amber-400' };
+  if (count >= 500) return { message: 'Excellent depth', color: 'text-green-600 dark:text-green-400' };
+  if (count >= 300) return { message: 'Great detail \u2014 this helps researchers understand your context', color: 'text-green-500 dark:text-green-400' };
+  if (count >= 100) return { message: 'Good start!', color: 'text-green-500 dark:text-green-400' };
   return null;
 }
 
@@ -105,7 +105,7 @@ export default function NarrativeInput({
               type="button"
               onClick={() => handleChipClick(chip)}
               disabled={disabled}
-              className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 disabled:opacity-50"
+              className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 disabled:opacity-50 dark:border-brand-900 dark:bg-brand-900/20 dark:text-brand-300 dark:hover:bg-brand-900/40"
             >
               {chip}
             </button>
@@ -125,7 +125,7 @@ export default function NarrativeInput({
         aria-describedby="char-count"
         className={`
           input resize-none overflow-hidden
-          ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-50' : ''}
+          ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900/50' : ''}
           ${isAtLimit ? 'ring-amber-500 focus:ring-amber-500' : ''}
         `}
       />
@@ -142,10 +142,10 @@ export default function NarrativeInput({
         <span
           className={`text-xs ${
             isAtLimit
-              ? 'font-medium text-amber-600'
+              ? 'font-medium text-amber-600 dark:text-amber-500'
               : isNearLimit
-                ? 'text-amber-500'
-                : 'text-gray-400'
+                ? 'text-amber-500 dark:text-amber-400'
+                : 'text-gray-400 dark:text-gray-500'
           }`}
         >
           {charCount.toLocaleString()} / {maxLength.toLocaleString()} characters
@@ -153,9 +153,9 @@ export default function NarrativeInput({
       </div>
 
       {/* Markdown hint */}
-      <p className="text-[10px] text-gray-400">
-        Tip: Use <code className="rounded bg-gray-100 px-1">**bold**</code> and{' '}
-        <code className="rounded bg-gray-100 px-1">-</code> for bullet lists
+      <p className="text-[10px] text-gray-400 dark:text-gray-500">
+        Tip: Use <code className="rounded bg-gray-100 px-1 dark:bg-gray-800">**bold**</code> and{' '}
+        <code className="rounded bg-gray-100 px-1 dark:bg-gray-800">-</code> for bullet lists
       </p>
     </div>
   );

@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { NarrativeSearchResponse, ResearchTag, TextHighlight } from '@wiseshift/shared';
 import { DOMAINS } from '@wiseshift/shared';
 import { researchApi } from '../../services/api';
 import NarrativeFilters from './NarrativeFilters';
 import NarrativeCard from './NarrativeCard';
 import TagPalette from './TagPalette';
+import AISuggestionsPanel from './AISuggestionsPanel';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import toast from 'react-hot-toast';
 
@@ -107,21 +108,33 @@ export default function NarrativeExplorer() {
 
   const totalPages = data ? Math.ceil(data.total / data.pageSize) : 0;
 
+  // Visible response IDs for AI suggestions
+  const visibleResponseIds = useMemo(
+    () => data?.results.map(r => r.responseId) ?? [],
+    [data]
+  );
+
   return (
     <div className="flex gap-6">
       {/* Main content */}
       <div className="min-w-0 flex-1 space-y-4">
-        {/* Search bar */}
-        <div className="relative">
-          <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search narratives (e.g. 'social clause', 'funding'...)"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="input w-full pl-10"
+        {/* Search bar + AI Suggest button */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search narratives (e.g. 'social clause', 'funding'...)"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="input w-full pl-10"
+            />
+          </div>
+          <AISuggestionsPanel
+            visibleResponseIds={visibleResponseIds}
+            onAccepted={refreshHighlights}
           />
         </div>
 
