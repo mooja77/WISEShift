@@ -6,10 +6,8 @@ cmds = ["npm ci"]
 
 [phases.build]
 cmds = [
-  "npm run build",
-  "cd apps/backend && npx prisma migrate deploy",
-  "cd apps/backend && npx tsx prisma/seed.ts"
+  "npm run build"
 ]
 
 [start]
-cmd = "cd apps/backend && node dist/index.js"
+cmd = "cd apps/backend && npx prisma migrate deploy && npx tsx prisma/seed.ts && node dist/index.js"
