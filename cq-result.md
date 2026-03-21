@@ -1,0 +1,716 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - link "WISEShift home" [ref=e8] [cursor=pointer]:
+          - /url: /
+          - img [ref=e10]
+          - generic [ref=e12]: WISEShift
+        - generic [ref=e13]:
+          - generic [ref=e17]: "Assessment access code:"
+          - generic [ref=e18]: WISE-DEMO01
+        - navigation "Primary navigation" [ref=e19]:
+          - link "Home" [ref=e20] [cursor=pointer]:
+            - /url: /
+            - img [ref=e21]
+            - text: Home
+          - link "Methodology" [ref=e23] [cursor=pointer]:
+            - /url: /methodology
+            - img [ref=e24]
+            - text: Methodology
+          - link "Dashboard" [ref=e26] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e27]
+            - text: Dashboard
+          - link "Registry" [ref=e29] [cursor=pointer]:
+            - /url: /registry
+            - img [ref=e30]
+            - text: Registry
+          - button "Take a Tour" [ref=e32] [cursor=pointer]:
+            - img [ref=e33]
+            - text: Take a Tour
+          - button "Start full app tour" [ref=e35] [cursor=pointer]:
+            - img [ref=e36]
+            - text: Full Tour
+          - button "Change language" [ref=e40] [cursor=pointer]:
+            - generic [ref=e41]: EN
+            - img [ref=e42]
+          - button "Switch to light mode" [ref=e44] [cursor=pointer]:
+            - img [ref=e45]
+    - main [ref=e47]:
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - heading "Research Workspace" [level=1] [ref=e52]
+            - paragraph [ref=e53]: Qualitative & quantitative analysis tools
+          - button "Exit Research" [ref=e54] [cursor=pointer]
+        - navigation "Research workspace tabs" [ref=e56]:
+          - button "Explorer" [ref=e57] [cursor=pointer]
+          - button "Heatmap" [ref=e58] [cursor=pointer]
+          - button "Quotes" [ref=e59] [cursor=pointer]
+          - button "Comparison" [ref=e60] [cursor=pointer]
+          - button "Statistics" [ref=e61] [cursor=pointer]
+          - button "Sampling" [ref=e62] [cursor=pointer]
+          - button "IRR" [ref=e63] [cursor=pointer]
+          - button "Trends" [ref=e64] [cursor=pointer]
+          - button "Layers" [ref=e65] [cursor=pointer]
+          - button "Exports" [ref=e66] [cursor=pointer]
+          - button "Coding Canvas" [ref=e67] [cursor=pointer]
+        - generic [ref=e3652]:
+          - generic [ref=e3653]:
+            - generic [ref=e3654]:
+              - button "Back to canvas list" [ref=e3655] [cursor=pointer]:
+                - img [ref=e3656]
+              - heading "Work Integration Deep Test" [level=3] [ref=e3658]
+            - generic [ref=e3659]:
+              - generic [ref=e3660]:
+                - generic [ref=e3661]: Data
+                - generic [ref=e3662]:
+                  - button "Transcript" [ref=e3664] [cursor=pointer]:
+                    - img [ref=e3665]
+                    - text: Transcript
+                    - img [ref=e3667]
+                  - button "Question" [ref=e3669] [cursor=pointer]:
+                    - img [ref=e3670]
+                    - text: Question
+                  - button "Memo" [ref=e3672] [cursor=pointer]:
+                    - img [ref=e3673]
+                    - text: Memo
+              - generic [ref=e3676]:
+                - generic [ref=e3677]: Analyze
+                - generic [ref=e3678]:
+                  - button "Auto-Code" [ref=e3679] [cursor=pointer]:
+                    - img [ref=e3680]
+                    - text: Auto-Code
+                  - button "Cases" [ref=e3682] [cursor=pointer]:
+                    - img [ref=e3683]
+                    - text: Cases
+                  - button "Hierarchy" [ref=e3685] [cursor=pointer]:
+                    - img [ref=e3686]
+                    - text: Hierarchy
+              - generic [ref=e3689]:
+                - generic [ref=e3690]: View
+                - generic [ref=e3691]:
+                  - button "Stripes" [ref=e3692] [cursor=pointer]:
+                    - img [ref=e3693]
+                    - text: Stripes
+                  - button "Codebook" [ref=e3695] [cursor=pointer]:
+                    - img [ref=e3696]
+                    - text: Codebook
+                  - button "Share" [ref=e3698] [cursor=pointer]:
+                    - img [ref=e3699]
+                    - text: Share
+              - button "Query" [ref=e3703] [cursor=pointer]:
+                - img [ref=e3704]
+                - text: Query
+                - img [ref=e3706]
+          - application [ref=e3709]:
+            - generic [ref=e3711]:
+              - generic:
+                - generic:
+                  - img:
+                    - group "Edge from transcript-cmly7qfq90021wht48riiu2gr to question-cmly7t6uv0027wht49lpfybpp" [ref=e7301] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7r9xu0023wht4ct6xz0n9 to question-cmly7t6uv0027wht49lpfybpp" [ref=e7305] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7s43y0025wht4tbbhqwjf to question-cmly7t6uv0027wht49lpfybpp" [ref=e7309] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7qfq90021wht48riiu2gr to question-cmly7u2kj0029wht4v58u3hsc" [ref=e7313] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7r9xu0023wht4ct6xz0n9 to question-cmly7u2kj0029wht4v58u3hsc" [ref=e7317] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7s43y0025wht4tbbhqwjf to question-cmly7u2kj0029wht4v58u3hsc" [ref=e7321] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7qfq90021wht48riiu2gr to question-cmly7ujn7002bwht4vyv2ht7s" [ref=e7325] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7r9xu0023wht4ct6xz0n9 to question-cmly7ujn7002bwht4vyv2ht7s" [ref=e7329] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7s43y0025wht4tbbhqwjf to question-cmly7ujn7002bwht4vyv2ht7s" [ref=e7333] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7qfq90021wht48riiu2gr to question-cmly7u2kj0029wht4v58u3hsc" [ref=e7337] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7qfq90021wht48riiu2gr to question-cmly7u2kj0029wht4v58u3hsc" [ref=e7341] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7r9xu0023wht4ct6xz0n9 to question-cmly7u2kj0029wht4v58u3hsc" [ref=e7345] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7s43y0025wht4tbbhqwjf to question-cmly7u2kj0029wht4v58u3hsc" [ref=e7349] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7qfq90021wht48riiu2gr to question-cmly7t6uv0027wht49lpfybpp" [ref=e7353] [cursor=pointer]
+                  - img:
+                    - group "Edge from transcript-cmly7s43y0025wht4tbbhqwjf to question-cmly7t6uv0027wht49lpfybpp" [ref=e7357] [cursor=pointer]
+                - generic:
+                  - group [ref=e3748]:
+                    - generic [ref=e3749]:
+                      - generic [ref=e3750]:
+                        - generic [ref=e3751]:
+                          - img [ref=e3752]
+                          - generic [ref=e3754]: "Interview #1 — Programme Manager Sarah"
+                          - generic [ref=e4101]: Programme Manager Sarah
+                        - button "Delete transcript" [ref=e3755] [cursor=pointer]:
+                          - img [ref=e3756]
+                      - paragraph [ref=e3764]:
+                        - text: Our social enterprise has been operating for twelve years now, focused on work integration for long-term unemployed individuals. We run a catering service and a
+                        - generic "Coded by 1 question" [ref=e3765]: community garden
+                        - text: project. The
+                        - generic "Coded by 1 question" [ref=e3767]: board of directors
+                        - text: meets monthly and includes representatives from the local community, participants, and ext
+                        - generic "Coded by 1 question" [ref=e4286]: ernal professionals. Democratic governance is central to everything we do — every major decision goes through a participatory process where staff and participants have equa
+                        - text: l voice. We measure our social impact through annual surveys, outcome tracking, and independent evaluations. Last year we supported forty-seven participants, with thirty-two movi
+                        - generic "Coded by 1 question" [ref=e4288]: ng into mainstream employment within six months. The key challenge remains sustainable funding — we rely on a mix of government grants, earned income from our c
+                        - generic "Coded by 1 question" [ref=e4290]: atering business, and philanthropic support. Environmental sustainability is embedded in our operations through the
+                        - generic "Coded by 1 question" [ref=e4410]: community garden
+                        - generic "Coded by 1 question" [ref=e4412]: ", composting progr"
+                        - text: amme, and our zero-waste kitchen policy. Staff training includes modules on inclusive management, trauma-informed practice, and cultural competency. We believe that genuine social enterprise must balance financial viability with deep commitment to social transformation.
+                      - generic [ref=e3770]: 6 coded segments
+                  - group [ref=e3772]:
+                    - generic [ref=e3773]:
+                      - generic [ref=e3774]:
+                        - generic [ref=e3775]:
+                          - img [ref=e3776]
+                          - generic [ref=e3778]: "Interview #2 — Participant John"
+                        - button "Delete transcript" [ref=e3779] [cursor=pointer]:
+                          - img [ref=e3780]
+                      - paragraph [ref=e3788]:
+                        - text: I was unemployed for nearly four years before joining this programme. The social enterprise gave me a real job in their catering kitchen — not just training, but actual responsibility. My supervisor understood that I had personal challenges and worked around my schedule when I needed to attend appointments. The democratic gov
+                        - generic "Coded by 1 question" [ref=e3789]: ernance structure means we have a say in how things run. I sit on the participant council and we meet monthly to discuss operations and suggest improvements. The environmental work in the
+                        - generic "Coded by 1 question" [ref=e4292]: c
+                        - generic "Coded by 1 question" [ref=e3791]: ommunity garden
+                        - generic "Coded by 1 question" [ref=e4294]: was therapeutic for me — growing food, composting waste, being outdoors. It helped with my mental health more than any formal programme could. After eighteen months I felt re
+                        - text: ady to apply for mainstream employment. The enterprise helped me with CV writing, interview practice, and even connected me with local employers. I now work part-time at a restaurant and still volunteer at the garden on week
+                        - generic "Coded by 1 question" [ref=e4295]: ends. The funding uncertainty worries me though — if government grants are cut, many people like me would lose this lifeline. I think social enterprises need more recognition and stable funding from the state.
+                      - generic [ref=e3796]: 4 coded segments
+                  - group [ref=e3798]:
+                    - generic [ref=e3799]:
+                      - generic [ref=e3800]:
+                        - generic [ref=e3801]:
+                          - img [ref=e3802]
+                          - generic [ref=e3804]: "Interview #3 — Board Chair Maria"
+                        - button "Delete transcript" [ref=e3805] [cursor=pointer]:
+                          - img [ref=e3806]
+                      - paragraph [ref=e3814]:
+                        - text: As board chair I oversee the strategic direction of our work integration social enterprise. We have nine
+                        - generic "Coded by 1 question" [ref=e3815]: board members
+                        - text: representing diverse stakeholders — two participant representatives, three community members, two business professionals,
+                        - generic "Coded by 1 question" [ref=e3817]: and two staff members. Our governance model follows cooperative principles with one-member-one-vote
+                        - generic "Coded by 1 question" [ref=e3818]: on all major decisions. Financial sustainability is our biggest ongoing concern. We generate about sixty percent of our revenue through commercial activities — the catering contracts and garden produce sales — and the remainder comes from government employment programmes
+                        - text: and EU structural funds. We conduct annual social audits and publish our impact reports publicly. Last year our social return on investment was calculated at three-to-one — for every euro invested, three euros of social value were generated. The environment
+                        - generic "Coded by 1 question" [ref=e4300]: al dimension has grown significantly. Our
+                        - generic "Coded by 1 question" [ref=e4415]: community garden
+                        - generic "Coded by 1 question" [ref=e4417]: now supplies organic produce to three local restaurants, and we have in
+                        - text: stalled solar panels on our premises. Staff wellbeing is monitored through quarterly check-ins and we maintain a ratio of one support worker for every five participants. The participant council feeds directly into board decisions — their minutes are a standing item on our agenda.
+                      - generic [ref=e3821]: 5 coded segments
+                  - group [ref=e3823]:
+                    - generic [ref=e3824]:
+                      - generic [ref=e3827]:
+                        - generic [ref=e3828]:
+                          - generic [ref=e3830]: Research Question
+                          - generic [ref=e4181]: 1 child
+                        - generic [ref=e3831]:
+                          - button "View coded segments" [ref=e3832] [cursor=pointer]:
+                            - img [ref=e3833]
+                          - button "Delete question" [ref=e3836] [cursor=pointer]:
+                            - img [ref=e3837]
+                      - generic [ref=e3839]:
+                        - paragraph [ref=e3840]: How do social enterprises practice democratic governance?
+                        - generic [ref=e3842]: 5 codings
+                  - group [ref=e3843]:
+                    - generic [ref=e3844]:
+                      - generic [ref=e3847]:
+                        - generic [ref=e3850]: Research Question
+                        - generic [ref=e3851]:
+                          - button "View coded segments" [ref=e3852] [cursor=pointer]:
+                            - img [ref=e3853]
+                          - button "Delete question" [ref=e3856] [cursor=pointer]:
+                            - img [ref=e3857]
+                      - generic [ref=e3859]:
+                        - generic [ref=e4182]:
+                          - generic [ref=e4184]: How do social enterprises practice democratic governance?
+                          - generic [ref=e4185]: ">"
+                        - paragraph [ref=e3860]: What environmental sustainability practices are described?
+                        - generic [ref=e3862]: 7 codings
+                  - group [ref=e3863]:
+                    - generic [ref=e3864]:
+                      - generic [ref=e3867]:
+                        - generic [ref=e3870]: Research Question
+                        - generic [ref=e3871]:
+                          - button "View coded segments" [ref=e3872] [cursor=pointer]:
+                            - img [ref=e3873]
+                          - button "Delete question" [ref=e3876] [cursor=pointer]:
+                            - img [ref=e3877]
+                      - generic [ref=e3879]:
+                        - paragraph [ref=e3880]: What funding challenges do social enterprises face?
+                        - generic [ref=e3882]: 3 codings
+                  - group [ref=e3941]:
+                    - generic [ref=e3969]:
+                      - generic [ref=e3970]:
+                        - generic [ref=e3971]: Memo
+                        - button "Delete memo" [ref=e3972] [cursor=pointer]:
+                          - img [ref=e3973]
+                      - paragraph [ref=e3976]: New memo — click to edit
+                  - group [ref=e4031]:
+                    - generic [ref=e4032]:
+                      - generic [ref=e4035]:
+                        - generic [ref=e4036]:
+                          - img [ref=e4037]
+                          - generic [ref=e4039]: Programme Manager Sarah
+                        - button "Delete case" [ref=e4040] [cursor=pointer]:
+                          - img [ref=e4041]
+                      - generic [ref=e4043]:
+                        - generic [ref=e4044]:
+                          - generic [ref=e4045]:
+                            - generic [ref=e4046]: "role:"
+                            - text: Manager
+                          - generic [ref=e4047]:
+                            - generic [ref=e4048]: "org:"
+                            - text: Green Catering SE
+                        - generic [ref=e4050]: 1 transcript
+                  - group [ref=e4544]:
+                    - generic [ref=e4611]:
+                      - generic [ref=e4613]:
+                        - generic [ref=e4614]:
+                          - img [ref=e4616]
+                          - generic [ref=e4618]: Statistics
+                        - generic [ref=e4619]:
+                          - button "Configure" [ref=e4620] [cursor=pointer]:
+                            - img [ref=e4621]
+                          - button "Run computation" [ref=e4624] [cursor=pointer]:
+                            - img [ref=e4625]
+                          - button "Delete node" [ref=e4627] [cursor=pointer]:
+                            - img [ref=e4628]
+                      - generic [ref=e4631]:
+                        - generic [ref=e5074]:
+                          - button "Bar" [ref=e5075] [cursor=pointer]
+                          - button "Pie" [ref=e5076] [cursor=pointer]
+                          - generic [ref=e5077]: 15 total
+                        - img [ref=e5081]:
+                          - generic [ref=e5083]:
+                            - generic [ref=e5085]: How do social e
+                            - generic [ref=e5087]: What environmen
+                            - generic [ref=e5089]: What funding ch
+                          - generic [ref=e5091]:
+                            - generic [ref=e5093]: "0"
+                            - generic [ref=e5095]: "2"
+                            - generic [ref=e5097]: "4"
+                            - generic [ref=e5099]: "6"
+                            - generic [ref=e5101]: "8"
+                  - group [ref=e4693]:
+                    - generic [ref=e4694]:
+                      - generic [ref=e4696]:
+                        - generic [ref=e4697]:
+                          - img [ref=e4699]
+                          - generic [ref=e4701]: Word Cloud
+                        - generic [ref=e4702]:
+                          - button "Configure" [ref=e4703] [cursor=pointer]:
+                            - img [ref=e4704]
+                          - button "Run computation" [ref=e4707] [cursor=pointer]:
+                            - img [ref=e4708]
+                          - button "Delete node" [ref=e4710] [cursor=pointer]:
+                            - img [ref=e4711]
+                      - img [ref=e5205]:
+                        - img [ref=e5206]:
+                          - generic [ref=e5207]: garden
+                        - img [ref=e5208]:
+                          - generic [ref=e5209]: community
+                        - img [ref=e5210]:
+                          - generic [ref=e5211]: governance
+                        - img [ref=e5212]:
+                          - generic [ref=e5213]: funding
+                        - img [ref=e5214]:
+                          - generic [ref=e5215]: government
+                        - img [ref=e5216]:
+                          - generic [ref=e5217]: democratic
+                        - img [ref=e5218]:
+                          - generic [ref=e5219]: major
+                        - img [ref=e5220]:
+                          - generic [ref=e5221]: operations
+                        - img [ref=e5222]:
+                          - generic [ref=e5223]: environmental
+                        - img [ref=e5224]:
+                          - generic [ref=e5225]: sustainability
+                        - img [ref=e5226]:
+                          - generic [ref=e5227]: composting
+                        - img [ref=e5228]:
+                          - generic [ref=e5229]: programme
+                        - img [ref=e5230]:
+                          - generic [ref=e5231]: produce
+                        - img [ref=e5232]:
+                          - generic [ref=e5233]: grants
+                        - img [ref=e5234]:
+                          - generic [ref=e5235]: catering
+                        - img [ref=e5236]:
+                          - generic [ref=e5237]: board
+                        - img [ref=e5238]:
+                          - generic [ref=e5239]: central
+                        - img [ref=e5240]:
+                          - generic [ref=e5241]: everything
+                        - img [ref=e5242]:
+                          - generic [ref=e5243]: every
+                        - img [ref=e5244]:
+                          - generic [ref=e5245]: decision
+                        - img [ref=e5246]:
+                          - generic [ref=e5247]: goes
+                        - img [ref=e5248]:
+                          - generic [ref=e5249]: participatory
+                        - img [ref=e5250]:
+                          - generic [ref=e5251]: process
+                        - img [ref=e5252]:
+                          - generic [ref=e5253]: staff
+                        - img [ref=e5254]:
+                          - generic [ref=e5255]: participants
+                        - img [ref=e5256]:
+                          - generic [ref=e5257]: equal
+                        - img [ref=e5258]:
+                          - generic [ref=e5259]: voice
+                        - img [ref=e5260]:
+                          - generic [ref=e5261]: structure
+                        - img [ref=e5262]:
+                          - generic [ref=e5263]: means
+                        - img [ref=e5264]:
+                          - generic [ref=e5265]: say
+                        - img [ref=e5266]:
+                          - generic [ref=e5267]: run
+                        - img [ref=e5268]:
+                          - generic [ref=e5269]: sit
+                        - img [ref=e5270]:
+                          - generic [ref=e5271]: participant
+                        - img [ref=e5272]:
+                          - generic [ref=e5273]: council
+                        - img [ref=e5274]:
+                          - generic [ref=e5275]: meet
+                        - img [ref=e5276]:
+                          - generic [ref=e5277]: monthly
+                        - img [ref=e5278]:
+                          - generic [ref=e5279]: discuss
+                        - img [ref=e5280]:
+                          - generic [ref=e5281]: suggest
+                        - img [ref=e5282]:
+                          - generic [ref=e5283]: improvements
+                        - img [ref=e5284]:
+                          - generic [ref=e5285]: model
+                        - img [ref=e5286]:
+                          - generic [ref=e5287]: follows
+                        - img [ref=e5288]:
+                          - generic [ref=e5289]: cooperative
+                        - img [ref=e5290]:
+                          - generic [ref=e5291]: principles
+                        - img [ref=e5292]:
+                          - generic [ref=e5293]: one-member-one-vote
+                        - img [ref=e5294]:
+                          - generic [ref=e5295]: decisions
+                        - img [ref=e5296]:
+                          - generic [ref=e5297]: embedded
+                        - img [ref=e5298]:
+                          - generic [ref=e5299]: zero-waste
+                        - img [ref=e5300]:
+                          - generic [ref=e5301]: kitchen
+                        - img [ref=e5302]:
+                          - generic [ref=e5303]: policy
+                        - img [ref=e5304]:
+                          - generic [ref=e5305]: work
+                  - group [ref=e4843]:
+                    - generic [ref=e4844]:
+                      - generic [ref=e4846]:
+                        - generic [ref=e4847]:
+                          - img [ref=e4849]
+                          - generic [ref=e4851]: Sentiment
+                        - generic [ref=e4852]:
+                          - button "Configure" [ref=e4853] [cursor=pointer]:
+                            - img [ref=e4854]
+                          - button "Run computation" [ref=e4857] [cursor=pointer]:
+                            - img [ref=e4858]
+                          - button "Delete node" [ref=e4860] [cursor=pointer]:
+                            - img [ref=e4861]
+                      - generic [ref=e4864]:
+                        - generic [ref=e5379]:
+                          - generic [ref=e5380]:
+                            - generic [ref=e5381]:
+                              - text: "Avg score:"
+                              - strong [ref=e5382]: "0.20"
+                            - generic [ref=e5383]: 15 segments
+                          - img [ref=e5387]:
+                            - generic [ref=e5389]:
+                              - generic [ref=e5391]: Positive
+                              - generic [ref=e5393]: Negative
+                              - generic [ref=e5395]: Neutral
+                            - generic [ref=e5397]:
+                              - generic [ref=e5399]: "0"
+                              - generic [ref=e5401]: "3"
+                              - generic [ref=e5403]: "6"
+                              - generic [ref=e5405]: "12"
+                        - generic [ref=e5414]:
+                          - generic [ref=e5415]:
+                            - generic [ref=e5416]: "+1.0"
+                            - generic [ref=e5417]: What funding challenges do social enterprises face?
+                          - generic [ref=e5418]:
+                            - generic [ref=e5419]: "+0.0"
+                            - generic [ref=e5420]: How do social enterprises practice democratic governance?
+                          - generic [ref=e5421]:
+                            - generic [ref=e5422]: "+0.0"
+                            - generic [ref=e5423]: What environmental sustainability practices are described?
+                  - group [ref=e4994]:
+                    - generic [ref=e5110]:
+                      - generic [ref=e5112]:
+                        - generic [ref=e5113]:
+                          - img [ref=e5115]
+                          - generic [ref=e5117]: Theme Map
+                        - generic [ref=e5118]:
+                          - button "Configure" [ref=e5119] [cursor=pointer]:
+                            - img [ref=e5120]
+                          - button "Run computation" [ref=e5123] [cursor=pointer]:
+                            - img [ref=e5124]
+                          - button "Delete node" [ref=e5126] [cursor=pointer]:
+                            - img [ref=e5127]
+                      - generic [ref=e5130]:
+                        - generic [ref=e5497]:
+                          - generic [ref=e5498]: 3 themes
+                          - generic [ref=e5499]: "Total: 15"
+                        - region [ref=e5502]:
+                          - img [ref=e5503]:
+                            - generic [ref=e5504]:
+                              - generic [ref=e5508]:
+                                - generic [ref=e5512]: How do social enterprises practic...
+                                - generic [ref=e5517]: What environmental sustainability...
+                              - generic [ref=e5522]: What funding c...
+                  - group [ref=e5646]:
+                    - generic [ref=e5717]:
+                      - generic [ref=e5719]:
+                        - generic [ref=e5720]:
+                          - img [ref=e5722]
+                          - generic [ref=e5724]: Text Search
+                        - generic [ref=e5725]:
+                          - button "Configure" [ref=e5726] [cursor=pointer]:
+                            - img [ref=e5727]
+                          - button "Run computation" [ref=e5730] [cursor=pointer]:
+                            - img [ref=e5731]
+                          - button "Delete node" [ref=e5733] [cursor=pointer]:
+                            - img [ref=e5734]
+                      - generic [ref=e6609]:
+                        - paragraph [ref=e6610]: 7 matches
+                        - generic [ref=e6611]:
+                          - paragraph [ref=e6612]: "Interview #1 — Programme Manager Sarah"
+                          - paragraph [ref=e6613]:
+                            - generic [ref=e6614]:
+                              - text: ...ncludes representatives from the local community,
+                              - mark [ref=e6615]: participant
+                            - text: s, and external professionals. Democratic governan...
+                        - generic [ref=e6616]:
+                          - paragraph [ref=e6617]: "Interview #1 — Programme Manager Sarah"
+                          - paragraph [ref=e6618]:
+                            - generic [ref=e6619]:
+                              - text: ...s through a participatory process where staff and
+                              - mark [ref=e6620]: participant
+                            - text: s have equal voice. We measure our social impact t...
+                        - generic [ref=e6621]:
+                          - paragraph [ref=e6622]: "Interview #1 — Programme Manager Sarah"
+                          - paragraph [ref=e6623]:
+                            - generic [ref=e6624]:
+                              - text: ...t evaluations. Last year we supported forty-seven
+                              - mark [ref=e6625]: participant
+                            - text: s, with thirty-two moving into mainstream employme...
+                        - generic [ref=e6626]:
+                          - paragraph [ref=e6627]: "Interview #2 — Participant John"
+                          - paragraph [ref=e6628]:
+                            - generic [ref=e6629]:
+                              - text: ...ans we have a say in how things run. I sit on the
+                              - mark [ref=e6630]: participant
+                            - text: council and we meet monthly to discuss operations...
+                        - generic [ref=e6631]:
+                          - paragraph [ref=e6632]: "Interview #3 — Board Chair Maria"
+                          - paragraph [ref=e6633]:
+                            - generic [ref=e6634]:
+                              - text: ...d members representing diverse stakeholders — two
+                              - mark [ref=e6635]: participant
+                            - text: representatives, three community members, two bus...
+                        - generic [ref=e6636]:
+                          - paragraph [ref=e6637]: "Interview #3 — Board Chair Maria"
+                          - paragraph [ref=e6638]:
+                            - generic [ref=e6639]:
+                              - text: ...tain a ratio of one support worker for every five
+                              - mark [ref=e6640]: participant
+                            - generic [ref=e6641]:
+                              - text: s. The
+                              - mark [ref=e6642]: participant
+                            - text: council feeds directly into boa...
+                        - generic [ref=e6643]:
+                          - paragraph [ref=e6644]: "Interview #3 — Board Chair Maria"
+                          - paragraph [ref=e6645]:
+                            - generic [ref=e6646]:
+                              - text: ...e support worker for every five
+                              - mark [ref=e6647]: participant
+                            - generic [ref=e6648]:
+                              - text: s. The
+                              - mark [ref=e6649]: participant
+                            - text: council feeds directly into board decisions — the...
+                  - group [ref=e5799]:
+                    - generic [ref=e5871]:
+                      - generic [ref=e5873]:
+                        - generic [ref=e5874]:
+                          - img [ref=e5876]
+                          - generic [ref=e5878]: Co-occurrence
+                        - generic [ref=e5879]:
+                          - button "Configure" [ref=e5880] [cursor=pointer]:
+                            - img [ref=e5881]
+                          - button "Run computation" [ref=e5884] [cursor=pointer]:
+                            - img [ref=e5885]
+                          - button "Delete node" [ref=e5887] [cursor=pointer]:
+                            - img [ref=e5888]
+                      - paragraph [ref=e5892]: Select 2+ questions and click Run.
+                  - group [ref=e5953]:
+                    - generic [ref=e6026]:
+                      - generic [ref=e6028]:
+                        - generic [ref=e6029]:
+                          - img [ref=e6031]
+                          - generic [ref=e6033]: Framework Matrix
+                        - generic [ref=e6034]:
+                          - button "Run computation" [ref=e6035] [cursor=pointer]:
+                            - img [ref=e6036]
+                          - button "Delete node" [ref=e6038] [cursor=pointer]:
+                            - img [ref=e6039]
+                      - table [ref=e6808]:
+                        - rowgroup [ref=e6809]:
+                          - row "Case" [ref=e6810]:
+                            - columnheader "Case" [ref=e6811]
+                            - columnheader "How do social enterprises practice democratic governance?" [ref=e6812]
+                            - columnheader "What environmental sustainability practices are described?" [ref=e6814]
+                            - columnheader "What funding challenges do social enterprises face?" [ref=e6816]
+                        - rowgroup [ref=e6818]:
+                          - row "Programme Manager Sarah 2 3 1" [ref=e6819]:
+                            - cell "Programme Manager Sarah" [ref=e6820]
+                            - cell "2" [ref=e6821]:
+                              - generic [ref=e6822]: "2"
+                            - cell "3" [ref=e6823]:
+                              - generic [ref=e6824]: "3"
+                            - cell "1" [ref=e6825]:
+                              - generic [ref=e6826]: "1"
+                  - group [ref=e6104]:
+                    - generic [ref=e6178]:
+                      - generic [ref=e6180]:
+                        - generic [ref=e6181]:
+                          - img [ref=e6183]
+                          - generic [ref=e6185]: Comparison
+                        - generic [ref=e6186]:
+                          - button "Configure" [ref=e6187] [cursor=pointer]:
+                            - img [ref=e6188]
+                          - button "Run computation" [ref=e6191] [cursor=pointer]:
+                            - img [ref=e6192]
+                          - button "Delete node" [ref=e6194] [cursor=pointer]:
+                            - img [ref=e6195]
+                      - generic [ref=e6908]:
+                        - img [ref=e6909]:
+                          - generic [ref=e6911]:
+                            - generic [ref=e6913]: How do socia
+                            - generic [ref=e6915]: What environ
+                            - generic [ref=e6917]: What funding
+                          - generic [ref=e6919]:
+                            - generic [ref=e6921]: "0"
+                            - generic [ref=e6923]: "0.75"
+                            - generic [ref=e6925]: "1.5"
+                            - generic [ref=e6927]: "2.25"
+                            - generic [ref=e6929]: "3"
+                        - list [ref=e6958]:
+                          - listitem [ref=e6959]:
+                            - img [ref=e6960]
+                            - text: "Interview #1 —"
+                          - listitem [ref=e6962]:
+                            - img [ref=e6963]
+                            - text: "Interview #2 —"
+                          - listitem [ref=e6965]:
+                            - img [ref=e6966]
+                            - text: "Interview #3 —"
+                  - group [ref=e6260]:
+                    - generic [ref=e6335]:
+                      - generic [ref=e6337]:
+                        - generic [ref=e6338]:
+                          - img [ref=e6340]
+                          - generic [ref=e6342]: Clustering
+                        - generic [ref=e6343]:
+                          - button "Configure" [ref=e6344] [cursor=pointer]:
+                            - img [ref=e6345]
+                          - button "Run computation" [ref=e6348] [cursor=pointer]:
+                            - img [ref=e6349]
+                          - button "Delete node" [ref=e6351] [cursor=pointer]:
+                            - img [ref=e6352]
+                      - generic [ref=e7065]:
+                        - generic [ref=e7066]:
+                          - generic [ref=e7067]:
+                            - generic [ref=e7069]: Cluster 2
+                            - generic [ref=e7070]: (2)
+                          - generic [ref=e7071]:
+                            - generic [ref=e7072]: major
+                            - generic [ref=e7073]: governance
+                            - generic [ref=e7074]: model
+                            - generic [ref=e7075]: follows
+                            - generic [ref=e7076]: cooperative
+                          - paragraph [ref=e7077]: "\"Democratic governance is central to everything we do � every...\""
+                          - paragraph [ref=e7078]: "\"Our governance model follows cooperative principles with one...\""
+                        - generic [ref=e7079]:
+                          - generic [ref=e7080]:
+                            - generic [ref=e7082]: Cluster 3
+                            - generic [ref=e7083]: (8)
+                          - generic [ref=e7084]:
+                            - generic [ref=e7085]: community
+                            - generic [ref=e7086]: garden
+                            - generic [ref=e7087]: operations
+                            - generic [ref=e7088]: environmental
+                            - generic [ref=e7089]: composting
+                          - paragraph [ref=e7090]: "\"The democratic governance structure means we have a say in h...\""
+                          - paragraph [ref=e7091]: "\"Environmental sustainability is embedded in our operations t...\""
+                          - paragraph [ref=e7092]: "\"The environmental work in the community garden was therapeut...\""
+                        - generic [ref=e7093]:
+                          - generic [ref=e7094]:
+                            - generic [ref=e7096]: Cluster 1
+                            - generic [ref=e7097]: (5)
+                          - generic [ref=e7098]:
+                            - generic [ref=e7099]: board
+                            - generic [ref=e7100]: directors
+                            - generic [ref=e7101]: members
+                            - generic [ref=e7102]: funding
+                            - generic [ref=e7103]: government
+                          - paragraph [ref=e7104]: "\"The key challenge remains sustainable funding � we rely on a...\""
+                          - paragraph [ref=e7105]: "\"The funding uncertainty worries me though � if government gr...\""
+                          - paragraph [ref=e7106]: "\"Financial sustainability is our biggest ongoing concern. We ...\""
+                  - group [ref=e6417]:
+                    - generic [ref=e6442]:
+                      - generic [ref=e6444]:
+                        - generic [ref=e6445]:
+                          - img [ref=e6447]
+                          - generic [ref=e6449]: Coding Query
+                        - generic [ref=e6450]:
+                          - button "Configure" [ref=e6451] [cursor=pointer]:
+                            - img [ref=e6452]
+                          - button "Run computation" [ref=e6455] [cursor=pointer]:
+                            - img [ref=e6456]
+                          - button "Delete node" [ref=e6458] [cursor=pointer]:
+                            - img [ref=e6459]
+                      - paragraph [ref=e6463]: No matches. Click Run to query.
+            - img
+            - generic "Control Panel" [ref=e3883]:
+              - button "Zoom In" [ref=e3884] [cursor=pointer]:
+                - img [ref=e3885]
+              - button "Zoom Out" [ref=e3887] [cursor=pointer]:
+                - img [ref=e3888]
+              - button "Fit View" [ref=e3890] [cursor=pointer]:
+                - img [ref=e3891]
+              - button "Toggle Interactivity" [ref=e3893] [cursor=pointer]:
+                - img [ref=e3894]
+            - img "Mini Map" [ref=e3897]
+    - contentinfo [ref=e91]:
+      - generic [ref=e93]:
+        - paragraph [ref=e94]: © 2026 WISEShift Self-Assessment Tool
+        - navigation "Footer navigation" [ref=e95]:
+          - link "Methodology" [ref=e96] [cursor=pointer]:
+            - /url: /methodology
+          - generic [ref=e97]: "|"
+          - link "Privacy Policy" [ref=e98] [cursor=pointer]:
+            - /url: /methodology#privacy
+          - generic [ref=e99]: "|"
+          - link "Manage My Data" [ref=e100] [cursor=pointer]:
+            - /url: /data-management
+          - generic [ref=e101]: "|"
+          - link "Open Data API" [ref=e102] [cursor=pointer]:
+            - /url: /api-docs
+        - paragraph [ref=e103]: Grounded in EMES, ENSIE, and Horizon Europe WISESHIFT research
+  - generic [ref=e668]: policy
+  - generic [ref=e669]: "2.25"
